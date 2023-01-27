@@ -1,0 +1,19 @@
+---
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: hub-only
+spec:
+  clusterConditions:
+  - status: 'True'
+    type: ManagedClusterConditionAvailable
+  clusterSelector:
+    matchExpressions:
+    - key: vendor
+      operator: In
+      values:
+      - OpenShift
+    - key: name
+      operator: In
+      values:
+      - local-cluster

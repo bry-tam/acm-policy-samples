@@ -1,0 +1,37 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: acm-wookie-samples
+  remediationAction: enforce
+  policySets:
+    - tekton-operators
+placementBindingDefaults:
+  name: "tekton-binding"
+
+policies:
+  - name: tekton-operator
+    remediationAction: enforce
+    manifests:
+      - path: tekton/subscription.yml
+        complianceType: musthave
+
+  # - name: tekton-operator-status
+  #   remediationAction: inform
+  #   namespaceSelector:
+  #     include:  
+  #       - openshift-pipelines
+  #     exclude: 
+  #       - kube-*
+  #       - default
+  #   manifests:
+  #     - path: tekton/health/
+  #       complianceType: musthave
+
+policySets:
+  - name: tekton-operators
+    placement:
+      placementRuleName: "hub-only"
+
