@@ -3,6 +3,7 @@ kind: Kustomization
 bases:
   - misc/
   - operators/
+  - cluster-configs/
 
 namespace: acm-wookie-samples
 
