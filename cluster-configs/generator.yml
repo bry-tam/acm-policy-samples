@@ -1,0 +1,31 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: dmte-acm-samples
+  remediationAction: enforce
+  policySets:
+    - cluster-configs
+placementBindingDefaults:
+  name: "cluster-config-binding"
+
+policies:
+  - name: acm-clusterclaims
+    remediationAction: enforce
+    manifests:
+      - path: clusterclaims/
+        complianceType: musthave
+
+  - name: acm-ingress-infra
+    remediationAction: enforce
+    manifests:
+      - path: ingress/
+        complianceType: musthave
+
+
+policySets:
+  - name: cluster-configs
+    placement:
+      placementRuleName: "hub-only"
