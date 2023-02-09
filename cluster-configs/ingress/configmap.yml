@@ -1,7 +1,7 @@
 ---
 apiVersion: v1
 data:
-  infraCount: '{{ len ((lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "infra").status.machineCount) | toInt }}'
+  infraCount: '{{ (lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "infra").status.machineCount }}'
 kind: ConfigMap
 metadata:
   name: test-ingress
