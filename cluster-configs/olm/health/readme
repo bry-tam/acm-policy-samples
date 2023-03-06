@@ -1,0 +1,20 @@
+These health policies will detect issue referenced in https://access.redhat.com/articles/7000167
+
+Note they would also likely trigger on any operator bundle unpacking job failure as decribed in https://access.redhat.com/solutions/6459071.  These will not resolve the issue, will only highlight as failed in ACM when the jobs enter a failure state.
+
+To use add similar to the PolicyGenerator config.
+```
+  - name: operator-lifecycle-status
+    remediationAction: inform
+    namespaceSelector:
+      include:  
+        - openshift-*
+        - open-cluster-management
+        - multicluster-engine
+      exclude: 
+        - kube-*
+        - default
+    manifests:
+      - path: olm/health/
+        complianceType: mustnothave
+```
