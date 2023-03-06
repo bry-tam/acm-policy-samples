@@ -4,10 +4,7 @@ metadata:
   generateName: install-
 status:
   bundleLookups:
-    - catalogSourceRef:
-        name: redhat-operators
-        namespace: openshift-marketplace
-      conditions:
+    - conditions:
         - reason: JobIncomplete
           status: 'True'
           type: BundleLookupPending
