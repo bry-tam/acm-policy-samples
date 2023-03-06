@@ -1,0 +1,12 @@
+kind: Job
+apiVersion: batch/v1
+metadata:
+  namespace: openshift-marketplace
+status:
+  conditions:
+    - type: Failed
+      status: 'True'
+      reason: DeadlineExceeded
+      message: Job was active longer than specified deadline
+  failed: 1
+  ready: 0

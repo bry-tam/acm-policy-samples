@@ -25,6 +25,12 @@ policies:
         complianceType: musthave
 
 
+  - name: operator-lifecycle-status
+    remediationAction: inform
+    manifests:
+      - path: olm/health/
+        complianceType: mustnothave
+
 policySets:
   - name: cluster-configs
     placement:
