@@ -25,6 +25,20 @@ policies:
         complianceType: musthave
 
 
+  - name: operator-lifecycle-status
+    remediationAction: inform
+    namespaceSelector:
+      include:  
+        - openshift-*
+        - open-cluster-management
+        - multicluster-engine
+      exclude: 
+        - kube-*
+        - default
+    manifests:
+      - path: olm/health/
+        complianceType: mustnothave
+
 policySets:
   - name: cluster-configs
     placement:
