@@ -1,0 +1,10 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+status:
+  conditions:
+  - message: 'bundle unpacking failed. Reason: DeadlineExceeded, and Message: Job
+      was active longer than specified deadline'
+    reason: InstallCheckFailed
+    status: "True"
+    type: InstallPlanFailed
+  state: UpgradePending
