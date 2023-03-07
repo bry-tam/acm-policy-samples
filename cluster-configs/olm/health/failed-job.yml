@@ -9,4 +9,3 @@ status:
       reason: DeadlineExceeded
       message: Job was active longer than specified deadline
   failed: 1
-  ready: 0
