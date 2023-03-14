@@ -4,4 +4,4 @@ kind: Namespace
 metadata:
   name: bry-tam-policies
   labels:
-    tekton.rh-reg-auth: true
+    tekton.rh-reg-auth: 'true'
