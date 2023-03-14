@@ -4,7 +4,7 @@ kind: PolicyGenerator
 metadata:
   name: gen-policy-generator
 policyDefaults:
-  namespace: acm-wookie-samples
+  namespace: bry-tam-policies
   remediationAction: enforce
   placement:
     placementRuleName: "hub-only"

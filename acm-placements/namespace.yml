@@ -2,4 +2,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: dmte-acm-samples
+  name: bry-tam-policies

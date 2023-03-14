@@ -4,7 +4,7 @@ kind: PolicyGenerator
 metadata:
   name: gen-policy-generator
 policyDefaults:
-  namespace: acm-wookie-samples
+  namespace: acm-policy-samples
   remediationAction: enforce
   policySets:
     - tekton-operators

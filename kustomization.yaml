@@ -5,7 +5,7 @@ bases:
   - operators/
   - cluster-configs/
 
-namespace: acm-wookie-samples
+namespace: bry-tam-policies
 
 resources:
   - acm-placements/
