@@ -54,7 +54,7 @@ spec:
   rbac:
     defaultPolicy: readonly
     policy: |
-      g, "bry-tam,ou-admins", role:admin
+      g, "bry-tam", role:admin
       p, role:org-team, projects, get, *, allow
       p, role:org-team, projects, create, *, allow
       p, role:org-team, projects, update, *, allow
