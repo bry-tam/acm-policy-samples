@@ -4,7 +4,7 @@ kind: PolicyGenerator
 metadata:
   name: gen-policy-generator
 policyDefaults:
-  namespace: acm-policy-samples
+  namespace: bry-tam-policies
   remediationAction: enforce
   policySets:
     - tekton-operators
