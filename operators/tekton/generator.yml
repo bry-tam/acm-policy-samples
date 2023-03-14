@@ -17,10 +17,10 @@ policies:
     remediationAction: enforce
     manifests:
       - path: tekton/subscription.yml
-      - path: gitops/health/operator-unavailable.yml
+      - path: tekton/health/operator-unavailable.yml
         remediationAction: inform
         complianceType: mustnothave
-      - path: gitops/health/operator-progressing.yml
+      - path: tekton/health/operator-progressing.yml
         remediationAction: inform
         complianceType: mustnothave
 
