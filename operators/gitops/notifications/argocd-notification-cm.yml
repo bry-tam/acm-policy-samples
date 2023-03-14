@@ -1,0 +1,19 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: argocd-notifications-cm
+  labels:
+    app.kubernetes.io/part-of: argocd
+data:
+
+  trigger.sync-operation-change: |
+    - when: app.status.operationState.phase in ['Succeeded']
+      send: [app-sync-succeeded]
+    - when: app.status.operationState.phase in ['Running']
+      send: [app-sync-running]
+    - when: app.status.health.status == 'Degraded'
+      send: [app-health-degraded]
+    - when: app.status.operationState.phase in ['Error', 'Failed']
+      send: [app-sync-failed]
+  
+      
