@@ -4,5 +4,5 @@ apiVersion: apps/v1
 metadata:
   namespace: openshift-pipelines
   labels:
-    app.kubernetes.io/part-of: pipelines-as-code
     tam: bry
+  name: pipelines-as-code-controller
