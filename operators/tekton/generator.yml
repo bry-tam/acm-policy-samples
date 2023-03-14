@@ -6,6 +6,7 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
+  consolidateManifests: false
   policySets:
     - tekton-operators
 placementBindingDefaults:
@@ -16,7 +17,8 @@ policies:
     remediationAction: enforce
     manifests:
       - path: tekton/subscription.yml
-        complianceType: musthave
+      - path: gitops/health/operator-status.yml
+        remediationAction: inform
 
   - name: tekton-rh-auth
     remediationAction: enforce
@@ -29,18 +31,25 @@ policies:
     manifests:
       - path: tekton/pull-secret-auth/
 
+  - name: tekton-configure
+    remediationAction: enforce
+    dependencies:
+      - name: "tekton-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: tekton/tektonchains.yml
+      - path: tekton/tektonconfig.yml
 
-  # - name: tekton-operator-status
-  #   remediationAction: inform
-  #   namespaceSelector:
-  #     include:  
-  #       - openshift-pipelines
-  #     exclude: 
-  #       - kube-*
-  #       - default
-  #   manifests:
-  #     - path: tekton/health/
-  #       complianceType: musthave
+  - name: tekton-operator-status
+    remediationAction: inform
+    namespaceSelector:
+      include:  
+        - openshift-pipelines
+      exclude: 
+        - kube-*
+        - default
+    manifests:
+      - path: tekton/health/tekton-status.yml
 
 policySets:
   - name: tekton-operators

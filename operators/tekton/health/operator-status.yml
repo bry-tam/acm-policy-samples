@@ -1,0 +1,16 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: openshift-pipelines-operator
+  namespace: openshift-operators
+
+status:
+  replicas: 1
+  updatedReplicas: 1
+  readyReplicas: 1
+  availableReplicas: 1
+  conditions:
+    - type: Available
+      status: 'True'
+      reason: MinimumReplicasAvailable
+      message: Deployment has minimum availability.
