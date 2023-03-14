@@ -18,6 +18,18 @@ policies:
       - path: tekton/subscription.yml
         complianceType: musthave
 
+  - name: tekton-rh-auth
+    remediationAction: enforce
+    namespaceSelector:
+      matchLabels:
+        tekton.rh-reg-auth: true
+    dependencies:
+      - name: "tekton-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: tekton/pull-secret-auth/
+
+
   # - name: tekton-operator-status
   #   remediationAction: inform
   #   namespaceSelector:
