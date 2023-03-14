@@ -3,7 +3,8 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   namespace: openshift-pipelines
-
+  labels:
+    tam: bry
 status:
   conditions:
     - type: Available
