@@ -36,9 +36,15 @@ policies:
     dependencies:
       - name: "tekton-operator"
         compliance: "Compliant"
+    namespaceSelector:
+      include:  
+        - openshift-pipelines
+      exclude: 
+        - kube-*
+        - default
     manifests:
       - path: tekton/label-tekton.yml
-      
+
   - name: tekton-configure
     remediationAction: enforce
     dependencies:
