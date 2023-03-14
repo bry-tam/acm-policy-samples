@@ -1,0 +1,10 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: openshift-pipelines-operator
+  namespace: openshift-operators
+
+status:
+  conditions:
+    - type: Progressing
+      status: 'True'

@@ -17,8 +17,12 @@ policies:
     remediationAction: enforce
     manifests:
       - path: tekton/subscription.yml
-      - path: gitops/health/operator-status.yml
+      - path: gitops/health/operator-unavailable.yml
         remediationAction: inform
+        complianceType: mustnothave
+      - path: gitops/health/operator-progressing.yml
+        remediationAction: inform
+        complianceType: mustnothave
 
   - name: tekton-rh-auth
     remediationAction: enforce
@@ -42,6 +46,7 @@ policies:
 
   - name: tekton-operator-status
     remediationAction: inform
+    complianceType: mustnothave
     namespaceSelector:
       include:  
         - openshift-pipelines
@@ -49,7 +54,8 @@ policies:
         - kube-*
         - default
     manifests:
-      - path: tekton/health/tekton-status.yml
+      - path: tekton/health/tekton-unavailable.yml
+      - path: tekton/health/tekton-progressing.yml
 
 policySets:
   - name: tekton-operators
