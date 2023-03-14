@@ -31,20 +31,6 @@ policies:
     manifests:
       - path: tekton/pull-secret-auth/
 
-  - name: tekton-label
-    remediationAction: enforce
-    dependencies:
-      - name: "tekton-operator"
-        compliance: "Compliant"
-    namespaceSelector:
-      include:  
-        - openshift-pipelines
-      exclude: 
-        - kube-*
-        - default
-    manifests:
-      - path: tekton/label-tekton.yml
-
   - name: tekton-configure
     remediationAction: enforce
     dependencies:

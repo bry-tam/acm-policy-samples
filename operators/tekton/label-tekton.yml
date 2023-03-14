@@ -1,8 +1,0 @@
----
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  namespace: openshift-pipelines
-  labels:
-    tam: bry
-  name: pipelines-as-code-controller
