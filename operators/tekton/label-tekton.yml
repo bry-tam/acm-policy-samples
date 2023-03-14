@@ -4,10 +4,5 @@ apiVersion: apps/v1
 metadata:
   namespace: openshift-pipelines
   labels:
+    app.kubernetes.io/part-of: pipelines-as-code
     tam: bry
-status:
-  conditions:
-    - type: Available
-      status: 'True'
-      reason: MinimumReplicasAvailable
-      message: Deployment has minimum availability.
