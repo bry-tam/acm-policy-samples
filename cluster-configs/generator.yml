@@ -24,6 +24,11 @@ policies:
       - path: ingress/
         complianceType: musthave
 
+  - name: etcd-backup
+    remediationAction: enforce
+    manifests:
+      - path: etcd-backup/
+        complianceType: musthave
 
   - name: operator-lifecycle-status
     remediationAction: inform
