@@ -18,7 +18,7 @@ policies:
     manifests:
       - path: gitops/argocd-ns.yml
       - path: gitops/subscription.yml
-      - path: gitops/health/operator-status.yml
+      # - path: gitops/health/operator-status.yml
         remediationAction: inform
 
   - name: gitops-configure
@@ -32,8 +32,12 @@ policies:
     manifests:
       - path: gitops/argocd-notifications-enable.yml
       - path: gitops/argocd-policygenerator.yml
-      - path: gitops/health/notification-status.yml
+      - path: gitops/health/notification-unavailable.yml
         remediationAction: inform
+        complianceType: mustnothave
+      - path: gitops/health/notification-progressing.yml
+        remediationAction: inform
+        complianceType: mustnothave
 
   - name: gitops-notifiations
     remediationAction: enforce

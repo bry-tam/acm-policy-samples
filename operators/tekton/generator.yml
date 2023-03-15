@@ -17,10 +17,15 @@ policies:
     remediationAction: enforce
     manifests:
       - path: tekton/subscription.yml
+      - path: tekton/health/operator-status.yml
+        remediationAction: inform
       - path: tekton/health/operator-unavailable.yml
         remediationAction: inform
         complianceType: mustnothave
-      - path: tekton/health/operator-progressing.yml
+      - path: tekton/health/operator-pod-status-phases.yml
+        remediationAction: inform
+        complianceType: mustnothave
+      - path: tekton/health/operator-pod-status-conditions.yml
         remediationAction: inform
         complianceType: mustnothave
 
@@ -55,7 +60,8 @@ policies:
         - default
     manifests:
       - path: tekton/health/tekton-unavailable.yml
-      - path: tekton/health/tekton-progressing.yml
+      - path: tekton/health/tekton-pod-status-phases.yml
+      - path: tekton/health/tekton-pod-status-conditions.yml
 
 policySets:
   - name: tekton-operators

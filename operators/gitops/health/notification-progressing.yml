@@ -7,13 +7,8 @@ metadata:
     app.kubernetes.io/managed-by: openshift-gitops
     app.kubernetes.io/name: openshift-gitops-notifications-controller
     app.kubernetes.io/part-of: argocd
+
 status:
-  replicas: 1
-  updatedReplicas: 1
-  readyReplicas: 1
-  availableReplicas: 1
   conditions:
-    - type: Available
+    - type: Progressing
       status: 'True'
-      reason: MinimumReplicasAvailable
-      message: Deployment has minimum availability.
