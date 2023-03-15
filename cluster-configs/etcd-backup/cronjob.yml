@@ -12,9 +12,9 @@ spec:
   failedJobsHistoryLimit: 2
   jobTemplate:
     spec:
+      parallelism: 1
+      backoffLimit: 0
       template:
-        parallelism: 1
-        backoffLimit: 0
         metadata:
           generateName: etcd-backup-
           namespace: etcd-infra
