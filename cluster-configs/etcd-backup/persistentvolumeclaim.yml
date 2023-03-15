@@ -3,6 +3,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: etcd-backup
+  namespace: etcd-infra
   labels:
     app: etcd-infra
 spec:
