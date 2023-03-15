@@ -1,0 +1,10 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: openshift-operators
+  labels:
+    operators.coreos.com/openshift-pipelines-operator-rh.openshift-operators: ''
+status:
+  conditions:
+    - type: Available
+      status: 'False'

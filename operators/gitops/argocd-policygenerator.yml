@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: openshift-gitops
+spec:
+  kustomizeBuildOptions: --enable-alpha-plugins
+  repo:
+    env:
+    - name: KUSTOMIZE_PLUGIN_HOME
+      value: /etc/kustomize/plugin
+    initContainers:
+    - args:
+      - -c
+      - cp /etc/kustomize/plugin/policy.open-cluster-management.io/v1/policygenerator/PolicyGenerator
+        /policy-generator/PolicyGenerator
+      command:
+      - /bin/bash
+      image: 'registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel8:v{{ (lookup "operator.open-cluster-management.io/v1" "MultiClusterHub" "open-cluster-management" "multiclusterhub").status.currentVersion }}' 
+      name: policy-generator-install
+      volumeMounts:
+      - mountPath: /policy-generator
+        name: policy-generator
+    volumeMounts:
+    - mountPath: /etc/kustomize/plugin/policy.open-cluster-management.io/v1/policygenerator
+      name: policy-generator
+    volumes:
+    - emptyDir: {}
+      name: policy-generator 

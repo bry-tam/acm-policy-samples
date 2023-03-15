@@ -4,3 +4,4 @@ kind: Kustomization
 
 generators:
   - ./tekton/generator.yml
+  - ./gitops/generator.yml
