@@ -18,8 +18,17 @@ policies:
     manifests:
       - path: gitops/argocd-ns.yml
       - path: gitops/subscription.yml
-      # - path: gitops/health/operator-status.yml
+      - path: gitops/health/operator-status.yml
         remediationAction: inform
+      - path: gitops/health/operator-unavailable.yml
+        remediationAction: inform
+        complianceType: mustnothave
+      - path: gitops/health/operator-pod-status-phases.yml
+        remediationAction: inform
+        complianceType: mustnothave
+      - path: gitops/health/operator-pod-status-conditions.yml
+        remediationAction: inform
+        complianceType: mustnothave
 
   - name: gitops-configure
     remediationAction: enforce
@@ -35,7 +44,10 @@ policies:
       - path: gitops/health/notification-unavailable.yml
         remediationAction: inform
         complianceType: mustnothave
-      - path: gitops/health/notification-progressing.yml
+      - path: gitops/health/notification-pod-status-phases.yml
+        remediationAction: inform
+        complianceType: mustnothave
+      - path: gitops/health/notification-pod-status-conditions.yml
         remediationAction: inform
         complianceType: mustnothave
 
@@ -72,7 +84,20 @@ policies:
       - name: "gitops-instances"
         compliance: "Compliant"
     manifests:
-      - path: gitops/health/argocd-status.yml
+      - path: gitops/health/argocd-unavailable.yml
+        complianceType: mustnothave
+      - path: gitops/health/argocd-server-pod-status-phases.yml
+        complianceType: mustnothave
+      - path: gitops/health/argocd-server-pod-status-conditions.yml
+        complianceType: mustnothave
+      - path: gitops/health/argocd-repo-pod-status-phases.yml
+        complianceType: mustnothave
+      - path: gitops/health/argocd-repo-pod-status-conditions.yml
+        complianceType: mustnothave
+      - path: gitops/health/argocd-appcontroller-pod-status-phases.yml
+        complianceType: mustnothave
+      - path: gitops/health/argocd-appcontroller-pod-status-conditions.yml
+        complianceType: mustnothave
 
 policySets:
   - name: gitops-operator

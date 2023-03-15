@@ -1,0 +1,26 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-gitops-server
+status:
+  phase: Pending
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-gitops-server
+status:
+  phase: Failed
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-gitops-server
+status:
+  phase: Unknown
