@@ -1,0 +1,29 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: openshift-operators
+  labels:
+    control-plane: controller-manager
+status:
+  phase: Pending
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: openshift-operators
+  labels:
+    control-plane: controller-manager
+status:
+  phase: Failed
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: openshift-operators
+  labels:
+    control-plane: controller-manager
+status:
+  phase: Unknown

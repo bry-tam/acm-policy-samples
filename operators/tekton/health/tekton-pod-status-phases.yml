@@ -1,0 +1,23 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: openshift-pipelines
+status:
+  phase: Pending
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: openshift-pipelines
+status:
+  phase: Failed
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: openshift-pipelines
+status:
+  phase: Unknown

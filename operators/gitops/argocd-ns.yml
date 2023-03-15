@@ -1,0 +1,8 @@
+---
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: openshift-gitops
+  labels:
+    openshift.io/cluster-monitoring: 'true'
+    app.host: argocd

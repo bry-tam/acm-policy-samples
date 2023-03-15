@@ -1,8 +1,0 @@
----
-apiVersion: v1
-data:
-  infraCount: '{{ (lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "infra").status.machineCount | toInt | default 2 }}'
-kind: ConfigMap
-metadata:
-  name: test-ingress
-  namespace: wookie-policies

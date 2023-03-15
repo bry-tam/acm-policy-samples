@@ -1,0 +1,47 @@
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-gitops-application-controller
+status:
+  conditions:
+    - type: Initialized
+      status: 'False'
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-gitops-application-controller
+status:
+  phase: Running
+  conditions:
+    - type: Ready
+      status: 'False'
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-gitops-application-controller
+status:
+  phase: Running
+  conditions:
+    - type: ContainersReady
+      status: 'False'
+
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-gitops-application-controller
+status:
+  phase: Pending
+  conditions:
+    - type: PodScheduled
+      status: 'False'
+
