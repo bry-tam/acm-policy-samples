@@ -4,8 +4,7 @@ apiVersion: v1
 metadata:
   namespace: openshift-operators
   labels:
-    app: tekton-operator
-    name: tekton-operator-webhook
+    app: openshift-pipelines-operator
 status:
   conditions:
     - type: Initialized
@@ -17,8 +16,7 @@ apiVersion: v1
 metadata:
   namespace: openshift-operators
   labels:
-    app: tekton-operator
-    name: tekton-operator-webhook
+    app: openshift-pipelines-operator
 status:
   phase: Running
   conditions:
@@ -31,8 +29,7 @@ apiVersion: v1
 metadata:
   namespace: openshift-operators
   labels:
-    app: tekton-operator
-    name: tekton-operator-webhook
+    app: openshift-pipelines-operator
 status:
   phase: Running
   conditions:
@@ -45,8 +42,7 @@ apiVersion: v1
 metadata:
   namespace: openshift-operators
   labels:
-    app: tekton-operator
-    name: tekton-operator-webhook
+    app: openshift-pipelines-operator
 status:
   phase: Pending
   conditions:

@@ -52,12 +52,6 @@ policies:
   - name: tekton-operator-status
     remediationAction: inform
     complianceType: mustnothave
-    namespaceSelector:
-      include:  
-        - openshift-pipelines
-      exclude: 
-        - kube-*
-        - default
     manifests:
       - path: tekton/health/tekton-unavailable.yml
       - path: tekton/health/tekton-pod-status-phases.yml
