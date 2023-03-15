@@ -27,6 +27,7 @@ metadata:
     app: tekton-operator
     name: tekton-operator-webhook
 status:
+  phase: Running
   conditions:
     - type: Ready
       status: 'False'
@@ -40,6 +41,7 @@ metadata:
     app: tekton-operator
     name: tekton-operator-webhook
 status:
+  phase: Running
   conditions:
     - type: ContainersReady
       status: 'False'
@@ -53,6 +55,7 @@ metadata:
     app: tekton-operator
     name: tekton-operator-webhook
 status:
+  phase: Pending
   conditions:
     - type: PodScheduled
       status: 'False'
