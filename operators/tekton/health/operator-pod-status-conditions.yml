@@ -1,10 +1,3 @@
-# A Pod has a PodStatus, which has an array of PodConditions through which the Pod has or has not passed. Kubelet manages the following PodConditions:
-#     PodScheduled: the Pod has been scheduled to a node.
-#     PodHasNetwork: (alpha feature; must be enabled explicitly) the Pod sandbox has been successfully created and networking configured.
-#     ContainersReady: all containers in the Pod are ready.
-#     Initialized: all init containers have completed successfully.
-#     Ready: the Pod is able to serve requests and should be added to the load balancing pools of all matching Services.
-
 ---
 kind: Pod
 apiVersion: v1
