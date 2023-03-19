@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## include the clusters to be created.
+generators:
+  - generator.yml
+
+## specify the namespace to create the polcies/placements/bindings in
+namespace: bry-tam-cluster-policies
+
+## include existing placements.  For this exercise we only want to deploy to the hub
+resources:
+  - ../acm-placements/
+
+## patch the namespace from the acm-placements to fit this example using the same name as the namespace above.
+patches:
+- target:
+    kind: Namespace
+    name: bry-tam-policies
+  patch: |-
+    - op: replace
+      path: /metadata/name
+      value: bry-tam-cluster-policies

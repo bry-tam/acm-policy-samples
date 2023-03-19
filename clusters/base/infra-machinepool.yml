@@ -1,0 +1,22 @@
+apiVersion: hive.openshift.io/v1
+kind: MachinePool
+metadata:
+  name: infra-machinepool
+  namespace: cluster-name
+spec:
+  clusterDeploymentRef:
+    name: cluster-name
+  labels:
+    node-role.kubernetes.io/infra: ""
+  name: infra
+  platform:
+    vsphere:
+      coresPerSocket: 2
+      cpus: 4
+      memoryMB: 32768
+      osDisk:
+        diskSizeGB: 120
+  replicas: 3
+  taints:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/infra

@@ -1,0 +1,66 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../base
+
+## specify the namespace to match the name of the cluster.
+## this set the namespace on objects included in the policy, not the policy itself
+namespace: ocp01
+
+
+## include any additional objects that should be part of the policy
+resources:
+- managedcluster.yml
+- install-config-secret.yml
+
+patches:
+## patch the namespace be the name of the cluster
+- target:
+    kind: Namespace
+    name: cluster-name
+  patch: |-
+    - op: replace
+      path: /metadata/name
+      value: ocp01
+
+## patch the klusterletagentconfig to inlude the cluster name
+- target:
+    kind: KlusterletAddonConfig
+    name: klusterletaddon
+  patch: |-
+    - op: replace
+      path: /spec/clusterName
+      value: ocp01
+    - op: replace
+      path: /spec/clusterNamespace
+      value: ocp01
+
+
+## patch the clusterdeployment to inlude the cluster name
+- target:
+    kind: ClusterDeployment
+    name: cluster
+  patch: |-
+    - op: replace
+      path: /metadata/name
+      value: ocp01
+    - op: replace
+      path: /spec/clusterName
+      value: ocp01
+
+## below should be uncommented as an example to modify additional parts of the clusterdeployment.
+## Note you sould have to manually edit the same value in the install-config secret.
+    # - op: replace
+    #   path: /spec/platform/vsphere/folder
+    #   value: ocp01-vm-folder-path
+
+
+## patch the machinepools to include the cluster name
+- target:
+    kind: MachinePool
+    name: .*
+  patch: |-
+    - op: replace
+      path: /spec/clusterDeploymentRef/name
+      value: ocp01

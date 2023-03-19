@@ -1,0 +1,11 @@
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  labels:
+    cloud: vSphere
+    cluster.open-cluster-management.io/clusterset: default
+    name: ocp01
+    vendor: OpenShift
+  name: ocp01
+spec:
+  hubAcceptsClient: true

@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: cluster-name
+  remediationAction: enforce
+  policySets:
+    - openshift-clusters
+placementBindingDefaults:
+  name: "openshift-cluster-binding"
+
+policies:
+  - name: ocp01-cluster
+    remediationAction: enforce
+    manifests:
+      - path: ocp01/
+        complianceType: musthave
+
+
+
+
+policySets:
+  - name: openshift-clusters
+    placement:
+      placementRuleName: "hub-only"
