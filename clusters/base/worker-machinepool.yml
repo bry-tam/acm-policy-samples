@@ -1,0 +1,17 @@
+apiVersion: hive.openshift.io/v1
+kind: MachinePool
+metadata:
+  name: worker-machinepool
+  namespace: cluster-name
+spec:
+  clusterDeploymentRef:
+    name: cluster-name
+  name: worker
+  platform:
+    vsphere:
+      coresPerSocket: 2
+      cpus: 4
+      memoryMB: 16384
+      osDisk:
+        diskSizeGB: 120
+  replicas: 3

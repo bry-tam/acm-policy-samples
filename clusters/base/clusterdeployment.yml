@@ -1,0 +1,36 @@
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  labels:
+    cloud: vSphere
+    cluster.open-cluster-management.io/clusterset: default
+    vendor: OpenShift
+  name: cluster-name
+  namespace: cluster-name
+spec:
+  baseDomain: '{{ fromSecret "cluster-provider-infra" "vsphere-creds" "baseDomain" }}'
+  clusterName: cluster-name
+  controlPlaneConfig:
+    servingCertificates: {}
+  installAttemptsLimit: 1
+  platform:
+    vsphere:
+      certificatesSecretRef:
+        name: vsphere-cert
+      cluster: '{{ fromSecret "cluster-provider-infra" "vsphere-creds" "cluster" }}'
+      credentialsSecretRef:
+        name: vsphere-creds
+      datacenter: '{{ fromSecret "cluster-provider-infra" "vsphere-creds" "datacenter" }}'
+      defaultDatastore: '{{ fromSecret "cluster-provider-infra" "vsphere-creds" "defaultDatastore" }}'
+      folder: '{{ fromSecret "cluster-provider-infra" "vsphere-creds" "vsphereFolder" }}'
+      network: xxx
+      vCenter: '{{ fromSecret "cluster-provider-infra" "vsphere-creds" "vCenter" }}'
+  provisioning:
+    imageSetRef:
+      name: img4.12.6-multi-appsub
+    installConfigSecretRef:
+      name: install-config
+    sshPrivateKeySecretRef:
+      name: ssh-privatekey
+  pullSecretRef:
+    name: rh-pull-secret
