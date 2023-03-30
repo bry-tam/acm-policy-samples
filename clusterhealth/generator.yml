@@ -1,0 +1,24 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  policySets:
+    - cluster-health-configs
+placementBindingDefaults:
+  name: "cluster-health-config-binding"
+
+policies:
+  - name: cluster-cleaner-clusterrolebinding
+    remediationAction: inform
+    manifests:
+      - path: cluster-cleaner-clusterrolebinding.yml
+
+
+policySets:
+  - name: cluster-health-configs
+    placement:
+      placementRuleName: "all-openshift"
