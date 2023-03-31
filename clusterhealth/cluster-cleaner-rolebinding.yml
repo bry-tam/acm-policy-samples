@@ -1,0 +1,68 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: cluster-cleaner-rolebinding
+spec:
+  remediationAction: inform
+  severity: low
+  object-templates-raw: |
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: ConfigMap
+        apiVersion: v1
+        metadata:
+          name: fake-policy-holder
+          namespace: default
+        data:
+          fake: holder so policy is not generated empty
+        
+    {{- range $rb := (lookup "rbac.authorization.k8s.io/v1" "RoleBinding" "" "").items }}
+      {{- if and (not $hasAnn) (not (hasPrefix "system:" $rb.metadata.name)) }}
+        {{- $ignoreSubjects := "" }}
+        {{- $hasSubjectRemoved := false }}
+        {{- range $i, $sub := $rb.subjects }}
+          {{- $subject := false }}
+          {{- if or (eq "User" $sub.kind) (eq "Group" $sub.kind) }}
+            {{- $subject = (lookup "user.openshift.io/v1" $sub.kind "" $sub.name) }}
+          {{- else if eq "ServiceAccount" $sub.kind }}
+            {{- $subject = (lookup "v1" $sub.kind $sub.namespace $sub.name) }}
+          {{- end }}
+          {{- if and (not $subject) (not (hasPrefix "system:" $sub.name)) (not (hasPrefix "kube" $sub.name)) (not (hasPrefix "hive" $sub.name)) }}
+            {{- $hasSubjectRemoved = true }}
+            {{- if eq (len $rb.subjects) 1 }}
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: RoleBinding
+        apiVersion: rbac.authorization.k8s.io/v1
+        metadata:
+          name: {{ $rb.metadata.name }}
+          namespace: {{ $rb.metadata.namespace}}
+            {{- end }}
+          {{- else }}
+            {{- $subId := (cat "apiGroup:" $sub.apiGroup) }}
+            {{- if eq "ServiceAccount" $sub.kind }}
+              {{- $subId = (cat "namespace:" $sub.namespace) }}
+            {{- end }}
+            {{- $tSub := `
+        - kind: %s
+          name: %s
+          %s` }}
+            {{- $ignoreSubjects = (cat $ignoreSubjects (printf $tSub $sub.kind $sub.name $subId)) }}
+          {{- end }}
+        {{- end }}
+        {{- if and ($hasSubjectRemoved) ($ignoreSubjects) }}
+    - complianceType: mustonlyhave
+      objectDefinition:
+        kind: RoleBinding
+        apiVersion: rbac.authorization.k8s.io/v1
+        metadata:
+          name: {{ $rb.metadata.name }}
+          namespace: {{ $rb.metadata.namespace }}
+        roleRef:
+          apiGroup: {{ $rb.roleRef.apiGroup }}
+          kind: {{ $rb.roleRef.kind }}
+          name: {{ $rb.roleRef.name }}
+        subjects: {{ $ignoreSubjects }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
