@@ -17,7 +17,7 @@ spec:
           fake: holder so policy is not generated empty
         
     {{- range $rb := (lookup "rbac.authorization.k8s.io/v1" "RoleBinding" "" "").items }}
-      {{- if and (not $hasAnn) (not (hasPrefix "system:" $rb.metadata.name)) }}
+      {{- if not (hasPrefix "system:" $rb.metadata.name) }}
         {{- $ignoreSubjects := "" }}
         {{- $hasSubjectRemoved := false }}
         {{- range $i, $sub := $rb.subjects }}
