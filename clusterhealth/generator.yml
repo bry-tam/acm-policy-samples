@@ -16,6 +16,7 @@ policies:
     remediationAction: inform
     manifests:
       - path: cluster-cleaner-clusterrolebinding.yml
+      - path: cluster-cleaner-groups.yml
 
 
 policySets:

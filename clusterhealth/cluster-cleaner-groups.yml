@@ -1,0 +1,28 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: cluster-cleaner-groups
+spec:
+  remediationAction: inform
+  severity: low
+  object-templates-raw: |
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: ConfigMap
+        apiVersion: v1
+        metadata:
+          name: fake-policy-holder
+          namespace: default
+        data:
+          fake: holder so policy is not generated empty
+        
+    {{- range $grp := (lookup "user.openshift.io/v1" "Group" "" "").items }}
+      {{- if eq (len $grp.users) 0 }}
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: Group
+        apiVersion: user.openshift.io/v1
+        metadata:
+          name: {{ $grp.metadata.name }}
+      {{- end }}
+      
