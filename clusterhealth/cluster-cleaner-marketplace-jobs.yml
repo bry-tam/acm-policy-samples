@@ -24,7 +24,7 @@ spec:
         apiVersion: v1
         metadata:
           name: {{ $jbs.metadata.name }}
-          namespace: {{ $jbs.metadata.name }}
+          namespace: {{ $jbs.metadata.namespace }}
       {{- end }}
     {{- end }}
       
