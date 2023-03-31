@@ -19,7 +19,7 @@ spec:
     {{- range $grp := (lookup "user.openshift.io/v1" "Group" "" "").items }}
       {{- $ignoreUsers := "" }}
       {{- $hasUserRemoved := false }}
-      {{- range $i, $usr := $crb.users }}
+      {{- range $i, $usr := $grp.users }}
         {{- $user := false }}
         {{- $user = (lookup "user.openshift.io/v1" "User" "" $usr) }}
         {{- if not $user }}
