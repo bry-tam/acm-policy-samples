@@ -17,13 +17,35 @@ spec:
           fake: holder so policy is not generated empty
         
     {{- range $grp := (lookup "user.openshift.io/v1" "Group" "" "").items }}
-      {{- if eq (len $grp.users) 0 }}
+      {{- $ignoreUsers := "" }}
+      {{- $hasUserRemoved := false }}
+      {{- range $i, $usr := $crb.users }}
+        {{- $user := false }}
+        {{- $user = (lookup "user.openshift.io/v1" "User" "" $usr) }}
+        {{- if not $user }}
+          {{- $hasUserRemoved = true }}
+          {{- if or (eq (len $grp.users) 1) (eq (len $grp.users) 0) }}
     - complianceType: mustnothave
       objectDefinition:
         kind: Group
         apiVersion: user.openshift.io/v1
         metadata:
           name: {{ $grp.metadata.name }}
+          {{- end }}
+        {{- else }}
+          {{- $tUsr := `
+        - %s` }}
+          {{- $ignoreUSers = (cat $ignoreUsers (printf $tUsr $usr)) }}
+        {{- end }}
+        {{- if and ($hasUserRemoved) ($ignoreUsers) }}
+    - complianceType: mustonlyhave
+      objectDefinition:
+        kind: Group
+        apiVersion: user.openshift.io/v1
+        metadata:
+          name: {{ $grp.metadata.name }}
+        users: {{ $ignoreUsers }}
+        {{- end }}
       {{- end }}
     {{- end }}
       
