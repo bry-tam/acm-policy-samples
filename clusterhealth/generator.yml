@@ -12,7 +12,7 @@ placementBindingDefaults:
   name: "cluster-health-config-binding"
 
 policies:
-  - name: cluster-cleaner-clusterrolebinding
+  - name: cluster-cleaner-maintenance
     remediationAction: inform
     manifests:
       - path: cluster-cleaner-clusterrolebinding.yml

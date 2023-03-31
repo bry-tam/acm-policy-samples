@@ -25,4 +25,5 @@ spec:
         metadata:
           name: {{ $grp.metadata.name }}
       {{- end }}
+    {{- end }}
       
