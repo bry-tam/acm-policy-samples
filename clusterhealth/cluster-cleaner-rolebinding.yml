@@ -31,7 +31,7 @@ spec:
           {{- else if eq "ServiceAccount" $sub.kind }}
             {{- $subject = (lookup "v1" $sub.kind $subNs $sub.name) }}
           {{- end }}
-          {{- if and (not $subject) (not (hasPrefix "system:" $sub.name)) (not (hasPrefix "kube" $sub.name)) (not (hasPrefix "hive" $sub.name)) }}
+          {{- if and (not $subject) (not (hasPrefix "system:" $sub.name)) (not (hasPrefix "kube" $sub.name)) (not (hasPrefix "hive" $sub.name)) (not (hasPrefix "open-cluster-management" $sub.name)) }}
             {{- $hasSubjectRemoved = true }}
             {{- if eq (len $rb.subjects) 1 }}
     - complianceType: mustnothave
