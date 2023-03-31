@@ -18,6 +18,7 @@ policies:
       - path: cluster-cleaner-clusterrolebinding.yml
       - path: cluster-cleaner-rolebinding.yml
       - path: cluster-cleaner-groups.yml
+      - path: cluster-cleaner-marketplace-jobs.yml
 
 
 policySets:

@@ -1,0 +1,30 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: cluster-cleaner-marketplace-jobs
+spec:
+  remediationAction: inform
+  severity: low
+  object-templates-raw: |
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: ConfigMap
+        apiVersion: v1
+        metadata:
+          name: fake-policy-holder
+          namespace: default
+        data:
+          fake: holder so policy is not generated empty
+        
+    {{- range $jbs := (lookup "batch/v1" "Job" "openshift-marketplace" "").items }}
+      {{- if eq $jbs.status.succeeded 1 }}
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: ConfigMap
+        apiVersion: v1
+        metadata:
+          name: {{ $jbs.metadata.name }}
+          namespace: openshift-marketing
+      {{- end }}
+    {{- end }}
+      
