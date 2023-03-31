@@ -7,21 +7,33 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   policySets:
-    - cluster-health-configs
+    - cluster-maintenance
 placementBindingDefaults:
-  name: "cluster-health-config-binding"
+  name: "cluster-maintenance-binding"
 
 policies:
-  - name: cluster-cleaner-maintenance
+  - name: clean-clusterrolebindings
     remediationAction: inform
     manifests:
-      - path: cluster-cleaner-clusterrolebinding.yml
-      - path: cluster-cleaner-rolebinding.yml
-      - path: cluster-cleaner-groups.yml
-      - path: cluster-cleaner-marketplace-jobs.yml
+      - path: clean-clusterrolebinding.yml
+
+  - name: clean-rolebindings
+    remediationAction: inform
+    manifests:
+      - path: clean-rolebinding.yml
+
+  - name: clean-groups
+    remediationAction: inform
+    manifests:
+      - path: clean-groups.yml
+
+  - name: clean-marketplace-jobs
+    remediationAction: enforce
+    manifests:
+      - path: clean-marketplace-jobs.yml
 
 
 policySets:
-  - name: cluster-health-configs
+  - name: cluster-maintenance
     placement:
       placementRuleName: "all-openshift"
