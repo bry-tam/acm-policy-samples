@@ -21,11 +21,15 @@ spec:
         {{- $ignoreSubjects := "" }}
         {{- $hasSubjectRemoved := false }}
         {{- range $i, $sub := $rb.subjects }}
+          {{- $subNs := $rb.metadata.namespace }}
+          {{- if ($sub.namespace) }}
+            {{- $subNs = $sub.namespace }}
+          {{- end }}
           {{- $subject := false }}
           {{- if or (eq "User" $sub.kind) (eq "Group" $sub.kind) }}
             {{- $subject = (lookup "user.openshift.io/v1" $sub.kind "" $sub.name) }}
           {{- else if eq "ServiceAccount" $sub.kind }}
-            {{- $subject = (lookup "v1" $sub.kind $sub.namespace $sub.name) }}
+            {{- $subject = (lookup "v1" $sub.kind $subNs $sub.name) }}
           {{- end }}
           {{- if and (not $subject) (not (hasPrefix "system:" $sub.name)) (not (hasPrefix "kube" $sub.name)) (not (hasPrefix "hive" $sub.name)) }}
             {{- $hasSubjectRemoved = true }}
@@ -40,8 +44,10 @@ spec:
             {{- end }}
           {{- else }}
             {{- $subId := (cat "apiGroup:" $sub.apiGroup) }}
-            {{- if eq "ServiceAccount" $sub.kind }}
+            {{- if and (eq "ServiceAccount" $sub.kind) ($sub.namespace) }}
               {{- $subId = (cat "namespace:" $sub.namespace) }}
+            {{- else if and (eq "ServiceAccount" $sub.kind) (not $sub.namespace)  }}
+              {{- $subId = "" }}
             {{- end }}
             {{- $tSub := `
         - kind: %s
