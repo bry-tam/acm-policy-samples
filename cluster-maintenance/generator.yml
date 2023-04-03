@@ -1,0 +1,39 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  policySets:
+    - cluster-maintenance
+placementBindingDefaults:
+  name: "cluster-maintenance-binding"
+
+policies:
+  - name: clean-clusterrolebindings
+    remediationAction: inform
+    manifests:
+      - path: clean-clusterrolebinding.yml
+
+  - name: clean-rolebindings
+    remediationAction: inform
+    manifests:
+      - path: clean-rolebinding.yml
+
+  - name: clean-groups
+    remediationAction: inform
+    manifests:
+      - path: clean-groups.yml
+
+  - name: clean-marketplace-jobs
+    remediationAction: enforce
+    manifests:
+      - path: clean-marketplace-jobs.yml
+
+
+policySets:
+  - name: cluster-maintenance
+    placement:
+      placementRuleName: "all-openshift"

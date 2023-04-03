@@ -1,0 +1,72 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: cluster-cleaner-clusterrolebinding
+spec:
+  remediationAction: inform
+  severity: low
+  object-templates-raw: |
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: ConfigMap
+        apiVersion: v1
+        metadata:
+          name: fake-policy-holder
+          namespace: default
+        data:
+          fake: holder so policy is not generated empty
+        
+    {{- range $crb := (lookup "rbac.authorization.k8s.io/v1" "ClusterRoleBinding" "" "").items }}
+      {{- $hasAnn := false }}
+      {{- range $a, $an := $crb.metadata.annotations }}
+        {{- if eq "rbac.authorization.kubernetes.io/autoupdate" $a }}
+          {{- $hasAnn = true }}
+        {{- end }}
+      {{- end }}
+      {{- if and (not $hasAnn) (not (hasPrefix "system:" $crb.metadata.name)) }}
+        {{- $ignoreSubjects := "" }}
+        {{- $hasSubjectRemoved := false }}
+        {{- range $i, $sub := $crb.subjects }}
+          {{- $subject := false }}
+          {{- if or (eq "User" $sub.kind) (eq "Group" $sub.kind) }}
+            {{- $subject = (lookup "user.openshift.io/v1" $sub.kind "" $sub.name) }}
+          {{- else if eq "ServiceAccount" $sub.kind }}
+            {{- $subject = (lookup "v1" $sub.kind $sub.namespace $sub.name) }}
+          {{- end }}
+          {{- if and (not $subject) (not (hasPrefix "system:" $sub.name)) (not (hasPrefix "kube" $sub.name)) (not (hasPrefix "hive" $sub.name)) (not (hasPrefix "open-cluster-management" $sub.name)) }}
+            {{- $hasSubjectRemoved = true }}
+            {{- if eq (len $crb.subjects) 1 }}
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: ClusterRoleBinding
+        apiVersion: rbac.authorization.k8s.io/v1
+        metadata:
+          name: {{ $crb.metadata.name }}
+            {{- end }}
+          {{- else }}
+            {{- $subId := (cat "apiGroup:" $sub.apiGroup) }}
+            {{- if eq "ServiceAccount" $sub.kind }}
+              {{- $subId = (cat "namespace:" $sub.namespace) }}
+            {{- end }}
+            {{- $tSub := `
+        - kind: %s
+          name: %s
+          %s` }}
+            {{- $ignoreSubjects = (cat $ignoreSubjects (printf $tSub $sub.kind $sub.name $subId)) }}
+          {{- end }}
+        {{- end }}
+        {{- if and ($hasSubjectRemoved) ($ignoreSubjects) }}
+    - complianceType: mustonlyhave
+      objectDefinition:
+        kind: ClusterRoleBinding
+        apiVersion: rbac.authorization.k8s.io/v1
+        metadata:
+          name: {{ $crb.metadata.name }}
+        roleRef:
+          apiGroup: {{ $crb.roleRef.apiGroup }}
+          kind: {{ $crb.roleRef.kind }}
+          name: {{ $crb.roleRef.name }}
+        subjects: {{ $ignoreSubjects }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
