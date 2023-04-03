@@ -3,6 +3,7 @@ kind: Kustomization
 bases:
   - operators/
   - cluster-configs/
+  - cluster-maintenance/
 
 namespace: bry-tam-policies
 
