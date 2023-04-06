@@ -43,7 +43,7 @@ spec:
           {{- else }}
             {{- $tUsr := `
         - %s` }}
-            {{- $ignoreUSers = (cat $ignoreUsers (printf $tUsr $usr)) }}
+            {{- $ignoreUsers = (cat $ignoreUsers (printf $tUsr $usr)) }}
           {{- end }}
           {{- if and ($hasUserRemoved) ($ignoreUsers) }}
     - complianceType: mustonlyhave
