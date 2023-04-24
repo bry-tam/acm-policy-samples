@@ -26,7 +26,7 @@ spec:
       {{- $ip := (lookup $ipRef.apiVersion $ipRef.kind $ipRef.namespace $ipRef.name) }}
 
       {{- /* from the installplan we need to get the configmap where the install was stored. */ -}}
-      {{- $cm := ($ip.status.plan._0.resource.manifest | mustFromJson).name }}
+      {{- $cm := ((index $ip.status.plan 0).resource.manifest | mustFromJson).name }}
       {{- $jobsToKeep = (list $jobsToKeep $cm | join "|") }}
     {{- end }}
     {{- range $jbs := (lookup "batch/v1" "Job" "openshift-marketplace" "").items }}
