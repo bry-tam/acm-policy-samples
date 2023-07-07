@@ -6,6 +6,10 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
   policySets:
     - cluster-configs
 placementBindingDefaults:
@@ -18,7 +22,7 @@ policies:
       - path: clusterclaims/
         complianceType: musthave
 
-  - name: acm-ingress-infra
+  - name: ocp-ingress-infra
     remediationAction: enforce
     manifests:
       - path: ingress/
@@ -49,4 +53,4 @@ policies:
 policySets:
   - name: cluster-configs
     placement:
-      placementRuleName: "hub-only"
+      placementName: "env-bound-placement"

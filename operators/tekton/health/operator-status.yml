@@ -3,7 +3,7 @@ kind: Subscription
 metadata:
   namespace: openshift-operators
   labels:
-    operators.coreos.com/openshift-pipelines-operator-rh.openshift-operators: ''
+    olm.operator-name: openshift-pipeline
 status:
   state: AtLatestKnown
 

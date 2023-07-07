@@ -14,8 +14,7 @@ status:
           type: BundleLookupFailed
   conditions:
     - message: >-
-        bundle unpacking failed. Reason: DeadlineExceeded, and Message: Job was
-        active longer than specified deadline
+        bundle unpacking failed. Reason: DeadlineExceeded, and Message: Job was active longer than specified deadline
       reason: InstallCheckFailed
       status: 'False'
       type: Installed
