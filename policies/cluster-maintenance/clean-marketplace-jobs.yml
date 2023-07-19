@@ -1,0 +1,43 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: cluster-cleaner-marketplace-jobs
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: ConfigMap
+        apiVersion: v1
+        metadata:
+          name: fake-policy-holder
+          namespace: default
+        data:
+          fake: holder so policy is not generated empty
+    {{- /*  */ -}}
+
+    {{- /* we can only remove a job if it is not part of an existing installplan */ -}}
+    {{- /* to find the list of protected jobs we need to get all of the subscriptions */ -}}
+    {{- $jobsToKeep := "" }}
+    {{- range $sb := (lookup "operators.coreos.com/v1alpha1" "Subscription" "" "").items }}
+      {{- /* for each subscription we need to get the installplan */ -}}
+      {{- $ipRef := $sb.status.installPlanRef }}
+      {{- $ip := (lookup $ipRef.apiVersion $ipRef.kind $ipRef.namespace $ipRef.name) }}
+
+      {{- /* from the installplan we need to get the configmap where the install was stored. */ -}}
+      {{- $cm := ($ip.status.plan._0.resource.manifest | mustFromJson).name }}
+      {{- $jobsToKeep = (list $jobsToKeep $cm | join "|") }}
+    {{- end }}
+    {{- range $jbs := (lookup "batch/v1" "Job" "openshift-marketplace" "").items }}
+      {{- if and (eq $jbs.status.succeeded 1) (not (contains $jbs.metadata.name $jobsToKeep)) }}
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: ConfigMap
+        apiVersion: v1
+        metadata:
+          name: {{ $jbs.metadata.name }}
+          namespace: {{ $jbs.metadata.namespace }}
+      {{- end }}
+    {{- end }}
+      

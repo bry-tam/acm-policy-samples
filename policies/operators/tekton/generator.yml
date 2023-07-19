@@ -60,5 +60,5 @@ policies:
 policySets:
   - name: tekton-operators
     placement:
-      placementRuleName: "hub-only"
+      placementName: "dev-bound-placement"
 

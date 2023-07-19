@@ -36,20 +36,11 @@ policies:
       - path: etcd-backup/
         complianceType: musthave
 
-  - name: operator-lifecycle-status
-    remediationAction: inform
-    namespaceSelector:
-      include:  
-        - openshift-*
-        - open-cluster-management
-        - multicluster-engine
-      exclude: 
-        - kube-*
-        - default
+  - name: infra-machineset
+    remediationAction: enforce
     manifests:
-      - path: olm/health/
-        complianceType: mustnothave
-
+      - path: machinesets/
+        complianceType: musthave
 policySets:
   - name: cluster-configs
     placement:

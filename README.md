@@ -9,12 +9,12 @@ Additionally we don't want to have to manage multiple copies of the same Policy,
 
 ## General repo layout
 .
-├── base
+├── policies
 │   ├── acm-placements
 │   ├── cluster-configs
 │   └── kustomization.yaml
 ├── kustomization.yaml
-├── overlays
+├── environments
 │   └── prod
 └── README.md
 
@@ -30,7 +30,7 @@ The file structure is based on a typical kustomize enviroment.
 
  Each environment will consist of the following items:
  - ClusterSet containing all clusters in that environment
- - Directory in the overlay folder specifying the namespace name, ClusterSet name and other details specific to that environment.
+ - Directory in the `environments` folder specifying the namespace name, ClusterSet name and other details specific to that environment.
  - Branch in the source repo used to provide the source of truth for the Policies deployed.
 
 ## Example workflow 
@@ -46,6 +46,11 @@ New Policies and changes to existing Policies are expected to go through a simil
 8. Repeat steps #4 & 5 merging change to QA branch in parent repo
    forked working QA branch --> parent repo QA branch
 
+## Limitations with this approach
+Because this is meant to be a more simplistic approach there are assumptions made in how clusters are configured and managed.  This repo example will use the following rules and guidelines for managing changes.
+- All clusters in an environment have the same configuration. 
+  - The only deviation from this is "Dev" environment as you may want developer tooling available such as `OpenShift Pipelines` that should not be available in other environments.
+- All clusters are updated at the same time.  If you want to control when different clusters in the same environment are updated you should treat those clusters as separate environments.  QA1 and QA2 for example.  This will increase the overhead of managing the policy code and
 
 ## Best practices
 Every effort is made in these examples to follow best practies for Policies.  This includes using templates to ensure clsuter/object configuration is in a working order regardless of the state of the cluster.  For example, setting OpenShift Monitoring or other workloads to run on infra nodes should only happen if there are infra nodes in the cluster.  When the cluster is first created infra nodes may not have been created yet.  We don't want to have ACM policies create a situation where the cluster is not healthy because of missing infra nodes.  The policies should react and adjust the configuration once the infra nodes are created.

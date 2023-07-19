@@ -102,5 +102,5 @@ policies:
 policySets:
   - name: gitops-operator
     placement:
-      placementRuleName: "hub-only"
+      placementName: "env-bound-placement"
 

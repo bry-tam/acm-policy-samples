@@ -36,4 +36,4 @@ policies:
 policySets:
   - name: cluster-maintenance
     placement:
-      placementRuleName: "all-openshift"
+      placementName: "env-bound-placement"
