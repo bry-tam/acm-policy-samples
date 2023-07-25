@@ -1,9 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-## configure kustomize to correct the name of the PolicySet in the placement binding
 configurations:
+  ## configure kustomize to correct the name of the PolicySet in the placement binding
   - ./kustomize-configs/policyset-namereference.yml
+  ## configure kustomize to correct the name of the Policy namespace in the Policy dependency
+  - ./kustomize-configs/namespace-namereference.yml
 
 
 
