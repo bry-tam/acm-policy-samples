@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-generator
+  name: gen-policy-generator-gitops
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
