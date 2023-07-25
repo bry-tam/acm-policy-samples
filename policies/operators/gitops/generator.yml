@@ -30,7 +30,7 @@ policies:
         remediationAction: inform
         complianceType: mustnothave
 
-  - name: gitops-configure
+  - name: gitops-instances
     remediationAction: enforce
     namespaceSelector:
       matchLabels:
@@ -39,8 +39,32 @@ policies:
       - name: "gitops-operator"
         compliance: "Compliant"
     manifests:
-      - path: gitops/argocd-notifications-enable.yml
+      - path: gitops/argocd-instances/default
+      - path: gitops/argocd-instances/dev
+
+  - name: gitops-acm-policygenerator
+    remediationAction: enforce
+    namespaceSelector:
+      matchLabels:
+        app.host: argocd
+    dependencies:
+      - name: "gitops-instances"
+        compliance: "Compliant"
+    policySets:
+      - gitops-acm-hub
+    manifests:
       - path: gitops/argocd-policygenerator.yml
+  
+  - name: gitops-enable-notifications
+    remediationAction: enforce
+    namespaceSelector:
+      matchLabels:
+        app.host: argocd
+    dependencies:
+      - name: "gitops-instances"
+        compliance: "Compliant"
+    manifests:
+      - path: gitops/argocd-notifications-enable.yml
       - path: gitops/health/notification-unavailable.yml
         remediationAction: inform
         complianceType: mustnothave
@@ -51,29 +75,16 @@ policies:
         remediationAction: inform
         complianceType: mustnothave
 
-  - name: gitops-notifiations
+  - name: gitops-config-notifiations
     remediationAction: enforce
     namespaceSelector:
       matchLabels:
         app.host: argocd
     dependencies:
-      - name: "gitops-configure"
+      - name: "gitops-enable-notifications"
         compliance: "Compliant"
     manifests:
       - path: gitops/notifications
-
-  - name: gitops-instances
-    remediationAction: enforce
-    namespaceSelector:
-      matchLabels:
-        app.host: argocd
-    dependencies:
-      - name: "gitops-configure"
-        compliance: "Compliant"
-    manifests:
-      - path: gitops/argocd-instances/default
-      - path: gitops/argocd-instances/dev
-
 
   - name: argocd-operator-status
     remediationAction: inform
@@ -103,4 +114,8 @@ policySets:
   - name: gitops-operator
     placement:
       placementName: "env-bound-placement"
+  
+  - name: gitops-acm-hub
+    placement:  
+      placementName: "env-bound-hub-placement"
 

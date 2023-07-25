@@ -19,7 +19,7 @@ spec:
         env:
           ## remove the default ARGOCD instance
           - name: DISABLE_DEFAULT_ARGOCD_INSTANCE
-            value: true
+            value: "true"
           ## If we are not on the hub we should set ourselves to be a global Argo
     {{hub- if ne .ManagedClusterName "local-cluster" hub}}
           - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
