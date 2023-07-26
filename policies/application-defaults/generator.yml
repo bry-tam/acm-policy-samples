@@ -18,7 +18,9 @@ policies:
         - kube-*
         - openshift*
         - open-*
-        - default
+        - default*
+        - multicluster-engine
+        - hive
       include:
         - "*"
     remediationAction: enforce
