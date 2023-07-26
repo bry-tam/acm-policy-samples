@@ -1,31 +1,21 @@
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
 metadata:
-  name: create-infra-machineset
+  name: openshift-gitops-operator
+  namespace: openshift-operators
+  labels:
+    control-plane: controller-manager
 spec:
-  remediationAction: enforce
-  severity: low
-  object-templates-raw: |
-    apiVersion: operators.coreos.com/v1alpha1
-    kind: Subscription
-    metadata:
-      name: openshift-gitops-operator
-      namespace: openshift-operators
-      labels:
-        control-plane: controller-manager
-    spec:
-      channel: gitops-1.8
-      config:
-        env:
-          ## remove the default ARGOCD instance
-          - name: DISABLE_DEFAULT_ARGOCD_INSTANCE
-            value: "true"
-          ## If we are not on the hub we should set ourselves to be a global Argo
-    {{hub- if ne .ManagedClusterName "local-cluster" hub}}
-          - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
-            value: 'open-cluster-management-gitops'
-    {{hub- end hub}}
-      installPlanApproval: Automatic
-      name: openshift-gitops-operator
-      source: redhat-operators
-      sourceNamespace: openshift-marketplace
+  channel: gitops-1.8
+  config:
+    env:
+      ## remove the default ARGOCD instance
+      - name: DISABLE_DEFAULT_ARGOCD_INSTANCE
+        value: "true"
+      - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
+        value: open-cluster-management-gitops
+  installPlanApproval: Automatic
+  name: openshift-gitops-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
