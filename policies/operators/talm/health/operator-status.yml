@@ -4,6 +4,7 @@ metadata:
   namespace: openshift-operators
   labels:
     control-plane: controller-manager
+    operators.coreos.com/topology-aware-lifecycle-manager.openshift-operators: ''
 status:
   state: AtLatestKnown
 
