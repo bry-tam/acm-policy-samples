@@ -1,0 +1,9 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  labels:
+    app.kubernetes.io/name: openshift-gitops-notifications-controller
+status:
+  conditions:
+    - type: Available
+      status: 'False'

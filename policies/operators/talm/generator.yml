@@ -1,0 +1,60 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-talm
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - talm-operator
+placementBindingDefaults:
+  name: "talm-binding"
+
+policies:
+  - name: talm-operator
+    remediationAction: enforce
+    manifests:
+      - path: talm/subscription.yml
+      - path: talm/health/operator-status.yml
+        remediationAction: inform
+      - path: talm/health/operator-unavailable.yml
+        remediationAction: inform
+        complianceType: mustnothave
+      - path: talm/health/operator-pod-status-phases.yml
+        remediationAction: inform
+        complianceType: mustnothave
+      - path: talm/health/operator-pod-status-conditions.yml
+        remediationAction: inform
+        complianceType: mustnothave
+
+  # - name: talm-operator-status
+  #   remediationAction: inform
+  #   namespaceSelector:
+  #     matchLabels:
+  #       app.host: argocd
+  #   dependencies:
+  #     - name: "talm-operator"
+  #       compliance: "Compliant"
+  #   manifests:
+  #     - path: gitops/health/argocd-unavailable.yml
+  #       complianceType: mustnothave
+  #     - path: talm/health/argocd-server-pod-status-phases.yml
+  #       complianceType: mustnothave
+  #     - path: gitops/health/argocd-server-pod-status-conditions.yml
+  #       complianceType: mustnothave
+  #     - path: gitops/health/argocd-repo-pod-status-phases.yml
+  #       complianceType: mustnothave
+  #     - path: gitops/health/argocd-repo-pod-status-conditions.yml
+  #       complianceType: mustnothave
+  #     - path: gitops/health/argocd-appcontroller-pod-status-phases.yml
+  #       complianceType: mustnothave
+  #     - path: gitops/health/argocd-appcontroller-pod-status-conditions.yml
+  #       complianceType: mustnothave
+
+policySets:
+  - name: talm-operator
+    placement:
+      placementName: "env-bound-hub-placement"
+
