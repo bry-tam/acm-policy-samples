@@ -9,7 +9,7 @@ metadata:
 spec:
   # channel: '{{hub .ManagedClusterLabels.openshiftVersion-major-minor hub}}'
   ## would prefer the above, however that is not a happy camper with the - in the label name
-  channel: stable
+  channel: '{{hub (index .ManagedClusterLabels "openshiftVersion-major-minor") hub}}'
   installPlanApproval: Automatic
   name: topology-aware-lifecycle-manager
   source: redhat-operators
