@@ -3,7 +3,7 @@ apiVersion: apps/v1
 metadata:
   namespace: openshift-operators
   labels:
-    operators.coreos.com/openshift-gitops-operator.openshift-operators: ''
+    operators.coreos.com/topology-aware-lifecycle-manager.openshift-operators: ''
 status:
   conditions:
     - type: Available
