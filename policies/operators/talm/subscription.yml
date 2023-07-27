@@ -7,7 +7,7 @@ metadata:
   labels:
     control-plane: talm-manager
 spec:
-  channel: '{{hub .ManagedClusterLables.openshiftVersion-major-minor hub}}'
+  channel: '{{hub .ManagedClusterLabels.openshiftVersion-major-minor hub}}'
   installPlanApproval: Automatic
   name: topology-aware-lifecycle-manager
   source: redhat-operators
