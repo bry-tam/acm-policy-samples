@@ -7,4 +7,8 @@ spec:
   upstream: https://api.openshift.com/api/upgrades_info/v1/graph
   desiredUpdate:
     force: false
-    version: 4.10.59
+    version: 4.10.60
+status:
+  history:
+    - version: 4.10.60
+      state: "Completed"
