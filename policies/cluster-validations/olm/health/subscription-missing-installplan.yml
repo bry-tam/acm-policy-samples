@@ -1,7 +1,18 @@
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-status:
-  conditions:
-    - reason: ReferencedInstallPlanNotFound
-      status: "True"
-      type: InstallPlanMissing
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: subscription-missing-installplan
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates:
+    - complianceType: mustnothave
+      objectDefinition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: Subscription
+        status:
+          conditions:
+            - reason: ReferencedInstallPlanNotFound
+              status: "True"
+              type: InstallPlanMissing
