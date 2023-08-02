@@ -5,3 +5,5 @@ resources:
 - managedclustersetbinding.yml
 - env-bound-placement.yml
 - env-bound-hub-placement.yml
+- env-bound-nohub-placement.yml
+- dev-bound-placement.yml
