@@ -16,7 +16,7 @@ placementBindingDefaults:
   name: "cluster-version-binding"
 
 policies:
-  - name: cluster-version-upgrade
+  - name: ocp-upgrade
     remediationAction: inform
     manifests:
       - path: clusterversion.yml
