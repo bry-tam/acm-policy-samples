@@ -6,4 +6,4 @@ metadata:
 status:
   conditions:
     - type: Available
-      status: 'False'
+      status: 'True'

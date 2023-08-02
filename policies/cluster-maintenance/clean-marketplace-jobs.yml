@@ -3,7 +3,7 @@ kind: ConfigurationPolicy
 metadata:
   name: cluster-cleaner-marketplace-jobs
 spec:
-  remediationAction: inform
+  remediationAction: enforce
   severity: low
   object-templates-raw: |
     - complianceType: mustnothave

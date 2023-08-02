@@ -20,15 +20,6 @@ policies:
       - path: gitops/subscription.yml
       - path: gitops/health/operator-status.yml
         remediationAction: inform
-      - path: gitops/health/operator-unavailable.yml
-        remediationAction: inform
-        complianceType: mustnothave
-      - path: gitops/health/operator-pod-status-phases.yml
-        remediationAction: inform
-        complianceType: mustnothave
-      - path: gitops/health/operator-pod-status-conditions.yml
-        remediationAction: inform
-        complianceType: mustnothave
 
   - name: gitops-instances
     remediationAction: enforce
@@ -65,15 +56,8 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: gitops/argocd-notifications-enable.yml
-      - path: gitops/health/notification-unavailable.yml
+      - path: gitops/health/notification-available.yml
         remediationAction: inform
-        complianceType: mustnothave
-      - path: gitops/health/notification-pod-status-phases.yml
-        remediationAction: inform
-        complianceType: mustnothave
-      - path: gitops/health/notification-pod-status-conditions.yml
-        remediationAction: inform
-        complianceType: mustnothave
 
   - name: gitops-config-notifiations
     remediationAction: enforce
@@ -86,29 +70,15 @@ policies:
     manifests:
       - path: gitops/notifications
 
-  - name: argocd-operator-status
+  - name: gitops-instance-status
     remediationAction: inform
-    namespaceSelector:
-      matchLabels:
-        app.host: argocd
     dependencies:
       - name: "gitops-instances"
         compliance: "Compliant"
     manifests:
-      - path: gitops/health/argocd-unavailable.yml
-        complianceType: mustnothave
-      - path: gitops/health/argocd-server-pod-status-phases.yml
-        complianceType: mustnothave
-      - path: gitops/health/argocd-server-pod-status-conditions.yml
-        complianceType: mustnothave
-      - path: gitops/health/argocd-repo-pod-status-phases.yml
-        complianceType: mustnothave
-      - path: gitops/health/argocd-repo-pod-status-conditions.yml
-        complianceType: mustnothave
-      - path: gitops/health/argocd-appcontroller-pod-status-phases.yml
-        complianceType: mustnothave
-      - path: gitops/health/argocd-appcontroller-pod-status-conditions.yml
-        complianceType: mustnothave
+      - path: gitops/health/argocd-status.yml
+        remediationAction: inform
+
 
 policySets:
   - name: gitops-operator

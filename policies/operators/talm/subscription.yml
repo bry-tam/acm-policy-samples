@@ -5,8 +5,7 @@ metadata:
   name: openshift-topology-aware-lifecycle-manager-subscription
   namespace: openshift-operators
   labels:
-    control-plane: controller-manager
-    operators.coreos.com/topology-aware-lifecycle-manager.openshift-operators: ''
+    acm-policy: talm-operator
 spec:
   # channel: '{{hub .ManagedClusterLabels.openshiftVersion-major-minor hub}}'
   ## would prefer the above, however that is not a happy camper with the - in the label name

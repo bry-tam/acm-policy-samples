@@ -1,0 +1,84 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: argocd-instance-status
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates-raw: |
+    {{- /* ## Get all the ArgoCD instances we are checking health for  */ -}}
+    {{- range $argo := (lookup "argoproj.io/v1alpha1" "ArgoCD" "" "").items }}
+      {{- /* ## list all of the lookups for Argo deployments  */ -}}
+      {{- $selectors := list "app.kubernetes.io/name=argocd-applicationset-controller"
+                            (printf "app.kubernetes.io/name=%s-dex-server" $argo.metadata.name)
+                            (printf "app.kubernetes.io/name=%s-notifications-controller" $argo.metadata.name)
+                            (printf "app.kubernetes.io/name=%s-redis" $argo.metadata.name)
+                            (printf "app.kubernetes.io/name=%s-repo-server" $argo.metadata.name)
+                            (printf "app.kubernetes.io/name=%s-server" $argo.metadata.name)
+      }}
+      
+      {{- /* ## ensure ArgoCD is reporting healthy */ -}}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: argoproj.io/v1alpha1
+        kind: ArgoCD
+        metadata:
+          namespace: {{ $argo.metadata.namespace }}
+        status:
+          server: Running
+          notificationsController: Running
+          applicationController: Running
+          applicationSetController: Running
+          ssoConfig: Success
+          repo: Running
+          dex: Running
+          phase: Available
+          redis: Running
+
+      {{- /* ## ensure all deployments are healthy in each argo instance */ -}}
+      {{- range $sel := $selectors }}
+        {{- $dep := (lookup "apps/v1" "Deployment" $argo.metadata.namespace "" $sel).items }}
+    - complianceType: musthave
+      objectDefinition:
+        kind: Deployment
+        apiVersion: apps/v1
+        metadata:
+          namespace: {{ $argo.metadata.namespace }}
+          labels:
+            {{ $sel | replace "=" ": " }}
+        status:
+        {{- if gt (len $dep) 0 }}
+          {{- $dp := (index $dep 0) }}
+          replicas: {{ $dp.spec.replicas }}
+          updatedReplicas: {{ $dp.spec.replicas }}
+          readyReplicas: {{ $dp.spec.replicas }}
+          availableReplicas: {{ $dp.spec.replicas }}
+        {{- end }}
+          conditions:
+            - type: Available
+              status: 'True'
+      {{- end }}
+
+      {{- /* ## ensure the argo statefulset is healthy */ -}}
+      {{- $ssSel := (printf "app.kubernetes.io/name=%s-application-controller" $argo.metadata.name) }}
+      {{- $sset := (lookup "apps/v1" "StatefulSet" $argo.metadata.namespace "" $ssSel).items}}
+    - complianceType: musthave
+      objectDefinition:
+        kind: StatefulSet
+        apiVersion: apps/v1
+        metadata:
+          namespace: {{ $argo.metadata.namespace }}
+          labels:
+            {{ $ssSel | replace "=" ": " }}
+        status:
+      {{- if gt (len $sset) 0 }}
+        {{- $ss := (index $sset 0) }}
+          availableReplicas: {{ $ss.spec.replicas }}
+          currentReplicas: {{ $ss.spec.replicas }}
+          updatedReplicas: {{ $ss.spec.replicas }}
+          replicas: {{ $ss.spec.replicas }}
+          collisionCount: 0
+          readyReplicas: {{ $ss.spec.replicas }}
+      {{- end }}
+    {{- end }}

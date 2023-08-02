@@ -4,6 +4,7 @@ metadata:
   name: openshift-gitops
   namespace: argocd-dev
 spec:
+  # Start default openshift-gitops ArgoCD
   server:
     autoscale:
       enabled: false
@@ -21,24 +22,29 @@ spec:
         memory: 128Mi
     route:
       enabled: true
-      tls:
-        insecureEdgeTerminationPolicy: Redirect
-        termination: reencrypt
     service:
       type: ''
   grafana:
     enabled: false
     ingress:
       enabled: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
     route:
       enabled: false
-  helpChatText: Red Hat Chat Broken!!!
+  monitoring:
+    enabled: false
   prometheus:
     enabled: false
     ingress:
       enabled: false
     route:
-      enabled: true
+      enabled: false
   initialSSHKnownHosts: {}
   sso:
     dex:
@@ -51,16 +57,19 @@ spec:
           cpu: 250m
           memory: 128Mi
     provider: dex
-  rbac:
-    defaultPolicy: readonly
-    policy: |
-      g, "bry-tam", role:admin
-      p, role:org-team, projects, get, *, allow
-      p, role:org-team, projects, create, *, allow
-      p, role:org-team, projects, update, *, allow
-      p, role:org-team, projects, delete, *, allow
-      g, argoteam, role:org-team
-    scopes: '[groups]'
+  applicationSet:
+    resources:
+      limits:
+        cpu: '2'
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+    webhookServer:
+      ingress:
+        enabled: false
+      route:
+        enabled: false
   repo:
     resources:
       limits:
@@ -69,7 +78,14 @@ spec:
       requests:
         cpu: 250m
         memory: 256Mi
-  helpChatURL: 'https://coreos.slack.com/archives/CMP95ST2N'
+  resourceExclusions: |
+    - apiGroups:
+      - tekton.dev
+      clusters:
+      - '*'
+      kinds:
+      - TaskRun
+      - PipelineRun
   ha:
     enabled: false
     resources:
@@ -99,3 +115,17 @@ spec:
         cpu: 250m
         memory: 1Gi
     sharding: {}
+  # end default argocd
+  rbac:
+    defaultPolicy: readonly
+    policy: |
+      g, system:cluster-admins, role:admin
+      g, cluster-admins, role:admin
+      g, "bry-tam", role:admin
+      p, role:org-team, projects, get, *, allow
+      p, role:org-team, projects, create, *, allow
+      p, role:org-team, projects, update, *, allow
+      p, role:org-team, projects, delete, *, allow
+      g, argoteam, role:org-team
+    scopes: '[groups]'
+  helpChatURL: 'https://cloud-native.slack.com/archives/C01TSERG0KZ'
