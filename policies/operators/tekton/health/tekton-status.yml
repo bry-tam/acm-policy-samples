@@ -24,7 +24,7 @@ spec:
                           "tkn-cli-serve"
     }}
 
-    {{- /* Create a CompilianceType objectDefinition for each deployment */ -}}
+    ## Create a CompilianceType objectDefinition for each deployment
     {{- range $depName := $depList }}
       {{- $dep := (lookup "apps/v1" "Deployment" "openshift-pipelines" $depName) }}
     - complianceType: musthave
@@ -33,12 +33,12 @@ spec:
         apiVersion: apps/v1
         metadata:
           namespace: openshift-pipelines
-      {{- /* If the deployment does not exist we need to specify the name */ -}}
+      ## If the deployment does not exist we need to specify the name
       {{- if not $dep }}
           name: {{ $depName }}
       {{- else }}
-      {{- /* when the deployment exists the compliance will be determined by
-            the labels, spec.selector.matchLabels and the expected healthy status */ -}}
+      ## when the deployment exists the compliance will be determined by
+      ## the labels, spec.selector.matchLabels and the expected healthy status
           labels:
         {{- range $k, $v := $dep.metadata.labels }}
             {{ $k }}: {{ $v }}

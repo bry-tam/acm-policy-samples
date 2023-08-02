@@ -7,10 +7,10 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* ## Get the subscription we are checking health for */ -}}
+    ## Get the subscription we are checking health for
     {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-operators" "openshift-pipeline-operator") }}
 
-    {{- /* ## Ensure the Subscription is at latest known release status */ -}}
+    ## Ensure the Subscription is at latest known release status
     - complianceType: musthave
       objectDefinition:
         apiVersion: operators.coreos.com/v1alpha1
@@ -22,7 +22,7 @@ spec:
         status:
           state: AtLatestKnown
 
-    {{- /* ## Ensure the operator deployment exists and has reached full pod health */ -}}
+    ## Ensure the operator deployment exists and has reached full pod health
     {{- $opDepList := list "openshift-pipelines-operator"
                             "tekton-operator-webhook" }}
 
