@@ -6,6 +6,14 @@ metadata:
 spec:
   remediationAction: inform
   severity: high
+  namespaceSelector:
+    exclude:
+      - kube-*
+      - default
+    include:
+      - openshift-*
+      - open-cluster-management
+      - multicluster-engine
   object-templates:
     - complianceType: mustnothave
       objectDefinition:
