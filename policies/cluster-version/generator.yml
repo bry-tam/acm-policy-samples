@@ -19,7 +19,7 @@ policies:
   - name: cluster-version-upgrade
     remediationAction: inform
     manifests:
-      - path: cluster-version.yml
+      - path: clusterversion.yml
 
 policySets:
   - name: cluster-version
