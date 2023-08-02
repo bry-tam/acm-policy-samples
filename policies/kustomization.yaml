@@ -18,3 +18,5 @@ resources:
   - ./operators/
   - ./application-defaults/
 
+commonAnnotations:
+  argocd.argoproj.io/compare-options: IgnoreExtraneous
