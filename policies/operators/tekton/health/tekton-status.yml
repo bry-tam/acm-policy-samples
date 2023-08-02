@@ -47,15 +47,15 @@ spec:
           selector:
             matchLabels:
             {{- range $k, $v := $dep.spec.selector.matchLabels }}
-                  {{ $k }}: {{ $v }}
+              {{ $k }}: {{ $v }}
             {{- end }}
-            status:
-              replicas: {{ $dep.spec.replicas }}
-              updatedReplicas: {{ $dep.spec.replicas }}
-              readyReplicas: {{ $dep.spec.replicas }}
-              availableReplicas: {{ $dep.spec.replicas }}
-              conditions:
-                - type: Available
-                  status: 'True'
+        status:
+          replicas: {{ $dep.spec.replicas }}
+          updatedReplicas: {{ $dep.spec.replicas }}
+          readyReplicas: {{ $dep.spec.replicas }}
+          availableReplicas: {{ $dep.spec.replicas }}
+          conditions:
+            - type: Available
+              status: 'True'
         {{- end }}
     {{- end }}
