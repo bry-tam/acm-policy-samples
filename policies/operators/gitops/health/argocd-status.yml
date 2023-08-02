@@ -7,9 +7,9 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* ## Get all the ArgoCD instances we are checking health for  */ -}}
+    ## Get all the ArgoCD instances we are checking health for  
     {{- range $argo := (lookup "argoproj.io/v1alpha1" "ArgoCD" "" "").items }}
-      {{- /* ## list all of the lookups for Argo deployments  */ -}}
+      ## list all of the lookups for Argo deployments  
       {{- $selectors := list "app.kubernetes.io/name=argocd-applicationset-controller"
                             (printf "app.kubernetes.io/name=%s-dex-server" $argo.metadata.name)
                             (printf "app.kubernetes.io/name=%s-notifications-controller" $argo.metadata.name)
@@ -18,7 +18,7 @@ spec:
                             (printf "app.kubernetes.io/name=%s-server" $argo.metadata.name)
       }}
       
-      {{- /* ## ensure ArgoCD is reporting healthy */ -}}
+      ## ensure ArgoCD is reporting healthy 
     - complianceType: musthave
       objectDefinition:
         apiVersion: argoproj.io/v1alpha1
@@ -36,7 +36,7 @@ spec:
           phase: Available
           redis: Running
 
-      {{- /* ## ensure all deployments are healthy in each argo instance */ -}}
+      ## ensure all deployments are healthy in each argo instance 
       {{- range $sel := $selectors }}
         {{- $dep := (lookup "apps/v1" "Deployment" $argo.metadata.namespace "" $sel).items }}
     - complianceType: musthave
@@ -60,7 +60,7 @@ spec:
         {{- end }}
       {{- end }}
 
-      {{- /* ## ensure the argo statefulset is healthy */ -}}
+      ## ensure the argo statefulset is healthy 
       {{- $ssSel := (printf "app.kubernetes.io/name=%s-application-controller" $argo.metadata.name) }}
       {{- $sset := (lookup "apps/v1" "StatefulSet" $argo.metadata.namespace "" $ssSel).items}}
     - complianceType: musthave
