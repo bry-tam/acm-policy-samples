@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: inform
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - cluster-version
+placementBindingDefaults:
+  name: "cluster-version-binding"
+
+policies:
+  - name: cluster-version-upgrade
+    remediationAction: inform
+    manifests:
+      - path: cluster-version.yml
+
+policySets:
+  - name: cluster-version
+    placement:
+      placementName: "env-bound-nohub-placement"

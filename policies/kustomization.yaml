@@ -17,6 +17,7 @@ resources:
   - ./cluster-maintenance/
   - ./operators/
   - ./application-defaults/
+  - ./cluster-version/
 
 commonAnnotations:
   argocd.argoproj.io/compare-options: IgnoreExtraneous
