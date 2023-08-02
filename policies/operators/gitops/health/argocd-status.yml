@@ -54,10 +54,10 @@ spec:
           updatedReplicas: {{ $dp.spec.replicas }}
           readyReplicas: {{ $dp.spec.replicas }}
           availableReplicas: {{ $dp.spec.replicas }}
-        {{- end }}
           conditions:
             - type: Available
               status: 'True'
+        {{- end }}
       {{- end }}
 
       {{- /* ## ensure the argo statefulset is healthy */ -}}
