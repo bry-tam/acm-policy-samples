@@ -16,6 +16,11 @@ placementBindingDefaults:
   name: "cluster-version-binding"
 
 policies:
+  - name: ack-412
+    remediationAction: inform
+    manifests:
+      - path: 412-admin-acks-configmap.yml
+
   - name: ocp-upgrade
     remediationAction: inform
     manifests:
