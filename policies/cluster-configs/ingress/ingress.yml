@@ -15,7 +15,8 @@ spec:
           namespace: openshift-ingress-operator
         spec:
           httpEmptyRequestsPolicy: Respond
-    {{- if ne (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) 0 }}
+    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+    {{- if ne $infraCount 0 }}
           nodePlacement:
             nodeSelector: 
               matchLabels:
@@ -24,4 +25,4 @@ spec:
             - operator: Exists
               key: node-role.kubernetes.io/infra
     {{- end }}
-          replicas: '{{ (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items | default 2) | toInt }}'
+          replicas: {{ $infraCount | default 2) | toInt }}

@@ -8,9 +8,12 @@ spec:
   object-templates-raw: |
     {{- /* Specify the parameters needed to create the MachineSet  */ -}}
     {{- $machineset_role := "infra" }}
-    {{- $region := "ap-southeast-1" }}
-    {{- $zones := list "ap-southeast-1a" "ap-southeast-1b" "ap-southeast-1c" }}
-    {{- $infrastructure_id := (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.infrastructureName }}
+    {{- $infrastructure := (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status }}
+    {{- $region := $infrastructure.platformStatus.aws.region }}
+    {{- $zones := list (printf "%sa" $region)
+                        (printf "%sb" $region)
+                        (printf "%sc" $region) }}
+    {{- $infrastructure_id := $infrastructure.infrastructureName }}
     {{- $worker_ms := (index (lookup "machine.openshift.io/v1beta1" "MachineSet" "openshift-machine-api" "").items 0) }}
 
     {{- /* Generate the MachineSet for each zone as specified  */ -}}
