@@ -1,0 +1,41 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - cluster-validations
+placementBindingDefaults:
+  name: "cluster-validations-binding"
+
+policies:
+  - name: operator-lifecycle-status
+    remediationAction: inform
+    namespaceSelector:
+      include:  
+        - openshift-*
+        - open-cluster-management
+        - multicluster-engine
+      exclude: 
+        - kube-*
+        - default
+    manifests:
+      - path: olm/health/
+        complianceType: mustnothave
+
+  - name: validate-cluster-security
+    remediationAction: enforce
+    manifests:
+      - path: security-configuration/
+        complianceType: musthave
+policySets:
+  - name: cluster-validations
+    placement:
+      placementName: "env-bound-placement"

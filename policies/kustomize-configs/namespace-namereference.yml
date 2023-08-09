@@ -1,0 +1,5 @@
+nameReference:
+- kind: Namespace
+  fieldSpecs:
+  - kind: Policy
+    path: spec/dependencies/namespace

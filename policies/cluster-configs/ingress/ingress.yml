@@ -1,0 +1,28 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: ingressoperator-default
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: operator.openshift.io/v1
+        kind: IngressController
+        metadata:
+          name: default
+          namespace: openshift-ingress-operator
+        spec:
+          httpEmptyRequestsPolicy: Respond
+    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+    {{- if ne $infraCount 0 }}
+          nodePlacement:
+            nodeSelector: 
+              matchLabels:
+                node-role.kubernetes.io/infra: ""
+            tolerations:
+            - operator: Exists
+              key: node-role.kubernetes.io/infra
+    {{- end }}
+          replicas: {{ $infraCount | default 2) | toInt }}

@@ -1,0 +1,91 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-gitops
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - gitops-operator
+placementBindingDefaults:
+  name: "gitops-binding"
+
+policies:
+  - name: gitops-operator
+    remediationAction: enforce
+    manifests:
+      - path: gitops/argocd-ns.yml
+      - path: gitops/subscription.yml
+      - path: gitops/health/operator-status.yml
+        remediationAction: inform
+
+  - name: gitops-instances
+    remediationAction: enforce
+    namespaceSelector:
+      matchLabels:
+        app.host: argocd
+    dependencies:
+      - name: "gitops-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: gitops/argocd-instances/default
+      - path: gitops/argocd-instances/dev
+
+  - name: gitops-acm-policygenerator
+    remediationAction: enforce
+    namespaceSelector:
+      matchLabels:
+        app.host: argocd
+    dependencies:
+      - name: "gitops-instances"
+        compliance: "Compliant"
+    policySets:
+      - gitops-acm-hub
+    manifests:
+      - path: gitops/argocd-policygenerator.yml
+  
+  - name: gitops-enable-notifications
+    remediationAction: enforce
+    namespaceSelector:
+      matchLabels:
+        app.host: argocd
+    dependencies:
+      - name: "gitops-instances"
+        compliance: "Compliant"
+    manifests:
+      - path: gitops/argocd-notifications-enable.yml
+      - path: gitops/health/notification-available.yml
+        remediationAction: inform
+
+  - name: gitops-config-notifiations
+    remediationAction: enforce
+    namespaceSelector:
+      matchLabels:
+        app.host: argocd
+    dependencies:
+      - name: "gitops-enable-notifications"
+        compliance: "Compliant"
+    manifests:
+      - path: gitops/notifications
+
+  - name: gitops-instance-status
+    remediationAction: inform
+    dependencies:
+      - name: "gitops-instances"
+        compliance: "Compliant"
+    manifests:
+      - path: gitops/health/argocd-status.yml
+        remediationAction: inform
+
+
+policySets:
+  - name: gitops-operator
+    placement:
+      placementName: "env-bound-placement"
+  
+  - name: gitops-acm-hub
+    placement:  
+      placementName: "env-bound-hub-placement"
+

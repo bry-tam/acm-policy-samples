@@ -1,0 +1,11 @@
+## The intent of this file is to block nameSuffix from applying to all objects generated.
+## We only want to apply the suffix to the PolicySet
+apiVersion: builtin
+kind: PrefixSuffixTransformer
+metadata:
+  name: policyset-suffixer
+suffix: -prod
+fieldSpecs:
+- kind: PolicySet
+  path: metadata/name
+

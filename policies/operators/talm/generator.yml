@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-talm
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - talm-operator
+placementBindingDefaults:
+  name: "talm-binding"
+
+policies:
+  - name: talm-operator
+    remediationAction: enforce
+    manifests:
+      - path: talm/subscription.yml
+      - path: talm/health/operator-status.yml
+        remediationAction: inform
+
+policySets:
+  - name: talm-operator
+    placement:
+      placementName: "env-bound-hub-placement"
+

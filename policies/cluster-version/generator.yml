@@ -1,0 +1,32 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: inform
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - cluster-version
+placementBindingDefaults:
+  name: "cluster-version-binding"
+
+policies:
+  - name: ack-412
+    remediationAction: inform
+    manifests:
+      - path: 412-admin-acks-configmap.yml
+
+  - name: ocp-upgrade
+    remediationAction: inform
+    manifests:
+      - path: clusterversion.yml
+
+policySets:
+  - name: cluster-version
+    placement:
+      placementName: "env-bound-nohub-placement"

@@ -1,0 +1,47 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - cluster-configs
+placementBindingDefaults:
+  name: "cluster-config-binding"
+
+policies:
+  - name: acm-clusterclaims
+    remediationAction: enforce
+    manifests:
+      - path: clusterclaims/
+        complianceType: musthave
+
+  - name: ocp-ingress-infra
+    remediationAction: enforce
+    manifests:
+      - path: ingress/
+        complianceType: musthave
+
+  - name: etcd-backup
+    remediationAction: enforce
+    configurationPolicyAnnotations:  
+      policy.open-cluster-management.io/disable-templates: "true"
+    manifests:
+      - path: etcd-backup/
+        complianceType: musthave
+
+  - name: infra-machineset
+    remediationAction: enforce
+    manifests:
+      - path: machinesets/
+        complianceType: musthave
+policySets:
+  - name: cluster-configs
+    placement:
+      placementName: "env-bound-placement"

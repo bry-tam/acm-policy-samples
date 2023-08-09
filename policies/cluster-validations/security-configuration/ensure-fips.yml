@@ -1,0 +1,27 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: check-fips-enabled
+spec:
+  remediationAction: inform
+  severity: low
+  object-templates-raw: |
+    {{- $machineTypes := list "master" "worker" }}
+    {{- range $mType := $machineTypes }}
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: MachineConfig
+        apiVersion: machineconfiguration.openshift.io/v1
+        metadata:
+          name: 99-{{ $mType }}-fips
+        spec:
+          fips: true
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: MachineConfig
+        apiVersion: machineconfiguration.openshift.io/v1
+        metadata:
+          name: 99-{{ $mType }}-fips
+        spec:
+          fips: true
+    {{- end }}

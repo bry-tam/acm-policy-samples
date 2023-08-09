@@ -1,0 +1,30 @@
+## The intent of this file is to label the local-cluster with the name of the managedcluserset 
+## we are currently deploying as part of this overlay
+apiVersion: builtin
+kind: ReplacementTransformer
+metadata:
+  name: set-clusterset-label
+replacements:
+# one of these per label
+- source: 
+    kind: ManagedClusterSet # doesn't really matter what we start with
+    fieldPath: metadata.name
+  targets:
+  - select:
+      kind: ManagedCluster
+      name: local-cluster
+    fieldPaths: 
+    # this may be the wrong syntax for targeting a label like this
+    - metadata.labels.[cluster.open-cluster-management.io/clusterset]
+    
+  - select:
+      kind: Placement
+    fieldPaths: 
+    - spec.clusterSets.0
+
+  - select:
+      kind: ManagedClusterSetBinding
+    fieldPaths: 
+    - spec.clusterSet
+    - metadata.name
+    

@@ -1,9 +1,0 @@
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  namespace: openshift-operators
-  labels:
-    operators.coreos.com/openshift-pipelines-operator-rh.openshift-operators: ''
-status:
-  state: AtLatestKnown
-
