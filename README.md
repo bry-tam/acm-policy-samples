@@ -10,6 +10,7 @@ The customer requirements are in contradiction to Policies that should be applie
 Additionally we don't want to have to manage multiple copies of the same Policy, such as using directories would cause.  We want to have a little friction between the Policy definition itself and the business rules used to determine when/where a Policy is applied.
 
 ## General repo layout
+```
 .
 ├── environments
 │   └── prod
@@ -27,7 +28,7 @@ Additionally we don't want to have to manage multiple copies of the same Policy,
 │   ├── kustomize-configs
 │   └── operators
 └── README.md (this file)
-
+```
 
 The file structure is based on a typical kustomize enviroment.  There are kustomize configurations (will be discussed later) which help tie everything together.  The assumption is all deployments are done through one of the environments subdirectories.
 
