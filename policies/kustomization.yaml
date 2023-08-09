@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+configurations:
+  ## configure kustomize to correct the name of the PolicySet in the placement binding
+  - ./kustomize-configs/policyset-namereference.yml
+  ## configure kustomize to correct the name of the Policy namespace in the Policy dependency
+  - ./kustomize-configs/namespace-namereference.yml
+
+
+
+## include existing placements. 
+resources:
+  - ./acm-placements/
+  - ./cluster-configs/
+  - ./cluster-validations/
+  - ./cluster-maintenance/
+  - ./operators/
+  - ./application-defaults/
+  - ./cluster-version/
+
+commonAnnotations:
+  argocd.argoproj.io/compare-options: IgnoreExtraneous
