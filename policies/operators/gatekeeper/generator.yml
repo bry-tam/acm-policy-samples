@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-gatekeeper
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - gatekeeper-operator
+placementBindingDefaults:
+  name: "gatekeeper-binding"
+
+policies:
+  - name: gatekeeper-operator
+    remediationAction: enforce
+    manifests:
+      - path: gatekeeper/subscription.yml
+      - path: gatekeeper/health/operator-status.yml
+        remediationAction: inform
+
+policySets:
+  - name: gatekeeper-operator
+    placement:
+      placementName: "env-bound-placement"
+
