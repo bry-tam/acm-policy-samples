@@ -16,6 +16,7 @@ policies:
   - name: gatekeeper-operator
     remediationAction: enforce
     manifests:
+<<<<<<< HEAD
       - path: subscription.yml
       - path: health/operator-status.yml
         remediationAction: inform
@@ -26,6 +27,12 @@ policies:
       - path: gatekeeper.yml
       - path: health/gatekeeper-status.yml
         remediationAction: inform
+=======
+      - path: gatekeeper/subscription.yml
+      - path: gatekeeper/health/operator-status.yml
+        remediationAction: inform
+
+>>>>>>> d926bdb (create dev overlay.  Add gatekeeper and example for validation verify-deprecatedapi (#18))
 policySets:
   - name: gatekeeper-operator
     placement:
