@@ -1,0 +1,59 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gk-policy-generator-depricatedapis
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - gp-valid-apidepreication
+placementBindingDefaults:
+  name: "gp-valid-apidepreication-binding"
+
+policies:
+  - name: gp-valid-apidepreication
+    remediationAction: enforce
+    dependencies:
+      - name: "gatekeeper-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: verify-deprecatedapi/constrainttemplate.yml
+      - path: verify-deprecatedapi/verifydeprecatedapi-1.16.yml
+        extraDependencies: 
+          - name: gp-valid-apidepreication
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: verify-deprecatedapi/verifydeprecatedapi-1.22.yml
+        extraDependencies: 
+          - name: gp-valid-apidepreication
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: verify-deprecatedapi/verifydeprecatedapi-1.25.yml
+        extraDependencies: 
+          - name: gp-valid-apidepreication
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: verify-deprecatedapi/verifydeprecatedapi-1.26.yml
+        extraDependencies: 
+          - name: gp-valid-apidepreication
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: verify-deprecatedapi/verifydeprecatedapi-1.27.yml
+        extraDependencies: 
+          - name: gp-valid-apidepreication
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: verify-deprecatedapi/verifydeprecatedapi-1.29.yml
+        extraDependencies: 
+          - name: gp-valid-apidepreication
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+policySets:
+  - name: gp-valid-apidepreication
+    placement:
+      placementName: "env-bound-placement"
+

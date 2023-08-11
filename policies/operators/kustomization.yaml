@@ -6,3 +6,4 @@ generators:
   - ./tekton/generator.yml
   - ./gitops/generator.yml
   - ./talm/generator.yml
+  - ./gatekeeper/generator.yml
