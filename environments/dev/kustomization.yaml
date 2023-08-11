@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+
+## specify the namespace to create the polcies/placements/bindings in
+namespace: bry-tam-policies-dev
+
+
+transformers:
+  ## set the name of the PolicySets to include a suffix specific to this environment
+  - kustomize-configs/policyset-suffixer.yml
+  
+  ## replace all references to ManagedClusterSet with the name of the ManagedClusterSet created for this environment
+  - ../../kustomize-configs/
+
+resources:
+  - managedclusterset.yml
+
+  ## include all policies
+  - ../../policies/
+
+# patches:
+  ## Add the ClusterSet that should be managed as part of this environment.  This patch will update the placments and ManagedClusterSetbinding
+  # - target:
+  #     kind: Placement
+  #   patch: |-
+
+      ## there should be no reason to inject enviroment info to the placement since
+      ## the clusterset would control what clusters the policy is deployed to
+      ## If you need this aditional level of control, uncomment the below.
+      # - op: add
+      #   path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions/-
+      #   value: 
+      #     key: environment
+      #     operator: In
+      #     values: ["Prod"]
