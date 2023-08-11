@@ -1,0 +1,50 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: talm-operator-status
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates-raw: |
+    {{- /* ## Get the subscription we are checking health for */ -}}
+    {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-operators" "gatekeeper-operator-product") }}
+
+    {{- /* ## Ensure the Subscription is at latest known release status */ -}}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: Subscription
+        metadata:
+          namespace: openshift-operators
+          labels:
+            acm-policy: gatekeeper-operator
+        status:
+          state: AtLatestKnown
+
+    {{- /* ## Ensure the operator deployment exists and has reached full pod health */ -}}
+    {{- $opDepList := list "gatekeeper-operator-controller" }}
+
+    {{- range $depName := $opDepList }}
+      {{- $dep := (lookup "apps/v1" "Deployment" $sub.metadata.namespace $depName) }}
+    - complianceType: musthave
+      objectDefinition:
+        kind: Deployment
+        apiVersion: apps/v1
+        metadata:
+          namespace: {{ $sub.metadata.namespace }}
+      {{- if not $dep }}
+          name: {{ $depName }}
+      {{- else }}
+          labels:
+            olm.owner: '{{ $sub.status.currentCSV }}'
+        status:
+          replicas: {{ $dep.spec.replicas }}
+          updatedReplicas: {{ $dep.spec.replicas }}
+          readyReplicas: {{ $dep.spec.replicas }}
+          availableReplicas: {{ $dep.spec.replicas }}
+          conditions:
+            - type: Available
+              status: 'True'
+      {{- end }}
+    {{- end }}

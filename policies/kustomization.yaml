@@ -18,6 +18,7 @@ resources:
   - ./operators/
   - ./application-defaults/
   - ./cluster-version/
+  - ./gatekeeper/
 
 commonAnnotations:
   argocd.argoproj.io/compare-options: IgnoreExtraneous

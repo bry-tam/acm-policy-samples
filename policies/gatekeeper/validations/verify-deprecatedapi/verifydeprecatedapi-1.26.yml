@@ -1,0 +1,33 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: verifydeprecatedapi-1.26
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates-raw: |
+    {{- if ge (semverCompare "^1.26" (fromClusterClaim "kubeversion.open-cluster-management.io"))}}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: constraints.gatekeeper.sh/v1beta1
+        kind: VerifyDeprecatedAPI
+        metadata:
+          name: verify-1.26
+        spec:
+          match:
+            kinds:
+              - apiGroups: ["flowcontrol.apiserver.k8s.io"]
+                kinds: ["FlowSchema", "PriorityLevelConfiguration"]
+              - apiGroups: ["autoscaling"]
+                kinds: ["HorizontalPodAutoscaler"]
+          parameters:
+            kvs: 
+              - deprecatedAPI: "flowcontrol.apiserver.k8s.io/v1beta1"
+                kinds: ["FlowSchema", "PriorityLevelConfiguration"]
+                targetAPI: "flowcontrol.apiserver.k8s.io/v1beta3"
+              - deprecatedAPI: "autoscaling/v2beta2"
+                kinds: ["HorizontalPodAutoscaler"]
+                targetAPI: "autoscaling/v2"
+            k8sVersion: 1.26
+    {{- end }}
