@@ -17,16 +17,20 @@ placementBindingDefaults:
 
 policies:
   - name: ack-412
-    remediationAction: inform
+    remediationAction: enforce
     manifests:
       - path: 412-admin-acks-configmap.yml
 
-  - name: ocp-upgrade
-    remediationAction: inform
-    manifests:
-      - path: clusterversion.yml
+  ## uncomment to showcase TALM
+  # - name: ocp-upgrade
+  #   remediationAction: inform
+  #   dependencies:
+  #   - name: "talm-operator"
+  #     compliance: "Compliant"
+  #   manifests:
+  #     - path: clusterversion.yml
 
 policySets:
   - name: cluster-version
     placement:
-      placementName: "env-bound-nohub-placement"
+      placementName: "env-bound-hub-placement"
