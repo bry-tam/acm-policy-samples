@@ -16,8 +16,8 @@ policies:
   - name: talm-operator
     remediationAction: enforce
     manifests:
-      - path: talm/subscription.yml
-      - path: talm/health/operator-status.yml
+      - path: subscription.yml
+      - path: health/operator-status.yml
         remediationAction: inform
 
 policySets:

@@ -1,0 +1,20 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: configure-appliationset-clusterbinding
+spec:
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    {{- range $mcs := (lookup "cluster.open-cluster-management.io/v1beta2" "ManagedClusterSet" "" "").items }}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: cluster.open-cluster-management.io/v1beta1
+        kind: ManagedClusterSetBinding
+        metadata:
+          name: {{ $mcs.metadata.name }}
+          namespace: open-cluster-management-gitops
+        spec:
+          clusterSet: {{ $mcs.metadata.name }}
+    {{- end }}
