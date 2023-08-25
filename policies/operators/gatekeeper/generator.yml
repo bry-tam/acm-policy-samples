@@ -20,6 +20,12 @@ policies:
       - path: health/operator-status.yml
         remediationAction: inform
 
+  - name: gatekeeper-instance
+    remediationAction: enforce
+    manifests:
+      - path: gatekeeper.yml
+      # - path: health/gatekeeper-status.yml
+      #   remediationAction: inform
 policySets:
   - name: gatekeeper-operator
     placement:
