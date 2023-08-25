@@ -16,7 +16,7 @@ spec:
           name: gatekeeper
         spec:
           audit:
-            replicas: {{ ($infraCount | default 2) | toInt }}
+            replicas: '{{ ($infraCount | default 2) | toInt }}'
             logLevel: DEBUG
             auditInterval: 10s
             constraintViolationLimit: 55
@@ -33,7 +33,7 @@ spec:
           validatingWebhook: Enabled
           mutatingWebhook: Enabled
           webhook:
-            replicas: {{ ($infraCount | default 2) | toInt }}
+            replicas: '{{ ($infraCount | default 2) | toInt }}'
             emitAdmissionEvents: Enabled
             logLevel: ERROR
             failurePolicy: Fail
