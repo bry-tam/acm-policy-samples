@@ -16,7 +16,7 @@ policies:
   - name: gp-valid-apidepreication
     remediationAction: enforce
     dependencies:
-      - name: "gatekeeper-operator"
+      - name: "gatekeeper-instance"
         compliance: "Compliant"
     manifests:
       - path: verify-deprecatedapi/constrainttemplate.yml

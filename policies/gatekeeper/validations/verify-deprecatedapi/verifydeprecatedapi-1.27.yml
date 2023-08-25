@@ -4,7 +4,7 @@ kind: ConfigurationPolicy
 metadata:
   name: verifydeprecatedapi-1.27
 spec:
-  remediationAction: inform
+  remediationAction: enforce
   severity: high
   object-templates-raw: |
     {{- if (semverCompare "^1.27" (fromClusterClaim "kubeversion.open-cluster-management.io")) }}
