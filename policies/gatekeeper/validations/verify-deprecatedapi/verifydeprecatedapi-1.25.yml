@@ -7,7 +7,7 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- if ge ((semverCompare "^1.25" (fromClusterClaim "kubeversion.open-cluster-management.io")) 0) }}
+    {{- if (semverCompare "^1.25" (fromClusterClaim "kubeversion.open-cluster-management.io")) }}
     - complianceType: musthave
       objectDefinition:
         apiVersion: constraints.gatekeeper.sh/v1beta1

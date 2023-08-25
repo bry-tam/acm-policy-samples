@@ -16,8 +16,8 @@ policies:
   - name: gatekeeper-operator
     remediationAction: enforce
     manifests:
-      - path: gatekeeper/subscription.yml
-      - path: gatekeeper/health/operator-status.yml
+      - path: subscription.yml
+      - path: health/operator-status.yml
         remediationAction: inform
 
 policySets:

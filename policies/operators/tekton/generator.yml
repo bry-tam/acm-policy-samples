@@ -16,8 +16,8 @@ policies:
   - name: tekton-operator
     remediationAction: enforce
     manifests:
-      - path: tekton/subscription.yml
-      - path: tekton/health/operator-status.yml
+      - path: subscription.yml
+      - path: health/operator-status.yml
         remediationAction: inform
 
   - name: tekton-rh-auth
@@ -29,7 +29,7 @@ policies:
       - name: "tekton-operator"
         compliance: "Compliant"
     manifests:
-      - path: tekton/pull-secret-auth/
+      - path: pull-secret-auth/
 
   - name: tekton-configure
     remediationAction: enforce
@@ -37,8 +37,8 @@ policies:
       - name: "tekton-operator"
         compliance: "Compliant"
     manifests:
-      - path: tekton/tektonchains.yml
-      - path: tekton/tektonconfig.yml
+      - path: tektonchains.yml
+      - path: tektonconfig.yml
 
   - name: tekton-operator-status
     remediationAction: inform
@@ -46,7 +46,7 @@ policies:
       - name: "tekton-operator"
         compliance: "Compliant"
     manifests:
-      - path: tekton/health/tekton-status.yml
+      - path: health/tekton-status.yml
 
 policySets:
   - name: tekton-operators
