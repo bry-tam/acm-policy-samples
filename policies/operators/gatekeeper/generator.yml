@@ -26,7 +26,6 @@ policies:
       - path: gatekeeper.yml
       - path: health/gatekeeper-status.yml
         remediationAction: inform
-
 policySets:
   - name: gatekeeper-operator
     placement:
