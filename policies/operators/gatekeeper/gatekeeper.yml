@@ -50,8 +50,4 @@ spec:
               operator: "Exists"
           nodeSelector:
             node-role.kubernetes.io/infra: ""
-<<<<<<< HEAD
         {{- end }}
-=======
-        {{- end }}
->>>>>>> b436d28 (Add gatekeeper instance (#21))
