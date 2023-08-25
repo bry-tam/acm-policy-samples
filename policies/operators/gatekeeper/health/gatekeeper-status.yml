@@ -1,0 +1,49 @@
+﻿---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: gatekeeper-status
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates-raw: |
+    {{- /* Create a list of all expected deployments in openshift-gatekeeper-system   */ -}}
+    {{- $depList := list "gatekeeper-audit"
+                          "gatekeeper-controller-manager"
+    }}
+
+    ## Create a CompilianceType objectDefinition for each deployment
+    {{- range $depName := $depList }}
+      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-gatekeeper-system" $depName) }}
+    - complianceType: musthave
+      objectDefinition:
+        kind: Deployment
+        apiVersion: apps/v1
+        metadata:
+          namespace: openshift-gatekeeper-system
+      ## If the deployment does not exist we need to specify the name
+      {{- if not $dep }}
+          name: {{ $depName }}
+      {{- else }}
+      ## when the deployment exists the compliance will be determined by
+      ## the labels, spec.selector.matchLabels and the expected healthy status
+          labels:
+        {{- range $k, $v := $dep.metadata.labels }}
+            {{ $k }}: {{ $v }}
+        {{- end }}
+        spec:
+          selector:
+            matchLabels:
+            {{- range $k, $v := $dep.spec.selector.matchLabels }}
+              {{ $k }}: {{ $v }}
+            {{- end }}
+        status:
+          replicas: {{ $dep.spec.replicas }}
+          updatedReplicas: {{ $dep.spec.replicas }}
+          readyReplicas: {{ $dep.spec.replicas }}
+          availableReplicas: {{ $dep.spec.replicas }}
+          conditions:
+            - type: Available
+              status: 'True'
+        {{- end }}
+    {{- end }}
