@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: talm-operator-status
+  name: gatekeeper-operator-status
 spec:
   remediationAction: inform
   severity: high
