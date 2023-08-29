@@ -12,7 +12,8 @@ spec:
     {{- $csvPrefix := "loki-operator.v" }}
 
     {{- /* maxVersion determins what versions will be approved.  Required to be in semverCompare format  */ -}}
-    {{- $maxVersion := "<=5.7.2" }}
+    {{- $maxVersion := "<=5.7.8" }}
+
     {{- range $ip := (lookup "operators.coreos.com/v1alpha1" "InstallPlan" $opNamespace "").items }}
       {{- /* check if the InstallPlan found contains the operator with an acceptable version  */ -}}
       {{- range $csv := $ip.spec.clusterServiceVersionNames }}
