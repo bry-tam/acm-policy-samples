@@ -6,3 +6,4 @@ resources:
   - ./gitops/
   - ./talm/
   - ./gatekeeper/
+  - ./logging/
