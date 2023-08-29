@@ -22,7 +22,7 @@ spec:
         apiVersion: operators.coreos.com/v1alpha1
         kind: InstallPlan
         metadata:
-          name: $ip.metadata.name
+          name: {{ $ip.metadata.name }}
           namespace: {{ $opNamespace }}
         spec:
           approved: true
