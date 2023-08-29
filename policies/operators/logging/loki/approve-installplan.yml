@@ -1,0 +1,33 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: approve-loki-installplan
+spec:
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    {{- /* Create a list of all installplans  */ -}}
+    {{- $opNamespace := "openshift-operators-redhat" }}
+    {{- $csvPrefix := "loki-operator.v" }}
+
+    {{- /* maxVersion determins what versions will be approved.  Required to be in semverCompare format  */ -}}
+    {{- $maxVersion := "<=5.7.8" }}
+
+    {{- range $ip := (lookup "operators.coreos.com/v1alpha1" "InstallPlan" $opNamespace "").items }}
+      {{- /* check if the InstallPlan found contains the operator with an acceptable version  */ -}}
+      {{- range $csv := $ip.spec.clusterServiceVersionNames }}
+        {{- if and (hasPrefix $csvPrefix $csv) (semverCompare $maxVersion ($csv | replace $csvPrefix "")) }}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: InstallPlan
+        metadata:
+          name: {{ $ip.metadata.name }}
+          namespace: {{ $opNamespace }}
+        spec:
+          approved: true
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
