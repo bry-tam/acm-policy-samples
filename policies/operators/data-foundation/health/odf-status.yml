@@ -1,0 +1,61 @@
+﻿---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: odf-status
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates-raw: |
+    {{- /* Create a list of all expected deployments in openshift-pipelines
+          Normally we would use labels to identify them, however there isn't
+          a selector available to uniquely identify the deployments   */ -}}
+    {{- $depList := list "pipelines-as-code-controller"
+                          "pipelines-as-code-watcher"
+                          "pipelines-as-code-webhook"
+                          "tekton-chains-controller"
+                          "tekton-operator-proxy-webhook"
+                          "tekton-pipelines-controller"
+                          "tekton-pipelines-remote-resolvers"
+                          "tekton-pipelines-webhook"
+                          "tekton-triggers-controller"
+                          "tekton-triggers-core-interceptors"
+                          "tekton-triggers-webhook"
+                          "tkn-cli-serve"
+    }}
+
+    ## Create a CompilianceType objectDefinition for each deployment
+    {{- range $depName := $depList }}
+      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-storage" $depName) }}
+    - complianceType: musthave
+      objectDefinition:
+        kind: Deployment
+        apiVersion: apps/v1
+        metadata:
+          namespace: openshift-storage
+      ## If the deployment does not exist we need to specify the name
+      {{- if not $dep }}
+          name: {{ $depName }}
+      {{- else }}
+      ## when the deployment exists the compliance will be determined by
+      ## the labels, spec.selector.matchLabels and the expected healthy status
+          labels:
+        {{- range $k, $v := $dep.metadata.labels }}
+            {{ $k }}: {{ $v }}
+        {{- end }}
+        spec:
+          selector:
+            matchLabels:
+            {{- range $k, $v := $dep.spec.selector.matchLabels }}
+              {{ $k }}: {{ $v }}
+            {{- end }}
+        status:
+          replicas: {{ $dep.spec.replicas }}
+          updatedReplicas: {{ $dep.spec.replicas }}
+          readyReplicas: {{ $dep.spec.replicas }}
+          availableReplicas: {{ $dep.spec.replicas }}
+          conditions:
+            - type: Available
+              status: 'True'
+        {{- end }}
+    {{- end }}
