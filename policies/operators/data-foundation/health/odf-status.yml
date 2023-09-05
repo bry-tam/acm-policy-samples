@@ -37,13 +37,13 @@ spec:
       ## the labels, spec.selector.matchLabels and the expected healthy status
           labels:
         {{- range $k, $v := $dep.metadata.labels }}
-            {{ $k }}: {{ $v }}
+            {{ $k }}: {{ (not (empty $v) | ternary $v "''") }}
         {{- end }}
         spec:
           selector:
             matchLabels:
             {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ $v }}
+              {{ $k }}: {{ (not (empty $v) | ternary $v "''") }}
             {{- end }}
         status:
           replicas: {{ $dep.spec.replicas }}
@@ -61,6 +61,7 @@ spec:
         apiVersion: ocs.openshift.io/v1
         kind: StorageCluster
         metadata:
+          namespace: openshift-storage
         status:
           conditions:
             - message: Reconcile completed successfully
