@@ -19,6 +19,8 @@ placementBindingDefaults:
 policies:
   - name: acm-policy-alerts
     remediationAction: enforce
+    configurationPolicyAnnotations:  
+      policy.open-cluster-management.io/disable-templates: "true"
     manifests:
       - path: namespace.yml
       - path: policy-prometheusrule.yml
