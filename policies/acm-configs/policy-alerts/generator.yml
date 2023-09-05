@@ -20,6 +20,7 @@ policies:
   - name: acm-policy-alerts
     remediationAction: enforce
     manifests:
+      - path: namespace.yml
       - path: policy-prometheusrule.yml
 
 policySets:
