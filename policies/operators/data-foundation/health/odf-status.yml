@@ -10,18 +10,12 @@ spec:
     {{- /* Create a list of all expected deployments in openshift-pipelines
           Normally we would use labels to identify them, however there isn't
           a selector available to uniquely identify the deployments   */ -}}
-    {{- $depList := list "pipelines-as-code-controller"
-                          "pipelines-as-code-watcher"
-                          "pipelines-as-code-webhook"
-                          "tekton-chains-controller"
-                          "tekton-operator-proxy-webhook"
-                          "tekton-pipelines-controller"
-                          "tekton-pipelines-remote-resolvers"
-                          "tekton-pipelines-webhook"
-                          "tekton-triggers-controller"
-                          "tekton-triggers-core-interceptors"
-                          "tekton-triggers-webhook"
-                          "tkn-cli-serve"
+    {{- $depList := list "csi-addons-controller-manager"
+                          "ocs-metrics-exporter"
+                          "ocs-operator"
+                          "odf-console"
+                          "odf-operator-controller-manager"
+                          "rook-ceph-operator"
     }}
 
     ## Create a CompilianceType objectDefinition for each deployment

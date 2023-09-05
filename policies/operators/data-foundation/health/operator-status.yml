@@ -23,7 +23,7 @@ spec:
           state: AtLatestKnown
 
     ## Ensure the operator deployment exists and has reached full pod health
-    {{- $opDepList := list "odf-operator" }}
+    {{- $opDepList := list "odf-operator-controller-manager" }}
 
     {{- range $depName := $opDepList }}
       {{- $dep := (lookup "apps/v1" "Deployment" $sub.metadata.namespace $depName) }}
