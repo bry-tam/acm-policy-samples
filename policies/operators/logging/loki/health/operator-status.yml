@@ -42,7 +42,7 @@ spec:
           selector:
             matchLabels:
         {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ $v }}
+              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
         {{- end }}
         status:
           replicas: {{ $dep.spec.replicas }}

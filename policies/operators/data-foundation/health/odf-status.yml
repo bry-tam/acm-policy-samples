@@ -37,13 +37,13 @@ spec:
       ## the labels, spec.selector.matchLabels and the expected healthy status
           labels:
         {{- range $k, $v := $dep.metadata.labels }}
-            {{ $k }}: {{ (not (empty $v) | ternary $v "''") }}
+            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
         {{- end }}
         spec:
           selector:
             matchLabels:
             {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ (not (empty $v) | ternary $v "''") }}
+              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
             {{- end }}
         status:
           replicas: {{ $dep.spec.replicas }}
