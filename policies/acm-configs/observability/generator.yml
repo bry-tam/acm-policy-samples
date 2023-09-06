@@ -10,7 +10,7 @@ policyDefaults:
   policySets:
     - acm-observability
 placementBindingDefaults:
-  name: "odf-binding"
+  name: "acm-observability-binding"
 
 policies:
   - name: acm-observabiltiy
