@@ -27,7 +27,7 @@ policies:
             compliance: "Compliant"
       - path: observability.yml
         extraDependencies: 
-          - name: acm-observe5
+          - name: thanos-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
