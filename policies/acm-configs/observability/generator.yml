@@ -26,10 +26,10 @@ policies:
         #     kind: ConfigurationPolicy
         #     compliance: "Compliant"
       - path: observability.yml
-        extraDependencies: 
-          - name: thanos-secret
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: thanos-secret
+        #     kind: ConfigurationPolicy
+        #     compliance: "Compliant"
 
   - name: acm-observe-status
     remediationAction: inform
