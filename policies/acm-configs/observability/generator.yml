@@ -42,5 +42,5 @@ policies:
 policySets:
   - name: acm-observability
     placement:
-      placementName: "ft-acm-observe--enabled"
+      placementName: "ft-acm-observability--enabled"
 
