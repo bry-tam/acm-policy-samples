@@ -7,17 +7,25 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* Create a list of all expected deployments in openshift-pipelines
-          Normally we would use labels to identify them, however there isn't
-          a selector available to uniquely identify the deployments   */ -}}
-    {{- $depList := list "csi-addons-controller-manager"
-                          "noobaa-endpoint"
-                          "noobaa-operator"
-                          "ocs-metrics-exporter"
-                          "ocs-operator"
-                          "odf-console"
-                          "odf-operator-controller-manager"
-                          "rook-ceph-operator"
+    {{- /* Create a list of all expected deployments in open-cluster-management-observability */ -}}
+    {{- $depList := list "observability-grafana"
+                          "observability-observatorium-api"
+                          "observability-observatorium-operator"
+                          "observability-rbac-query-proxy"
+                          "observability-thanos-query"
+                          "observability-thanos-query-frontend"
+                          "observability-thanos-receive-controller"
+    }}
+
+    {{- $sSetList := list "observability-alertmanager"
+                          "observability-thanos-compact"
+                          "observability-thanos-query-frontend-memcached"
+                          "observability-thanos-receive-default"
+                          "observability-thanos-rule"
+                          "observability-thanos-store-memcached"
+                          "observability-thanos-store-shard-0"
+                          "observability-thanos-store-shard-1"
+                          "observability-thanos-store-shard-2"
     }}
 
     ## Create a CompilianceType objectDefinition for each deployment
@@ -53,21 +61,39 @@ spec:
           conditions:
             - type: Available
               status: 'True'
-        {{- end }}
+      {{- end }}
     {{- end }}
 
+
+    ## Create a CompilianceType objectDefinition for each deployment
+    {{- range $sSetName := $sSetList }}
+      {{- $sSet := (lookup "apps/v1" "StatefulSet" "open-cluster-management-observability" $sSetName) }}
     - complianceType: musthave
       objectDefinition:
-        apiVersion: ocs.openshift.io/v1
-        kind: StorageCluster
+        kind: StatefulSet
+        apiVersion: apps/v1
         metadata:
-          namespace: open-cluster-management-observability
+      {{- if not $sSet }}
+          name: {{ $sSetName }}
+      {{- else }}
+      ## when the statefulset exists the compliance will be determined by
+      ## the labels, spec.selector.matchLabels and the expected healthy status
+          labels:
+        {{- range $k, $v := $sSet.metadata.labels }}
+            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+        {{- end }}
+        spec:
+          selector:
+            matchLabels:
+            {{- range $k, $v := $sSet.spec.selector.matchLabels }}
+              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+            {{- end }}
         status:
-          conditions:
-            - message: Reconcile completed successfully
-              reason: ReconcileCompleted
-              status: 'True'
-              type: ReconcileComplete
-            - status: 'True'
-              type: Available
-          phase: Ready
+          availableReplicas: {{ $sSet.spec.replicas }}
+          currentReplicas: {{ $sSet.spec.replicas }}
+          updatedReplicas: {{ $sSet.spec.replicas }}
+          replicas: {{ $sSet.spec.replicas }}
+          collisionCount: 0
+          readyReplicas: {{ $sSet.spec.replicas }}
+      {{- end }}
+    {{- end }}
