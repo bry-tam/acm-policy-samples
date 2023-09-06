@@ -20,10 +20,6 @@ policies:
       - path: console.yml
       - path: pull-secret.yml
       - path: objectbucketclaim.yml
-        extraDependencies: 
-          - name: odf-operator-status
-            kind: Policy
-            compliance: "Compliant"
       - path: thanos-secret.yml
         extraDependencies: 
           - name: acm-observabiltiy4
