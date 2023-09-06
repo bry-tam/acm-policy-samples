@@ -73,6 +73,7 @@ spec:
         kind: StatefulSet
         apiVersion: apps/v1
         metadata:
+          namespace: open-cluster-management-observability
       {{- if not $sSet }}
           name: {{ $sSetName }}
       {{- else }}
