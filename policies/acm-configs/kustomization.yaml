@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ./feature-flags-placement/
   - ./policy-alerts/
+  - ./observability/
