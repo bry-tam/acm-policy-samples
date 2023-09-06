@@ -8,7 +8,7 @@ policyDefaults:
   remediationAction: enforce
   consolidateManifests: false
   policySets:
-    - acm-observibility
+    - acm-observability
 placementBindingDefaults:
   name: "acm-observe-binding"
 
@@ -25,7 +25,7 @@ policies:
           - name: acm-observe4
             kind: ConfigurationPolicy
             compliance: "Compliant"
-      - path: observe.yml
+      - path: observability.yml
         extraDependencies: 
           - name: acm-observe5
             kind: ConfigurationPolicy
@@ -37,10 +37,10 @@ policies:
       - name: "acm-observe"
         compliance: "Compliant"
     manifests:
-      - path: health/acm-observe-status.yml
+      - path: health/acm-observability-status.yml
 
 policySets:
-  - name: acm-observibility
+  - name: acm-observability
     placement:
       placementName: "ft-acm-observe--enabled"
 
