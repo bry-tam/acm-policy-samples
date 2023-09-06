@@ -2,18 +2,18 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-generator-observability
+  name: gen-policy-generator-observe
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
   policySets:
-    - acm-observability
+    - acm-observibility
 placementBindingDefaults:
-  name: "acm-observability-binding"
+  name: "acm-observe-binding"
 
 policies:
-  - name: acm-observabiltiy
+  - name: acm-observe
     remediationAction: enforce
     manifests:
       - path: namespace.yml
@@ -22,25 +22,25 @@ policies:
       - path: objectbucketclaim.yml
       - path: thanos-secret.yml
         extraDependencies: 
-          - name: acm-observabiltiy4
+          - name: acm-observe4
             kind: ConfigurationPolicy
             compliance: "Compliant"
-      - path: observability.yml
+      - path: observe.yml
         extraDependencies: 
-          - name: acm-observabiltiy5
+          - name: acm-observe5
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
-  - name: acm-observabiltiy-status
+  - name: acm-observe-status
     remediationAction: inform
     dependencies:
-      - name: "acm-observabiltiy"
+      - name: "acm-observe"
         compliance: "Compliant"
     manifests:
-      - path: health/acm-observabiltiy-status.yml
+      - path: health/acm-observe-status.yml
 
 policySets:
-  - name: acm-observability
+  - name: acm-observibility
     placement:
-      placementName: "ft-acm-observabiltiy--enabled"
+      placementName: "ft-acm-observe--enabled"
 
