@@ -21,10 +21,10 @@ policies:
       - path: pull-secret.yml
       - path: objectbucketclaim.yml
       - path: thanos-secret.yml
-        extraDependencies: 
-          - name: acm-observe4
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: acm-observe4
+        #     kind: ConfigurationPolicy
+        #     compliance: "Compliant"
       - path: observability.yml
         extraDependencies: 
           - name: thanos-secret
