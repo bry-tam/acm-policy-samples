@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: loki-status
+  name: odf-status
 spec:
   remediationAction: inform
   severity: high
@@ -10,29 +10,25 @@ spec:
     {{- /* Create a list of all expected deployments in openshift-pipelines
           Normally we would use labels to identify them, however there isn't
           a selector available to uniquely identify the deployments   */ -}}
-    {{- $depList := list "pipelines-as-code-controller"
-                          "pipelines-as-code-watcher"
-                          "pipelines-as-code-webhook"
-                          "tekton-chains-controller"
-                          "tekton-operator-proxy-webhook"
-                          "tekton-pipelines-controller"
-                          "tekton-pipelines-remote-resolvers"
-                          "tekton-pipelines-webhook"
-                          "tekton-triggers-controller"
-                          "tekton-triggers-core-interceptors"
-                          "tekton-triggers-webhook"
-                          "tkn-cli-serve"
+    {{- $depList := list "csi-addons-controller-manager"
+                          "noobaa-endpoint"
+                          "noobaa-operator"
+                          "ocs-metrics-exporter"
+                          "ocs-operator"
+                          "odf-console"
+                          "odf-operator-controller-manager"
+                          "rook-ceph-operator"
     }}
 
     ## Create a CompilianceType objectDefinition for each deployment
     {{- range $depName := $depList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-pipelines" $depName) }}
+      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-storage" $depName) }}
     - complianceType: musthave
       objectDefinition:
         kind: Deployment
         apiVersion: apps/v1
         metadata:
-          namespace: openshift-pipelines
+          namespace: openshift-storage
       ## If the deployment does not exist we need to specify the name
       {{- if not $dep }}
           name: {{ $depName }}
@@ -59,3 +55,19 @@ spec:
               status: 'True'
         {{- end }}
     {{- end }}
+
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: ocs.openshift.io/v1
+        kind: StorageCluster
+        metadata:
+          namespace: openshift-storage
+        status:
+          conditions:
+            - message: Reconcile completed successfully
+              reason: ReconcileCompleted
+              status: 'True'
+              type: ReconcileComplete
+            - status: 'True'
+              type: Available
+          phase: Ready
