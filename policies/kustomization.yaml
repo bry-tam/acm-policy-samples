@@ -12,6 +12,7 @@ configurations:
 ## include existing placements. 
 resources:
   - ./acm-placements/
+  - ./acm-configs/
   - ./cluster-configs/
   - ./cluster-validations/
   - ./cluster-maintenance/

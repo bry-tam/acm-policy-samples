@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: open-cluster-management-alerts
+  namespace: open-cluster-management
+spec:
+  groups:
+    - name: GovernanceNotCompliant
+      rules:
+        - alert: PolicyAlert
+          annotations:
+            message: 'GRC Policy {{ $labels.policy_namespace }}/{{ $labels.policy }} is not compliant'
+          expr: >-
+            policy_governance_info{type="root"}  > 0
+          for: 2m
+          labels:
+            severity: critical

@@ -6,3 +6,5 @@ resources:
   - ./gitops/
   - ./talm/
   - ./gatekeeper/
+  - ./logging/
+  - ./data-foundation/

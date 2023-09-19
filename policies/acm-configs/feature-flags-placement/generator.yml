@@ -1,0 +1,28 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  pruneObjectBehavior: DeleteIfCreated
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - acm-feature-placements
+placementBindingDefaults:
+  name: "acm-feature-placement-binding"
+
+policies:
+  - name: generate-feature-placements
+    remediationAction: enforce
+    manifests:
+      - path: feature-flag-placements.yml
+
+policySets:
+  - name: acm-feature-placements
+    placement:
+      placementName: "env-bound-hub-placement"

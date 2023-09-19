@@ -2,25 +2,33 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: gatekeeper-status
+  name: odf-status
 spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* Create a list of all expected deployments in openshift-gatekeeper-system   */ -}}
-    {{- $depList := list "gatekeeper-audit"
-                          "gatekeeper-controller-manager"
+    {{- /* Create a list of all expected deployments in openshift-pipelines
+          Normally we would use labels to identify them, however there isn't
+          a selector available to uniquely identify the deployments   */ -}}
+    {{- $depList := list "csi-addons-controller-manager"
+                          "noobaa-endpoint"
+                          "noobaa-operator"
+                          "ocs-metrics-exporter"
+                          "ocs-operator"
+                          "odf-console"
+                          "odf-operator-controller-manager"
+                          "rook-ceph-operator"
     }}
 
     ## Create a CompilianceType objectDefinition for each deployment
     {{- range $depName := $depList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-gatekeeper-system" $depName) }}
+      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-storage" $depName) }}
     - complianceType: musthave
       objectDefinition:
         kind: Deployment
         apiVersion: apps/v1
         metadata:
-          namespace: openshift-gatekeeper-system
+          namespace: openshift-storage
       ## If the deployment does not exist we need to specify the name
       {{- if not $dep }}
           name: {{ $depName }}
@@ -47,3 +55,19 @@ spec:
               status: 'True'
         {{- end }}
     {{- end }}
+
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: ocs.openshift.io/v1
+        kind: StorageCluster
+        metadata:
+          namespace: openshift-storage
+        status:
+          conditions:
+            - message: Reconcile completed successfully
+              reason: ReconcileCompleted
+              status: 'True'
+              type: ReconcileComplete
+            - status: 'True'
+              type: Available
+          phase: Ready

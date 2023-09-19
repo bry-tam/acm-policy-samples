@@ -4,5 +4,5 @@ nameReference:
   - kind: Policy
     path: spec/dependencies/namespace
   - kind: Policy
-    path: spec/policy-templates/objectDefinition/extraDependencies/namespace
+    path: spec/policy-templates/extraDependencies/namespace
 
