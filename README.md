@@ -3,17 +3,29 @@
 RHACM sample policies meant to showcase best practices.
 
 ## Background
-RHACM does not have a control process that enables managing changes to Policies through the managed cluster environments.  Many users have requirements that Policy changes should be deployed to Dev --> QA --> Prod clusters in sequence to allow testing.  This workflow also allows blocking changes except during maintenance windows.  
+Many users have requirements that Policy changes should be deployed to Dev --> QA --> Prod clusters in sequence to allow testing.  Many also require a workflow that allows blocking changes except during maintenance windows.
 
-The customer requirements are in contradiction to Policies that should be applied to every cluster.  When a new Policy that deployed to all clusters is created, or an existing edited, we want to make sure those changes can be controlled where and when they are deployed.
+These customer requirements are in contradiction to basic GitOps practices and ACM functionaltiy.  RHACM does not have a control process that enables managing changes to Policies through the managed cluster environments.  Further most GitOps practioners recommend against using branches to control change.  When we have RHACM `Policies` that should be applied to every cluster we want to use all of the tooling in the best way possible to meet our requirements while at the same time following GitOps and code maintenance best practices.  When a new Policy that deployed to all clusters is created, or an existing edited, we want to make sure those changes can be controlled where and when they are deployed.
 
 Additionally we don't want to have to manage multiple copies of the same Policy, such as using directories would cause.  We want to have a little friction between the Policy definition itself and the business rules used to determine when/where a Policy is applied.
+
+## Solution outline
+This repo has been setup to highlight my recommendations for RHACM configuration, code change management practices, and policy standards.
+
+Goals:
+  - The configuration of RHACM should be consistent with the code change workflow
+  - Policy placement should be flexible enough to allow controlling where a Policy is deployed without having to create placements and policies in a 1:1 ratio.  We want to adhere to a practice of simple reusable placements.
+  - Follow a GitOps approach to managing all code
+  - All Policies should use the PolicyGenerator and be included in a PolciySet.
+  
 
 ## General repo layout
 ```
 .
 ├── environments
 │   └── prod
+│       └── kustomize-configs
+│   └── dev
 │       └── kustomize-configs
 ├── kustomize-configs
 ├── local-cluster
@@ -24,7 +36,7 @@ Additionally we don't want to have to manage multiple copies of the same Policy,
 │   ├── cluster-maintenance
 │   ├── cluster-validations
 │   ├── cluster-version
-│   ├── kustomization.yaml
+│   ├── gatekeeper
 │   ├── kustomize-configs
 │   └── operators
 └── README.md (this file)
@@ -32,10 +44,14 @@ Additionally we don't want to have to manage multiple copies of the same Policy,
 
 The file structure is based on a typical kustomize enviroment.  There are kustomize configurations (will be discussed later) which help tie everything together.  The assumption is all deployments are done through one of the environments subdirectories.
 
- - policies: Holds the Policy definitions.  It is expected most if not all policies would be applied to all environments.  This means Policies should have business logic defined in them such that the same policy deployed to QA and Prod would exhibit expected behaviors.  This also allows testing the logic as policies are moved between environments.  
-  - All Policies should use the PolicyGenerator and be included in a PolciySet.
- - environments/ENVIRONMENT_NAME: holds the kustomize overlay for specified environment.  Here we set the namespace name to deploy the policies in and the suffix for the PoliySet naming override.
- - local-cluster: Should only be included in the environment which the ACM hub is expected to be managed. This would typically be "prod".  Configuration here would change the behavor of the ACM Hub `ManagedCluster` object to include it in the ClusterSEt
+ - policies: Holds the Policy definitions.  It is expected most if not all policies would be applied to all environments.  This means Policies should have business logic defined in them such that the same policy deployed to QA and Prod would exhibit expected behaviors.  This also allows testing the logic as policies are moved between environments. 
+ - environments/ENVIRONMENT_NAME: holds the kustomize overlay for specified environment.  Here we set the namespace name to deploy the policies in, the suffix for the PoliySet naming override., and the ClusterSet to select the array of clusters to be considered as targets for that environments placements.
+ - local-cluster: Should only be included in the environment which the ACM hub is expected to be managed. This would typically be "prod".  Configuration here would change the behavor of the ACM Hub `ManagedCluster` object to include it in the ClusterSet created as part of the environment.
+
+## RHACM Cluster structure
+Each cluster should be included in a ClusterSet that matches the environments/ENVIRONMENT_NAME which is targetting them.  In this demo repo I use the naming convention of "ENVIRONMENT_NAME-clusters".  You could expand from the simple dev, qa, prod naming used here as required for additional separation and control.  As a general rule all clusters in the ClusterSet should be able to have a change applied at the same time.  
+
+To control subsets of clusters allowing specific features we will use labels applied to the `ManagedCluster`.  Here features would be a PolicySet which could be a specific configuration or operator or some such.  For example if we wanted to introduce a change to switch from the ElasticSearch logging stack to Loki we would introduce a feature flag label `logging-type=ElasticSearch|Loki`.  In preparation for use of this feature all clusters would be given the `logging-type=ElasticSearch` label.  Then as we want to change the logging a simple change to the label would be applied during the specified maintenance time period.
 
 
 ## Managing changes between environments and naming conventions
@@ -46,6 +62,8 @@ The file structure is based on a typical kustomize enviroment.  There are kustom
  - All clusters labeled env=dev
  - Hub only: cluster name is local-cluster
  - All clusters except Hub: cluster name is not local-cluster
+
+In addition there is a Hub Policy that will generate Placements for the feature flag based PolicySets.  This is accomplished by specifying the name of the Placement in the PolicyGenerator in the format of "ft-<LabelName>--<LabelValue>".  For the above logging-type example, the Placement name in the generator would be "ft-logging-type--Loki".
 
 The intersection between the choosen Placement and the clusters in the ClusterSet will determine which clusters are deployed to.
 

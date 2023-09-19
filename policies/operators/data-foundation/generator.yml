@@ -1,0 +1,47 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-odf
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - odf-operator
+placementBindingDefaults:
+  name: "odf-binding"
+
+policies:
+  - name: odf-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorgroup.yml
+      - path: subscription.yml
+      - path: health/operator-status.yml
+        remediationAction: inform
+
+  - name: odf-configure
+    remediationAction: enforce
+    dependencies:
+      - name: "odf-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: console.yml
+      - path: storagesystem.yml
+      - path: storagecluster.yml
+
+  - name: odf-operator-status
+    remediationAction: inform
+    dependencies:
+      - name: "odf-configure"
+        compliance: "Compliant"
+    manifests:
+      - path: health/odf-status.yml
+
+policySets:
+  - name: odf-operator
+    placement:
+      placementName: "ft-storage--odf"
+

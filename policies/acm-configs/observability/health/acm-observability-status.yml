@@ -1,0 +1,100 @@
+﻿---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: acm-observabiltiy-status
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates-raw: |
+    {{- /* Create a list of all expected deployments in open-cluster-management-observability */ -}}
+    {{- $depList := list "observability-grafana"
+                          "observability-observatorium-api"
+                          "observability-observatorium-operator"
+                          "observability-rbac-query-proxy"
+                          "observability-thanos-query"
+                          "observability-thanos-query-frontend"
+                          "observability-thanos-receive-controller"
+    }}
+
+    {{- $sSetList := list "observability-alertmanager"
+                          "observability-thanos-compact"
+                          "observability-thanos-query-frontend-memcached"
+                          "observability-thanos-receive-default"
+                          "observability-thanos-rule"
+                          "observability-thanos-store-memcached"
+                          "observability-thanos-store-shard-0"
+                          "observability-thanos-store-shard-1"
+                          "observability-thanos-store-shard-2"
+    }}
+
+    ## Create a CompilianceType objectDefinition for each deployment
+    {{- range $depName := $depList }}
+      {{- $dep := (lookup "apps/v1" "Deployment" "open-cluster-management-observability" $depName) }}
+    - complianceType: musthave
+      objectDefinition:
+        kind: Deployment
+        apiVersion: apps/v1
+        metadata:
+          namespace: open-cluster-management-observability
+      ## If the deployment does not exist we need to specify the name
+      {{- if not $dep }}
+          name: {{ $depName }}
+      {{- else }}
+      ## when the deployment exists the compliance will be determined by
+      ## the labels, spec.selector.matchLabels and the expected healthy status
+          labels:
+        {{- range $k, $v := $dep.metadata.labels }}
+            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+        {{- end }}
+        spec:
+          selector:
+            matchLabels:
+            {{- range $k, $v := $dep.spec.selector.matchLabels }}
+              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+            {{- end }}
+        status:
+          replicas: {{ $dep.spec.replicas }}
+          updatedReplicas: {{ $dep.spec.replicas }}
+          readyReplicas: {{ $dep.spec.replicas }}
+          availableReplicas: {{ $dep.spec.replicas }}
+          conditions:
+            - type: Available
+              status: 'True'
+      {{- end }}
+    {{- end }}
+
+
+    ## Create a CompilianceType objectDefinition for each deployment
+    {{- range $sSetName := $sSetList }}
+      {{- $sSet := (lookup "apps/v1" "StatefulSet" "open-cluster-management-observability" $sSetName) }}
+    - complianceType: musthave
+      objectDefinition:
+        kind: StatefulSet
+        apiVersion: apps/v1
+        metadata:
+          namespace: open-cluster-management-observability
+      {{- if not $sSet }}
+          name: {{ $sSetName }}
+      {{- else }}
+      ## when the statefulset exists the compliance will be determined by
+      ## the labels, spec.selector.matchLabels and the expected healthy status
+          labels:
+        {{- range $k, $v := $sSet.metadata.labels }}
+            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+        {{- end }}
+        spec:
+          selector:
+            matchLabels:
+            {{- range $k, $v := $sSet.spec.selector.matchLabels }}
+              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+            {{- end }}
+        status:
+          availableReplicas: {{ $sSet.spec.replicas }}
+          currentReplicas: {{ $sSet.spec.replicas }}
+          updatedReplicas: {{ $sSet.spec.replicas }}
+          replicas: {{ $sSet.spec.replicas }}
+          collisionCount: 0
+          readyReplicas: {{ $sSet.spec.replicas }}
+      {{- end }}
+    {{- end }}

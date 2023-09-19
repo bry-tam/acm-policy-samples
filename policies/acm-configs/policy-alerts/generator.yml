@@ -1,0 +1,31 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-policy-alerts
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  pruneObjectBehavior: DeleteIfCreated
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - acm-alerts-placements
+placementBindingDefaults:
+  name: "acm-alerts-placement-binding"
+
+policies:
+  - name: acm-policy-alerts
+    remediationAction: enforce
+    configurationPolicyAnnotations:  
+      policy.open-cluster-management.io/disable-templates: "true"
+    manifests:
+      - path: namespace.yml
+      - path: policy-prometheusrule.yml
+
+policySets:
+  - name: acm-alerts-placements
+    placement:
+      placementName: "env-bound-hub-placement"
