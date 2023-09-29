@@ -20,20 +20,20 @@ policies:
       - path: console.yml
       - path: pull-secret.yml
       - path: objectbucketclaim.yml
-        extraDependencies: 
-          - name: odf-operator-status
-            kind: Policy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: odf-operator-status
+        #     kind: Policy
+        #     compliance: "Compliant"
       - path: thanos-secret.yml
-        extraDependencies: 
-          - name: acm-observe4
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: acm-observe4
+        #     kind: ConfigurationPolicy
+        #     compliance: "Compliant"
       - path: observability.yml
-        extraDependencies: 
-          - name: thanos-secret
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: thanos-secret
+        #     kind: ConfigurationPolicy
+        #     compliance: "Compliant"
 
   - name: acm-observe-status
     remediationAction: inform
