@@ -30,9 +30,8 @@ spec:
           notificationsController: Running
           applicationController: Running
           applicationSetController: Running
-          ssoConfig: Success
+          sso: Running
           repo: Running
-          dex: Running
           phase: Available
           redis: Running
 

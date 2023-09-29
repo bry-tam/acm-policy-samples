@@ -38,7 +38,7 @@ spec:
     route:
       enabled: false
   monitoring:
-    enabled: false
+    enabled: true
   prometheus:
     enabled: false
     ingress:
