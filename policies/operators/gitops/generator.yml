@@ -16,6 +16,8 @@ policies:
   - name: gitops-operator
     remediationAction: enforce
     manifests:
+      - path: operator-ns.yml
+      - path: operatorgroup.yml
       - path: argocd-ns.yml
       - path: subscription.yml
       - path: health/operator-status.yml
