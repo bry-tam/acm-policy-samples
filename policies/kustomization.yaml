@@ -23,3 +23,18 @@ resources:
 
 commonAnnotations:
   argocd.argoproj.io/compare-options: IgnoreExtraneous
+
+## set common defaults for all policies
+transformers:
+  - ./kustomize-configs/policy-defaults-patch.yml
+  
+generatorOptions:
+ disableNameSuffixHash: true
+
+configMapGenerator:
+- name: policy-defaults
+  literals:
+  - evaluationInterval-compliant=5m
+  - evaluationInterval-noncompliant=2m
+  - pruneObjectBehavior=DeleteIfCreated
+  - copyPolicyMetadata=false

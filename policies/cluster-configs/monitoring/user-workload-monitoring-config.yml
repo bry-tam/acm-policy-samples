@@ -1,0 +1,39 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: user-workload-monitoring-config
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: user-workload-monitoring-config
+          namespace: openshift-user-workload-monitoring
+        data:
+          config.yaml: |
+            prometheus: 
+              retention: 24h 
+              resources:
+                requests:
+                  cpu: 200m 
+                  memory: 2Gi 
+    {{- if ne $infraCount 0 }}
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+    {{- end }}
+
+    {{- if ne $infraCount 0 }}
+            prometheusOperator:
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+    {{- end }}

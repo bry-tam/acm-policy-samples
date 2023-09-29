@@ -1,0 +1,106 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: cluster-monitoring-config
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    - complianceType: musthave
+      objectDefinition:
+    ## ensure we have infra nodes to run the component on
+    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: cluster-monitoring-config
+          namespace: openshift-monitoring
+        data:
+          config.yaml: |
+            enableUserWorkload: true
+
+            prometheusK8s: 
+              retention: 24h 
+              resources:
+                requests:
+                  cpu: 200m 
+                  memory: 2Gi 
+    {{- if ne $infraCount 0 }}
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+    {{- end }}
+              externalLabels:
+                adpalert: "on"
+                env: DIT
+                instance: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
+                product: OPNSHFT
+                region: AMER
+                site: BRY
+
+
+            alertmanagerMain: 
+              enableUserAlertmanagerConfig: true
+    {{- if ne $infraCount 0 }}
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+    {{- end }}
+              
+
+    ## group all remaining components together since the only config is for infra nodes
+    {{- if ne $infraCount 0 }}
+            prometheusOperator:
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+            kubeStateMetrics: 
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+            openshiftStateMetrics: 
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+            grafana 
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+            telemeterClient: 
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+            k8sPrometheusAdapter: 
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+
+            thanosQuerier:
+              nodeSelector: 
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+    {{- end }}
