@@ -36,5 +36,5 @@ configMapGenerator:
   literals:
   - evaluationInterval-compliant=5m
   - evaluationInterval-noncompliant=2m
-  - pruneObjectBehavior=DeleteIfCreated
+  - pruneObjectBehavior=None
   - copyPolicyMetadata=false
