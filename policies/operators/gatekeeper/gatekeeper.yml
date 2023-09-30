@@ -20,7 +20,7 @@ spec:
             logLevel: DEBUG
             auditInterval: 10s
             constraintViolationLimit: 55
-            auditFromCache: Enabled
+            auditFromCache: Disabled
             auditChunkSize: 66
             emitAuditEvents: Enabled
             resources:
@@ -35,7 +35,7 @@ spec:
           webhook:
             replicas: '{{ ($infraCount | default 2) | toInt }}'
             emitAdmissionEvents: Enabled
-            logLevel: ERROR
+            logLevel: DEBUG
             failurePolicy: Fail
             resources:
               limits:
