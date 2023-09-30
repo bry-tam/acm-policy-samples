@@ -26,10 +26,10 @@ spec:
             resources:
               limits:
                 cpu: 500m
-                memory: 150Mi
+                memory: 3Gi
               requests:
                 cpu: 500m
-                memory: 130Mi
+                memory: 1Gi
           validatingWebhook: Enabled
           mutatingWebhook: Enabled
           webhook:
@@ -40,10 +40,10 @@ spec:
             resources:
               limits:
                 cpu: 480m
-                memory: 140Mi
+                memory: 3Gi
               requests:
                 cpu: 400m
-                memory: 120Mi
+                memory: 1Gi
         {{- if ne $infraCount 0 }}
           tolerations:
             - key: node-role.kubernetes.io/infra
