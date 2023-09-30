@@ -31,12 +31,12 @@ spec:
                 cpu: 500m
                 memory: 1Gi
           validatingWebhook: Enabled
-          mutatingWebhook: Enabled
+          mutatingWebhook: Disabled
           webhook:
             replicas: '{{ ($infraCount | default 2) | toInt }}'
             emitAdmissionEvents: Enabled
             logLevel: DEBUG
-            failurePolicy: Fail
+            failurePolicy: Ignore
             resources:
               limits:
                 cpu: 480m
