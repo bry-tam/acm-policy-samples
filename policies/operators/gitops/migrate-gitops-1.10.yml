@@ -1,0 +1,53 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: clean-gitops-19
+spec:
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    {{- /* Create a list of all installplans  */ -}}
+    {{- $opNs:= "openshift-operators" }}
+    {{- $csvPrefix := "openshift-gitops-operator.v" }}
+
+    {{- range $csv := (lookup "operators.coreos.com/v1alpha1" "ClusterServiceVersion" $opNs "").items }}
+      {{- /* check if the csv found contains the operator */ -}}
+      {{- if (hasPrefix $csvPrefix $csv.metadata.name) }}
+    - complianceType: mustnothave
+      objectDefinition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: ClusterServiceVersion
+        metadata:
+          name: {{ $csv.metadata.name }}
+          namespace: {{ $opNs }}
+      {{- end }}
+    {{- end }}
+
+    {{- range $ip := (lookup "operators.coreos.com/v1alpha1" "InstallPlan" $opNs "").items }}
+      {{- /* check if the InstallPlan found contains the operator */ -}}
+      {{- range $csv := $ip.spec.clusterServiceVersionNames }}
+        {{- if (hasPrefix $csvPrefix $csv) }}
+    - complianceType: mustnothave
+      objectDefinition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: InstallPlan
+        metadata:
+          name: {{ $ip.metadata.name }}
+          namespace: {{ $opNs }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
+    {{- range $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" $opNs "").items }}
+      {{- /* check if the sub found contains the operator */ -}}
+      {{- if (eq $sub.spec.name "openshift-gitops-operator") }}
+    - complianceType: mustnothave
+      objectDefinition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: Subscription
+        metadata:
+          name: {{ $sub.metadata.name }}
+          namespace: {{ $opNs }}
+      {{- end }}
+    {{- end }}
