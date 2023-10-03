@@ -12,8 +12,8 @@ spec:
     {{- $csvPrefix := "openshift-gitops-operator.v" }}
 
     {{- range $csv := (lookup "operators.coreos.com/v1alpha1" "ClusterServiceVersion" $opNs "").items }}
-      {{- /* check if the csv found contains the operator */ -}}
-      {{- if (hasPrefix $csvPrefix $csv.metadata.name) }}
+      {{- /* check if the csv found contains the operator and the csv is less than 1.10 */ -}}
+      {{- if and (hasPrefix $csvPrefix $csv.metadata.name) (semverCompare "<1.10" ($csv.metadata.name | replace $csvPrefix "")) }}
     - complianceType: mustnothave
       objectDefinition:
         apiVersion: operators.coreos.com/v1alpha1
