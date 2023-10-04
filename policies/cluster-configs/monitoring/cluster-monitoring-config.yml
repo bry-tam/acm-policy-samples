@@ -44,7 +44,7 @@ spec:
               enableUserAlertmanagerConfig: true
     {{- if ne $infraCount 0 }}
               nodeSelector: 
-                  node-role.kubernetes.io/infra: ""
+                node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
@@ -54,49 +54,49 @@ spec:
     {{- if ne $infraCount 0 }}
             prometheusOperator:
               nodeSelector: 
-                  node-role.kubernetes.io/infra: ""
+                node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
             kubeStateMetrics: 
               nodeSelector: 
-                  node-role.kubernetes.io/infra: ""
+                node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
             openshiftStateMetrics: 
               nodeSelector: 
-                  node-role.kubernetes.io/infra: ""
+                node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
-            grafana 
+            grafana:
               nodeSelector: 
-                  node-role.kubernetes.io/infra: ""
+                node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
             telemeterClient: 
               nodeSelector: 
-                  node-role.kubernetes.io/infra: ""
+                node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
             k8sPrometheusAdapter: 
               nodeSelector: 
-                  node-role.kubernetes.io/infra: ""
+                node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
             thanosQuerier:
               nodeSelector: 
-                  node-role.kubernetes.io/infra: ""
+                node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
