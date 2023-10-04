@@ -8,9 +8,8 @@ spec:
   object-templates-raw: |
     - complianceType: musthave
       objectDefinition:
-    ## ensure we have infra nodes to run the component on
+    {{- /* ensure we have infra nodes to run the component on  */ -}}
     {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
-
         apiVersion: v1
         kind: ConfigMap
         metadata:
@@ -41,7 +40,6 @@ spec:
                 region: {{ fromClusterClaim "region" }}
                 site: {{ fromClusterClaim "site" }}
 
-
             alertmanagerMain: 
               enableUserAlertmanagerConfig: true
     {{- if ne $infraCount 0 }}
@@ -52,8 +50,7 @@ spec:
                 key: node-role.kubernetes.io/infra
     {{- end }}
               
-
-    ## group all remaining components together since the only config is for infra nodes
+    {{- /* group all remaining components together since the only config is for infra nodes  */ -}}
     {{- if ne $infraCount 0 }}
             prometheusOperator:
               nodeSelector: 
