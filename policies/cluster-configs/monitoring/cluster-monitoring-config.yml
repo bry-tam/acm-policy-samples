@@ -35,11 +35,11 @@ spec:
     {{- end }}
               externalLabels:
                 adpalert: "on"
-                env: DIT
+                env: {{ fromClusterClaim "env" }}
                 instance: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
-                product: OPNSHFT
-                region: AMER
-                site: BRY
+                product: {{ fromClusterClaim "product.open-cluster-management.io" }}
+                region: {{ fromClusterClaim "region" }}
+                site: {{ fromClusterClaim "site" }}
 
 
             alertmanagerMain: 
