@@ -28,7 +28,7 @@ spec:
                   memory: 2Gi 
     {{- if ne $infraCount 0 }}
               nodeSelector: 
-                  node-role.kubernetes.io/infra: ""
+                node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
