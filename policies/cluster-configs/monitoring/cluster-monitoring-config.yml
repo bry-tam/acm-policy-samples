@@ -19,14 +19,14 @@ spec:
           config.yaml: |
             enableUserWorkload: true
 
-            prometheusK8s: 
-              retention: 24h 
+            prometheusK8s:
+              retention: 24h
               resources:
                 requests:
-                  cpu: 200m 
-                  memory: 2Gi 
+                  cpu: 200m
+                  memory: 2Gi
     {{- if ne $infraCount 0 }}
-              nodeSelector: 
+              nodeSelector:
                 node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
@@ -68,62 +68,62 @@ spec:
                   insecureSkipVerify: false
     {{- end }}
 
-            alertmanagerMain: 
+            alertmanagerMain:
               enableUserAlertmanagerConfig: true
     {{- if ne $infraCount 0 }}
-              nodeSelector: 
+              nodeSelector:
                 node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
     {{- end }}
-              
+             
     {{- /* group all remaining components together since the only config is for infra nodes  */ -}}
     {{- if ne $infraCount 0 }}
             prometheusOperator:
-              nodeSelector: 
+              nodeSelector:
                 node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
-            kubeStateMetrics: 
-              nodeSelector: 
+            kubeStateMetrics:
+              nodeSelector:
                 node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
-            openshiftStateMetrics: 
-              nodeSelector: 
+            openshiftStateMetrics:
+              nodeSelector:
                 node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
             grafana:
-              nodeSelector: 
+              nodeSelector:
                 node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
-            telemeterClient: 
-              nodeSelector: 
+            telemeterClient:
+              nodeSelector:
                 node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
-            k8sPrometheusAdapter: 
-              nodeSelector: 
+            k8sPrometheusAdapter:
+              nodeSelector:
                 node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
             thanosQuerier:
-              nodeSelector: 
+              nodeSelector:
                 node-role.kubernetes.io/infra: ""
               tolerations:
               - operator: Exists
