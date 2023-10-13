@@ -39,6 +39,34 @@ spec:
                 product: {{ fromClusterClaim "product.open-cluster-management.io" }}
                 region: {{ fromClusterClaim "region" }}
                 site: {{ fromClusterClaim "site" }}
+                managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
+
+    {{- $isObservabilityEnabled := (lookup "cluster.open-cluster-management.io/v1alpha1" "ClusterClaim" "" "acm-observability") }}
+    {{- if and (not (empty $isObservabilityEnabled ))
+                (eq $isObservabilityEnabled.spec.value "enabled")  }}
+      {{- $hubInfo := (fromSecret "open-cluster-management-addon-observability" "hub-info-secret" "hub-info.yaml") | base64dec }}
+      {{- $amURL := "" }}
+      {{- range $v := (split "\n" $hubInfo)}}
+        {{- if (contains "alertmanager-endpoint" $v) }}
+          {{- $amURL = (split " " $v)._1  }}
+          {{- break }}
+        {{- end }}
+      {{- end }}
+              additionalAlertmanagerConfigs:
+              - apiVersion: v2
+                bearerToken:
+                  key: token
+                  name: observability-alertmanager-accessor
+                pathPrefix: /
+                scheme: https
+                staticConfigs:
+                - {{ $amURL }}
+                tlsConfig:
+                  ca:
+                    key: service-ca.crt
+                    name: hub-alertmanager-router-ca
+                  insecureSkipVerify: false
+    {{- end }}
 
             alertmanagerMain: 
               enableUserAlertmanagerConfig: true
