@@ -24,9 +24,14 @@ policies:
           - name: odf-operator-status
             kind: Policy
             compliance: "Compliant"
+      - path: noobaa-cert-secret.yml
+        extraDependencies: 
+          - name: odf-operator-status
+            kind: Policy
+            compliance: "Compliant"      
       - path: thanos-secret.yml
         extraDependencies: 
-          - name: acm-observe4
+          - name: acm-observe5
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: observability.yml
