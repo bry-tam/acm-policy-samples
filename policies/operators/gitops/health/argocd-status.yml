@@ -8,7 +8,7 @@ spec:
   severity: high
   object-templates-raw: |
     ## Get all the ArgoCD instances we are checking health for  
-    {{- range $argo := (lookup "argoproj.io/v1alpha1" "ArgoCD" "" "").items }}
+    {{- range $argo := (lookup "argoproj.io/v1beta1" "ArgoCD" "" "").items }}
       ## list all of the lookups for Argo deployments  
       {{- $selectors := list "app.kubernetes.io/name=argocd-applicationset-controller"
                             (printf "app.kubernetes.io/name=%s-dex-server" $argo.metadata.name)
@@ -21,7 +21,7 @@ spec:
       ## ensure ArgoCD is reporting healthy 
     - complianceType: musthave
       objectDefinition:
-        apiVersion: argoproj.io/v1alpha1
+        apiVersion: argoproj.io/v1beta1
         kind: ArgoCD
         metadata:
           namespace: {{ $argo.metadata.namespace }}
@@ -30,9 +30,8 @@ spec:
           notificationsController: Running
           applicationController: Running
           applicationSetController: Running
-          ssoConfig: Success
+          sso: Running
           repo: Running
-          dex: Running
           phase: Available
           redis: Running
 

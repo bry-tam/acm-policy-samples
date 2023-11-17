@@ -36,8 +36,16 @@ policies:
       - path: etcd-backup/
         complianceType: musthave
 
+  - name: ocp-monitoring
+    remediationAction: enforce
+    manifests:
+      - path: monitoring/
+        complianceType: musthave
+
   - name: infra-machineset
     remediationAction: enforce
+    policySets: 
+      - cluster-configs-infra
     manifests:
       - path: machinesets/
         complianceType: musthave
@@ -45,3 +53,7 @@ policySets:
   - name: cluster-configs
     placement:
       placementName: "env-bound-placement"
+      
+  - name: cluster-configs-infra
+    placement:
+      placementName: "ft-inframachines--enabled"

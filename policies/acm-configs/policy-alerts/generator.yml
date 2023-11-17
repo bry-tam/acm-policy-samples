@@ -6,8 +6,7 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
-  pruneObjectBehavior: DeleteIfCreated
-  ## turn off the default compliance annotations
+  ## set the default compliance annotations
   categories: []
   controls: []
   standards: []

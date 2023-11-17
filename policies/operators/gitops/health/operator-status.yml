@@ -8,7 +8,7 @@ spec:
   severity: high
   object-templates-raw: |
     {{- /* ## Get the subscription we are checking health for */ -}}
-    {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-operators" "openshift-gitops-operator") }}
+    {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-gitops-operator" "openshift-gitops-operator") }}
 
     {{- /* ## Ensure the Subscription is at latest known release status */ -}}
     - complianceType: musthave
@@ -16,14 +16,14 @@ spec:
         apiVersion: operators.coreos.com/v1alpha1
         kind: Subscription
         metadata:
-          namespace: openshift-operators
+          namespace: openshift-gitops-operator
           labels:
             acm-policy: gitops-operator
         status:
           state: AtLatestKnown
 
     {{- /* ## Ensure the operator deployment exists and has reached full pod health */ -}}
-    {{- $opDepList := list "gitops-operator-controller-manager" }}
+    {{- $opDepList := list "openshift-gitops-operator-controller-manager" }}
 
     {{- range $depName := $opDepList }}
       {{- $dep := (lookup "apps/v1" "Deployment" $sub.metadata.namespace $depName) }}
