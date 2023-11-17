@@ -13,9 +13,19 @@ placementBindingDefaults:
   name: "gitops-binding"
 
 policies:
+  - name: gitops-110-migration
+    remediationAction: inform
+    manifests:
+      - path: migrate-gitops-1.10.yml
+
   - name: gitops-operator
     remediationAction: enforce
+    dependencies:
+      - name: "gitops-110-migration"
+        compliance: "Compliant"
     manifests:
+      - path: operator-ns.yml
+      - path: operatorgroup.yml
       - path: argocd-ns.yml
       - path: subscription.yml
       - path: health/operator-status.yml

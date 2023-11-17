@@ -9,3 +9,4 @@ spec:
     metricObjectStorage:
       name: thanos-object-storage
       key: thanos.yaml
+      tlsSecretName: noobaa-cert

@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
   - set-clusterset-references.yml
+  - policy-defaults-patch.yml

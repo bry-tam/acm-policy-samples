@@ -21,5 +21,10 @@ resources:
   - ./cluster-version/
   - ./gatekeeper/
 
-commonAnnotations:
-  argocd.argoproj.io/compare-options: IgnoreExtraneous
+# commonAnnotations:
+#   argocd.argoproj.io/compare-options: IgnoreExtraneous
+
+# ## set common defaults for all policies
+# transformers:
+#   - ./kustomize-configs/policy-defaults-patch.yml
+

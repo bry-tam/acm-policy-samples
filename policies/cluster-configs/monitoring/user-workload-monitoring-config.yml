@@ -1,0 +1,76 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: user-workload-monitoring-config
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: user-workload-monitoring-config
+          namespace: openshift-user-workload-monitoring
+        data:
+          config.yaml: |
+            prometheus:
+              retention: 24h
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 2Gi
+    {{- if ne $infraCount 0 }}
+              nodeSelector:
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+    {{- end }}
+
+              externalLabels:
+                adpalert: "on"
+                env: {{ fromClusterClaim "env" }}
+                instance: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
+                product: {{ fromClusterClaim "product.open-cluster-management.io" }}
+                region: {{ fromClusterClaim "region" }}
+                site: {{ fromClusterClaim "site" }}
+                managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
+
+    {{- $isObservabilityEnabled := (lookup "cluster.open-cluster-management.io/v1alpha1" "ClusterClaim" "" "acm-observability") }}
+    {{- if and (not (empty $isObservabilityEnabled ))
+                (eq $isObservabilityEnabled.spec.value "enabled")  }}
+      {{- $hubInfo := (fromSecret "open-cluster-management-addon-observability" "hub-info-secret" "hub-info.yaml") | base64dec }}
+      {{- $amURL := "" }}
+      {{- range $v := (split "\n" $hubInfo)}}
+        {{- if (contains "alertmanager-endpoint" $v) }}
+          {{- $amURL = (split " " $v)._1  }}
+          {{- break }}
+        {{- end }}
+      {{- end }}
+              additionalAlertmanagerConfigs:
+              - apiVersion: v2
+                bearerToken:
+                  key: token
+                  name: observability-alertmanager-accessor
+                pathPrefix: /
+                scheme: https
+                staticConfigs:
+                - {{ $amURL }}
+                tlsConfig:
+                  ca:
+                    key: service-ca.crt
+                    name: hub-alertmanager-router-ca
+                  insecureSkipVerify: false
+    {{- end }}
+
+    {{- if ne $infraCount 0 }}
+            prometheusOperator:
+              nodeSelector:
+                  node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+    {{- end }}

@@ -23,7 +23,7 @@ spec:
           state: AtLatestKnown
 
     {{- /* ## Ensure the operator deployment exists and has reached full pod health */ -}}
-    {{- $opDepList := list "cluster-group-upgrades-controller-manager" }}
+    {{- $opDepList := list "cluster-group-upgrades-controller-manager-v2" }}
 
     {{- range $depName := $opDepList }}
       {{- $dep := (lookup "apps/v1" "Deployment" $sub.metadata.namespace $depName) }}

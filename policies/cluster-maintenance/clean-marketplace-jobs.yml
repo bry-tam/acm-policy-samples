@@ -6,17 +6,6 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    - complianceType: mustnothave
-      objectDefinition:
-        kind: ConfigMap
-        apiVersion: v1
-        metadata:
-          name: fake-policy-holder
-          namespace: default
-        data:
-          fake: holder so policy is not generated empty
-    {{- /*  */ -}}
-
     {{- /* we can only remove a job if it is not part of an existing installplan */ -}}
     {{- /* to find the list of protected jobs we need to get all of the subscriptions */ -}}
     {{- $jobsToKeep := "" }}
