@@ -20,10 +20,10 @@ policies:
       - path: operatorgroup.yml
       - path: subscription.yml
       - path: approve-installplan.yml
-        # extraDependencies: 
-        #   - name: loki-operator3
-        #     kind: ConfigurationPolicy
-        #     compliance: "Compliant"
+        extraDependencies: 
+          - name: loki-operator3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: health/operator-status.yml
         remediationAction: inform
 
