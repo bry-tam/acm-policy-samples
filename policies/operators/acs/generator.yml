@@ -1,0 +1,50 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-acs
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - acs-operator-hub
+placementBindingDefaults:
+  name: "acs-operator-binding"
+
+policies:
+  - name: acs-operator
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+      - acs-operator-managed
+    manifests:
+      - path: ns-rhacs-operator.yml
+      - path: ns-stackrox.yml
+      - path: operatorgroup.yml
+      - path: subscription.yml
+      - path: health/operator/operator-status.yml
+        remediationAction: inform
+
+
+  - name: acs-central
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: "acs-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: central/central.yml
+      - path: health/central/central-status.yml
+        remediationAction: inform
+
+
+policySets:
+  - name: acs-operator-hub
+    placement:  
+      placementName: "ft-acs--hub"
+
+  - name: acs-operator-managed
+    placement:
+      placementName: "ft-acs--managed"
