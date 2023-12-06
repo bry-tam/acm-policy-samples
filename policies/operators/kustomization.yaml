@@ -8,3 +8,4 @@ resources:
   - ./gatekeeper/
   - ./logging/
   - ./data-foundation/
+  - ./acs/
