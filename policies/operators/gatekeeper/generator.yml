@@ -26,6 +26,10 @@ policies:
       - path: gatekeeper.yml
       - path: health/gatekeeper-status.yml
         remediationAction: inform
+
+  - name: gatekeeper-violations
+    manifests:
+      - path: violation-events.yml
 policySets:
   - name: gatekeeper-operator
     placement:
