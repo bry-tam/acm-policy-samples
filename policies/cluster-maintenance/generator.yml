@@ -27,12 +27,6 @@ policies:
     manifests:
       - path: clean-groups.yml
 
-  - name: clean-marketplace-jobs
-    remediationAction: enforce
-    manifests:
-      - path: clean-marketplace-jobs.yml
-
-
 policySets:
   - name: cluster-maintenance
     placement:
