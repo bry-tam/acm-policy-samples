@@ -22,9 +22,24 @@ policies:
       - path: ns-rhacs-operator.yml
       - path: ns-stackrox.yml
       - path: operatorgroup.yml
+        extraDependencies: 
+          - name: acs-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: subscription.yml
+        extraDependencies: 
+          - name: acs-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: health/operator/operator-status.yml
         remediationAction: inform
+        extraDependencies: 
+          - name: acs-operator3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-operator4
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
 
 
   - name: acs-central
@@ -38,6 +53,9 @@ policies:
       - path: central/central.yml
       - path: health/central/central-status.yml
         remediationAction: inform
+          - name: acs-central
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
 
 
 policySets:
