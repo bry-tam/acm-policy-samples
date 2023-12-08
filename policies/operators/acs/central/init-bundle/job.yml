@@ -60,7 +60,7 @@ spec:
                 echo "bundle name is $bundle_name bundle id $bundle_id"
                 echo "-------------------------"
 
-                if [ ${bundle_id} ne "" ];then
+                if [ "${bundle_id}" != "" ];then
                 echo "executing revoke command"
                 export REVOKE={\"ids\":[\"$bundle_id\"],\"confirmImpactedClustersIds\":[]}
                 curl -k -o /tmp/bundle.json -X PATCH -u "admin:$PASSWORD" -H "Content-Type: application/json" --data $REVOKE https://central/v1/cluster-init/init-bundles/revoke
