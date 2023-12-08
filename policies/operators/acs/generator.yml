@@ -70,7 +70,6 @@ policies:
       - path: central/init-bundle/role.yml
       - path: central/init-bundle/rolebinding.yml
       - path: central/init-bundle/job.yml
-        complianceType: mustonlyhave
         extraDependencies: 
           - name: acs-central-init-bundle
             kind: ConfigurationPolicy

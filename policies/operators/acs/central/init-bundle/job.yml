@@ -7,8 +7,6 @@ metadata:
   labels:
     init-bundle: central
 spec:
-  selector:
-    init-bundle: central
   template:
     metadata:
       labels:
