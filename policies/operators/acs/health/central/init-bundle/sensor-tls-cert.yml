@@ -6,7 +6,7 @@ spec:
   namespaceSelector:
     include: ["stackrox"]
   labelSelector:
-    init-bundle: sensor-tls
+    certificate_key_name: sensor-cert.pem
   remediationAction: inform
   severity: high
-  minimumDuration: 8736h
+  maximumDuration: 1h

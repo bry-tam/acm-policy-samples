@@ -103,7 +103,19 @@ policies:
       - path: central/init-bundle/expired-admission-control-tls.yml
       - path: central/init-bundle/expired-collector-tls.yml
       - path: central/init-bundle/expired-sensor-tls.yml
-      
+      - path: central/init-bundle/job.yml
+        extraDependencies: 
+          - name: acs-central-init-bundle-cert
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-central-init-bundle-cert2
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-central-init-bundle-cert3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
 policySets:
   - name: acs-operator-hub
     placement:  
