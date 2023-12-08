@@ -19,6 +19,20 @@ resources:
   ## include all policies
   - ../../policies/
 
+## Set policy defaults for evaluation interval and prune behavior
+## The transformer above includes these values in the final policy
+generatorOptions:
+ disableNameSuffixHash: true
+
+configMapGenerator:
+- name: policy-defaults
+  literals:
+  - evaluationInterval-compliant=30s
+  - evaluationInterval-noncompliant=30s
+  - pruneObjectBehavior=None
+  - copyPolicyMetadata=false
+
+
 # patches:
   ## Add the ClusterSet that should be managed as part of this environment.  This patch will update the placments and ManagedClusterSetbinding
   # - target:
