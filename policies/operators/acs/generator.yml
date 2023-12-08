@@ -59,6 +59,7 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
+
   - name: acs-central-init-bundle
     remediationAction: enforce
     policySets:
@@ -82,6 +83,7 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
+
   - name: acs-central-init-bundle-cert
     remediationAction: enforce
     policySets:
@@ -93,6 +95,12 @@ policies:
       - path: health/central/init-bundle/sensor-tls-cert.yml
       - path: central/init-bundle/expired-sensor-tls.yml
         remediationAction: inform
+      - path: sensor/securedcluster.yml
+        extraDependencies: 
+          - name: acs-central-init-bundle-cert2
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
 
   - name: acs-central-expired-certs
     remediationAction: enforce
@@ -118,6 +126,37 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
+
+  - name: acs-sensor-sync-certs
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: acs-central-init-bundle-cert
+        compliance: "Compliant"
+    manifests:
+      - path: sensor/sensor-sync-tls-certs.yml
+
+  
+  - name: acs-sensor
+    remediationAction: enforce
+    policySets:
+      - acs-operator-managed
+    manifests:
+      - path: sensor/propagate-admission-control-tls.yml
+      - path: sensor/propagate-collector-tls.yml
+      - path: sensor/propagate-sensor-tls.yml
+      - path: sensor/securedcluster.yml
+        extraDependencies: 
+          - name: acs-sensor
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-sensor2
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-sensor3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
 
 policySets:
   - name: acs-operator-hub
