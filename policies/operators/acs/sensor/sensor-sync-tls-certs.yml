@@ -3,7 +3,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: ft-flag-placement
+  name: sensor-sync-tls-certs
 spec:
   remediationAction: enforce
   severity: low
