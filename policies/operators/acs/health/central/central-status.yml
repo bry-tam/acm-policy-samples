@@ -2,13 +2,13 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: acs-operator-status
+  name: acs-central-status
 spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
     {{- /* ## Ensure the central deployments exists and has reached full pod health */ -}}
-    {{- $opDepList := list "central" "scanner-db" "scanner" }}
+    {{- $opDepList := list "central" "central-db" "scanner" "scanner-db" }}
 
     {{- range $depName := $opDepList }}
       {{- $dep := (lookup "apps/v1" "Deployment" "stackrox" $depName) }}
@@ -21,8 +21,18 @@ spec:
       {{- if not $dep }}
           name: {{ $depName }}
       {{- else }}
+      ## when the deployment exists the compliance will be determined by
+      ## the labels, spec.selector.matchLabels and the expected healthy status
           labels:
-            olm.owner: '{{ $sub.status.currentCSV }}'
+        {{- range $k, $v := $dep.metadata.labels }}
+            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+        {{- end }}
+        spec:
+          selector:
+            matchLabels:
+            {{- range $k, $v := $dep.spec.selector.matchLabels }}
+              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+            {{- end }}
         status:
           replicas: {{ $dep.spec.replicas }}
           updatedReplicas: {{ $dep.spec.replicas }}
