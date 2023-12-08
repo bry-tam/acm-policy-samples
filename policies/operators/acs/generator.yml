@@ -47,7 +47,7 @@ policies:
     policySets:
       - acs-operator-hub
     dependencies:
-      - name: "acs-operator"
+      - name: acs-operator
         compliance: "Compliant"
     manifests:
       - path: central/central.yml
@@ -58,6 +58,29 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
+  - name: acs-central-init-bundle
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: acs-central
+        compliance: "Compliant"
+    manifests:
+      - path: central/init-bundle/serviceaccount.yml
+      - path: central/init-bundle/role.yml
+      - path: central/init-bundle/rolebinding.yml
+      - path: central/init-bundle/job.yml
+        remediationAction: 
+        extraDependencies: 
+          - name: acs-central-init-bundle
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-central-init-bundle2
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-central-init-bundle3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
 
 policySets:
   - name: acs-operator-hub
