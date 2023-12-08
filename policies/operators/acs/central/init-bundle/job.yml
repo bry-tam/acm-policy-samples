@@ -4,9 +4,13 @@ kind: Job
 metadata:
   name: create-cluster-init-bundle
   namespace: stackrox
+  labels:
+    init-bundle: central
 spec:
   template:
     metadata:
+      labels:
+        init-bundle: central
     spec:
       containers:
       - command:
