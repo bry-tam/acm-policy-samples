@@ -9,7 +9,7 @@ spec:
   severity: low
   object-templates-raw: |
     {{- /* Gather all Policies from the hub cluster that propagate the sensor-tls certs */ -}}
-    {{- range $plcy := (lookup "policy.open-cluster-management.io/v1" "Policy" "" "acs-sensor-propagate-certs").items }}
+    {{- range $plcy := (lookup "policy.open-cluster-management.io/v1" "Policy" "" "acs-sensor").items }}
     - complianceType: mustonlyhave
       objectDefinition:
         apiVersion: v1
