@@ -107,13 +107,13 @@ policies:
       - path: central/init-bundle/expired-sensor-tls.yml
       - path: central/init-bundle/job.yml
         extraDependencies: 
-          - name: acs-central-init-bundle-cert
+          - name: acs-central-init-bundle-certs
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-central-init-bundle-cert2
+          - name: acs-central-init-bundle-certs2
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-central-init-bundle-cert3
+          - name: acs-central-init-bundle-certs3
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
