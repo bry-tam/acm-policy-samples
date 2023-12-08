@@ -52,7 +52,7 @@ spec:
             cat /tmp/bundle.json | python3 -c "import sys, json; print(json.load(sys.stdin)['kubectlBundle'])" | ${BASE} -d | oc apply -f -
             ACS_HOST="$(oc get route central -o custom-columns=HOST:.spec.host --no-headers):443"
             oc patch secret sensor-tls --type='json' -p="[{\"op\" : \"add\", \"path\" : \"/data/acs-host\", \"value\" : \"$(echo $ACS_HOST | ${BASE})\"}]"
-
+            oc label secret sensor-tls -n stackrox init-bundle=sensor-tls
             echo "ACS Cluster init bundle generated and applied"
           fi
         env:

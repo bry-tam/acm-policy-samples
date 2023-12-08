@@ -82,6 +82,16 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
+  - name: acs-central-init-bundle-cert
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: acs-central-init-bundle
+        compliance: "Compliant"
+    manifests:
+      - path: health/central/init-bundle/sensor-tls-cert.yml
+
 policySets:
   - name: acs-operator-hub
     placement:  
