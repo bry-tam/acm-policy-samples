@@ -15,8 +15,8 @@ spec:
     replicas: 3
     timeoutSeconds: 20
     listenOnEvents: true
-  centralEndpoint: {{ fromSecret "stackrox" "sensor-tls" "acs-host" | base64dec }}
-  clusterName: {{hub .manageClusterName hub}}
+  centralEndpoint: '{{ fromSecret "stackrox" "sensor-tls" "acs-host" | base64dec }}'
+  clusterName: '{{hub .manageClusterName hub}}'
   monitoring:
     openshift:
       enabled: true
