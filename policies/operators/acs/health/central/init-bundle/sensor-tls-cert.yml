@@ -9,4 +9,4 @@ spec:
     certificate_key_name: sensor-cert.pem
   remediationAction: inform
   severity: high
-  maximumDuration: 1h
+  minimumDuration: 526310m
