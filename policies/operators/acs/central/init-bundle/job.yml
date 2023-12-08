@@ -44,7 +44,8 @@ spec:
             attempt_counter=0
             max_attempts=5
             echo "Configuring cluster-init bundle"
-            export DATA={\"name\":\"local-cluster\"}
+            bundle_name=local-cluster-$(date '+%Y-%m-%d')
+            export DATA={\"name\":\"$bundle_name\"}
             until (curl -k -o /tmp/bundle.json -X POST -u "admin:$PASSWORD" -H "Content-Type: application/json" --data $DATA --fail https://central/v1/cluster-init/init-bundles); do
                 if [ ${attempt_counter} -eq ${max_attempts} ];then
                   echo "Max attempts to create bundle reached"
@@ -52,8 +53,9 @@ spec:
                 fi
 
                 echo attempting to delete the bundle
-                curl -k -X DELETE -u "admin:$PASSWORD" -H "Content-Type: application/json" --data $DATA https://central/v1/cluster-init/init-bundles
-
+                curl -o /tmp/find_bundle.json  -k -X GET -u "admin:$PASSWORD" -H "Content-Type: application/json" https://central/v1/cluster-init/init-bundles
+                /tmp/find_bundle.json
+                
                 printf '.'
                 attempt_counter=$(($attempt_counter+1))
                 echo "Made create bundle attempt $attempt_counter, waiting..."
