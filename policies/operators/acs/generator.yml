@@ -90,6 +90,8 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: health/central/init-bundle/sensor-tls-cert.yml
+      - path: central/init-bundle/expired-sensor-tls.yml
+        remediationAction: inform
 
   - name: acs-central-expired-certs
     remediationAction: enforce
