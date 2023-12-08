@@ -52,7 +52,8 @@ policies:
     manifests:
       - path: central/central.yml
       - path: health/central/central-status.yml
-        remediationAction: inform
+        remediationAction: 
+        extraDependencies: 
           - name: acs-central
             kind: ConfigurationPolicy
             compliance: "Compliant"
