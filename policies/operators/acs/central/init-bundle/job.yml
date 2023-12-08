@@ -54,7 +54,7 @@ spec:
 
                 echo "Check to see if there is an existing bundle that can be revoked"
                 curl -o /tmp/find_bundle.json  -k -X GET -u "admin:$PASSWORD" -H "Content-Type: application/json" https://central/v1/cluster-init/init-bundles
-                bundle_id=$(cat /tmp/find_bundle.json | python -c "import sys, json; result = [x for x in json.load(sys.stdin)[\"items\"] if x[\"name\"]==\"$bundle_name\"]; print(result[0][\"id\"])"
+                bundle_id=$(cat /tmp/find_bundle.json | python -c "import sys, json; result = [x for x in json.load(sys.stdin)[\"items\"] if x[\"name\"]==\"$bundle_name\"]; print(result[0][\"id\"])")
 
                 echo "-------------------------"
                 echo "bundle name is $bundle_name bundle id $bundle_id"
