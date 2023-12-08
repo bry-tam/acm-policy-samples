@@ -2,10 +2,15 @@
 apiVersion: platform.stackrox.io/v1alpha1
 kind: Central
 metadata:
-  namespace: stackrox
   name: stackrox-central-services
+  namespace: stackrox
 spec:
+  monitoring:
+    openshift:
+      enabled: true
   central:
+    notifierSecretsEncryption:
+      enabled: false
     exposure:
       loadBalancer:
         enabled: false
@@ -14,6 +19,13 @@ spec:
         enabled: false
       route:
         enabled: true
+    telemetry:
+      enabled: true
+    db:
+      isEnabled: Default
+      persistence:
+        persistentVolumeClaim:
+          claimName: central-db
     persistence:
       persistentVolumeClaim:
         claimName: stackrox-db
@@ -25,5 +37,4 @@ spec:
         autoScaling: Enabled
         maxReplicas: 5
         minReplicas: 2
-        replicas: 2
-    scannerComponent: Enabled
+        replicas: 3
