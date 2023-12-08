@@ -52,7 +52,7 @@ policies:
     manifests:
       - path: central/central.yml
       - path: health/central/central-status.yml
-        remediationAction: 
+        remediationAction: inform
         extraDependencies: 
           - name: acs-central
             kind: ConfigurationPolicy
@@ -70,7 +70,7 @@ policies:
       - path: central/init-bundle/role.yml
       - path: central/init-bundle/rolebinding.yml
       - path: central/init-bundle/job.yml
-        remediationAction: 
+        complianceType: mustonlyhave
         extraDependencies: 
           - name: acs-central-init-bundle
             kind: ConfigurationPolicy
