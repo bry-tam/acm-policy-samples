@@ -54,8 +54,10 @@ spec:
 
                 echo attempting to delete the bundle
                 curl -o /tmp/find_bundle.json  -k -X GET -u "admin:$PASSWORD" -H "Content-Type: application/json" https://central/v1/cluster-init/init-bundles
-                /tmp/find_bundle.json
-                
+                echo "-------------------------"
+                cat /tmp/find_bundle.json
+                echo "-------------------------"
+
                 printf '.'
                 attempt_counter=$(($attempt_counter+1))
                 echo "Made create bundle attempt $attempt_counter, waiting..."
