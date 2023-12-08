@@ -91,6 +91,19 @@ policies:
     manifests:
       - path: health/central/init-bundle/sensor-tls-cert.yml
 
+  - name: acs-central-expired-certs
+    remediationAction: enforce
+    complianceType: mustnothave
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: acs-central-init-bundle-cert
+        compliance: "NonCompliant"
+    manifests:
+      - path: central/init-bundle/expired-admission-control-tls.yml
+      - path: central/init-bundle/expired-collector-tls.yml
+      - path: central/init-bundle/expired-sensor-tls.yml
+      
 policySets:
   - name: acs-operator-hub
     placement:  
