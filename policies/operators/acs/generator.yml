@@ -51,6 +51,7 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: central/central.yml
+      - path: central/consolelink.yml
       - path: health/central/central-status.yml
         remediationAction: inform
         extraDependencies: 
