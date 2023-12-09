@@ -9,11 +9,14 @@ spec:
   severity: low
   object-templates-raw: |
     {{- /* Gather all Policies from the hub cluster that propagate the sensor-tls certs */ -}}
-    {{- range $plcy := (lookup "policy.open-cluster-management.io/v1" "Policy" "" "acs-sensor").items }}
+    {{- range $plcy := (lookup "policy.open-cluster-management.io/v1" "Policy" "" "" "!policy.open-cluster-management.io/root-policy").items }}
+      {{- if not (eq $plcy.metadata.name "acs-sensor") }}
+        {{- continue }}
+      {{- end }}
     - complianceType: mustonlyhave
       objectDefinition:
         apiVersion: v1
-        data: {{ copySecretData "stackrox" "admission-control-tls" }}
+        data: '{{ copySecretData "stackrox" "admission-control-tls" }}'
         kind: Secret
         metadata:
           labels:
@@ -25,7 +28,7 @@ spec:
     - complianceType: mustonlyhave
       objectDefinition:
         apiVersion: v1
-        data: {{ copySecretData "stackrox" "collector-tls" }}
+        data: '{{ copySecretData "stackrox" "collector-tls" }}'
         kind: Secret
         metadata:
           labels:
@@ -37,7 +40,7 @@ spec:
     - complianceType: mustonlyhave
       objectDefinition:
         apiVersion: v1
-        data: {{ copySecretData "stackrox" "sensor-tls" }}
+        data: '{{ copySecretData "stackrox" "sensor-tls" }}'
         kind: Secret
         metadata:
           labels:
