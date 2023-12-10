@@ -30,10 +30,18 @@ policies:
       - path: health/operator-status.yml
         remediationAction: InformOnly
         extraDependencies: 
-          - name: acm-operator3
+          - name: acm-operator-subscription
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
+
+  - name: acm-multiclusterhub
+    remediationAction: enforce
+    dependencies:
+      - name: acm-operator
+        compliance: "Compliant"
+    manifests:
+      - path: multiclusterhub.yml
 
 policySets:
   - name: acm-operator
