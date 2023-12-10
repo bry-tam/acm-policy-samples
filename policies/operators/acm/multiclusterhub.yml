@@ -17,6 +17,10 @@ spec:
           namespace: open-cluster-management
         spec:
           disableHubSelfManagement: {{ (eq (fromClusterClaim "acm-hub") "active") | ternary false true }}
+          overrides:
+            components:
+            - name: managedserviceaccount-preview
+              enabled: true
     {{- if ne $infraCount 0 }}
           nodeSelector:
             node-role.kubernetes.io/infra: ""
