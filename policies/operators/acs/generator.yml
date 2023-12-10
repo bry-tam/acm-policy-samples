@@ -32,7 +32,7 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: health/operator/operator-status.yml
-        remediationAction: inform
+        remediationAction: InformOnly
         extraDependencies: 
           - name: acs-operator3
             kind: ConfigurationPolicy
@@ -53,7 +53,7 @@ policies:
       - path: central/central.yml
       - path: central/consolelink.yml
       - path: health/central/central-status.yml
-        remediationAction: inform
+        remediationAction: InformOnly
         extraDependencies: 
           - name: acs-central
             kind: ConfigurationPolicy
@@ -94,7 +94,7 @@ policies:
     manifests:
       - path: health/central/init-bundle/sensor-tls-cert.yml
       - path: central/init-bundle/expired-sensor-tls.yml
-        remediationAction: inform
+        remediationAction: InformOnly
       - path: sensor/securedcluster.yml
         extraDependencies: 
           - name: acs-central-init-bundle-cert2

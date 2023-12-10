@@ -31,7 +31,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: health/operator/operator-status.yml
-        remediationAction: inform
+        remediationAction: InformOnly
         extraDependencies: 
           - name: acs-operator3
             kind: ConfigurationPolicy
@@ -57,7 +57,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
       - path: central/central.yml
       - path: central/consolelink.yml
       - path: health/central/central-status.yml
-        remediationAction: inform
+        remediationAction: InformOnly
         extraDependencies: 
           - name: acs-central
             kind: ConfigurationPolicy
@@ -108,7 +108,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
     manifests:
       - path: health/central/init-bundle/sensor-tls-cert.yml
       - path: central/init-bundle/expired-sensor-tls.yml
-        remediationAction: inform
+        remediationAction: InformOnly
       - path: sensor/securedcluster.yml
         extraDependencies: 
           - name: acs-central-init-bundle-cert2

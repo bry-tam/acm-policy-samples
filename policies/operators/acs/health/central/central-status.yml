@@ -4,7 +4,7 @@ kind: ConfigurationPolicy
 metadata:
   name: acs-central-status
 spec:
-  remediationAction: inform
+  remediationAction: InformOnly
   severity: high
   object-templates-raw: |
     {{- /* ## Ensure the central deployments exists and has reached full pod health */ -}}
