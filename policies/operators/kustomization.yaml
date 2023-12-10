@@ -9,3 +9,4 @@ resources:
   - ./logging/
   - ./data-foundation/
   - ./acs/
+  - ./acm/
