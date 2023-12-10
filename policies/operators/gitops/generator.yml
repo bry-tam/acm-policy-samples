@@ -98,5 +98,5 @@ policySets:
   
   - name: gitops-acm-hub
     placement:  
-      placementName: "env-bound-hub-placement"
+      placementName: "ft-acm-hub"
 
