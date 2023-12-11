@@ -24,7 +24,7 @@ policies:
       - path: verify-deprecatedapi/verifydeprecatedapi-1.16.yml
         extraDependencies: 
           - name: verifydeprecatedapi
-            kind: ConfigurationPolicy
+            kind: ConstraintTemplate
             compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.22.yml
         extraDependencies: 
