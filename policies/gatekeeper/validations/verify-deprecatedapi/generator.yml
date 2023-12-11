@@ -24,6 +24,7 @@ policies:
       - path: verify-deprecatedapi/verifydeprecatedapi-1.16.yml
         extraDependencies: 
           - name: verifydeprecatedapi
+            apiVersion: templates.gatekeeper.sh/v1beta1
             kind: ConstraintTemplate
             compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.22.yml
