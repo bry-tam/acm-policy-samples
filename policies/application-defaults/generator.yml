@@ -21,6 +21,8 @@ policies:
         - default*
         - multicluster-engine
         - hive
+        - stackrox
+        - "*-operator"
       include:
         - "*"
     remediationAction: enforce

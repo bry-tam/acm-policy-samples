@@ -1,0 +1,168 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-acs
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - acs-operator-hub
+placementBindingDefaults:
+  name: "acs-operator-binding"
+
+policies:
+  - name: acs-operator
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+      - acs-operator-managed
+    manifests:
+      - path: ns-rhacs-operator.yml
+      - path: ns-stackrox.yml
+      - path: operatorgroup.yml
+        extraDependencies: 
+          - name: acs-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: subscription.yml
+        extraDependencies: 
+          - name: acs-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: health/operator/operator-status.yml
+        remediationAction: InformOnly
+        extraDependencies: 
+          - name: acs-operator3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-operator4
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+  - name: acs-central
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: acs-operator
+        compliance: "Compliant"
+    manifests:
+      - path: central/central.yml
+      - path: central/consolelink.yml
+      - path: health/central/central-status.yml
+        remediationAction: InformOnly
+        extraDependencies: 
+          - name: acs-central
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+  - name: acs-central-init-bundle
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: acs-central
+        compliance: "Compliant"
+    manifests:
+      - path: central/init-bundle/serviceaccount.yml
+      - path: central/init-bundle/role.yml
+      - path: central/init-bundle/rolebinding.yml
+      - path: central/init-bundle/job.yml
+        extraDependencies: 
+          - name: acs-central-init-bundle
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-central-init-bundle2
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-central-init-bundle3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+  - name: acs-central-init-bundle-cert
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: acs-central-init-bundle
+        compliance: "Compliant"
+    manifests:
+      - path: health/central/init-bundle/sensor-tls-cert.yml
+      - path: central/init-bundle/expired-sensor-tls.yml
+        remediationAction: InformOnly
+      - path: sensor/securedcluster.yml
+        extraDependencies: 
+          - name: acs-central-init-bundle-cert2
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+  - name: acs-central-expired-certs
+    remediationAction: enforce
+    complianceType: mustnothave
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: acs-central-init-bundle-cert
+        compliance: "NonCompliant"
+    manifests:
+      - path: central/init-bundle/expired-admission-control-tls.yml
+      - path: central/init-bundle/expired-collector-tls.yml
+      - path: central/init-bundle/expired-sensor-tls.yml
+      - path: central/init-bundle/job.yml
+        extraDependencies: 
+          - name: acs-central-expired-certs
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-central-expired-certs2
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-central-expired-certs3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+  - name: acs-sensor-sync-certs
+    remediationAction: enforce
+    policySets:
+      - acs-operator-hub
+    dependencies:
+      - name: acs-central-init-bundle-cert
+        compliance: "Compliant"
+    manifests:
+      - path: sensor/sensor-sync-tls-certs.yml
+
+  
+  - name: acs-sensor
+    remediationAction: enforce
+    policySets:
+      - acs-operator-managed
+    manifests:
+      - path: sensor/propagate-admission-control-tls.yml
+      - path: sensor/propagate-collector-tls.yml
+      - path: sensor/propagate-sensor-tls.yml
+      - path: sensor/securedcluster.yml
+        extraDependencies: 
+          - name: acs-sensor
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-sensor2
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: acs-sensor3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: acs-operator-hub
+    placement:  
+      placementName: "ft-acs--hub"
+
+  - name: acs-operator-managed
+    placement:
+      placementName: "ft-acs--managed"

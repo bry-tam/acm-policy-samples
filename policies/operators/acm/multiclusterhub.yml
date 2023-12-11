@@ -1,0 +1,30 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: acm-operator-multiclusterhub
+spec:
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: operator.open-cluster-management.io/v1
+        kind: MultiClusterHub
+        metadata:
+          name: multiclusterhub
+          namespace: open-cluster-management
+        spec:
+          disableHubSelfManagement: {{ (eq (fromClusterClaim "acm-hub") "active") | ternary false true }}
+          overrides:
+            components:
+            - name: managedserviceaccount-preview
+              enabled: true
+    {{- if ne $infraCount 0 }}
+          nodeSelector:
+            node-role.kubernetes.io/infra: ""
+          tolerations:
+          - operator: Exists
+            key: node-role.kubernetes.io/infra
+    {{- end }}

@@ -30,8 +30,8 @@ generatorOptions:
 configMapGenerator:
 - name: policy-defaults
   literals:
-  - evaluationInterval-compliant=5m
-  - evaluationInterval-noncompliant=2m
+  - evaluationInterval-compliant=30s
+  - evaluationInterval-noncompliant=30s
   - pruneObjectBehavior=None
   - copyPolicyMetadata=false
 

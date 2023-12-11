@@ -24,13 +24,10 @@ policies:
   ## uncomment to showcase TALM
   # - name: ocp-upgrade
   #   remediationAction: inform
-  #   dependencies:
-  #   - name: "talm-operator"
-  #     compliance: "Compliant"
   #   manifests:
   #     - path: clusterversion.yml
 
 policySets:
   - name: cluster-version
     placement:
-      placementName: "env-bound-hub-placement"
+      placementName: "env-bound-placement"

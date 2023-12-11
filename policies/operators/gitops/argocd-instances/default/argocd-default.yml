@@ -5,6 +5,8 @@ metadata:
   namespace: open-cluster-management-gitops
 spec:
   # Start default openshift-gitops ArgoCD
+  disableAdmin: true
+  resourceTrackingMethod: annotation
   server:
     autoscale:
       enabled: false

@@ -27,4 +27,4 @@ policies:
 policySets:
   - name: acm-alerts-placements
     placement:
-      placementName: "env-bound-hub-placement"
+      placementName: "ft-acm-hub--active"

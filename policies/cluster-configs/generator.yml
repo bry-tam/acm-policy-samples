@@ -49,6 +49,8 @@ policies:
     manifests:
       - path: machinesets/
         complianceType: musthave
+
+        
 policySets:
   - name: cluster-configs
     placement:

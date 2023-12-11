@@ -1,0 +1,12 @@
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: acs
+spec:
+  applicationMenu:
+    section: Red Hat applications
+    imageURL: 'https://upload.wikimedia.org/wikipedia/commons/3/3a/OpenShift-LogoType.svg'
+  href: https://{{ (lookup "route.openshift.io/v1" "Route" "stackrox" "central").spec.host }}
+  location: ApplicationMenu
+  text: 'Red Hat Advanced Cluster Security for Kubernetes'
