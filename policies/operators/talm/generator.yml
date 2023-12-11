@@ -23,5 +23,5 @@ policies:
 policySets:
   - name: talm-operator
     placement:
-      placementName: "env-bound-hub-placement"
+      placementName: "ft-acm-hub"
 

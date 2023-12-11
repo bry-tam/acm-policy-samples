@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-msa
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - acm-managed-sa
+placementBindingDefaults:
+  name: "acm-managed-sa"
+
+policies:
+  - name: enable-managed-serviceaccount
+    remediationAction: enforce
+    manifests:
+      - path: managedserviceaccount.yml
+
+policySets:
+  - name: acm-managed-sa
+    placement:
+      placementName: "ft-acm-hub--active"

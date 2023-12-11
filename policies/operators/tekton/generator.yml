@@ -51,5 +51,5 @@ policies:
 policySets:
   - name: tekton-operators
     placement:
-      placementName: "dev-bound-placement"
+      placementName: "ft-tekton--enabled"
 

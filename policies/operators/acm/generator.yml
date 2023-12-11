@@ -1,0 +1,49 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-acm
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - acm-operator
+placementBindingDefaults:
+  name: "acm-operator-binding"
+
+policies:
+  - name: acm-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorgroup.yml
+        extraDependencies: 
+          - name: acm-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: subscription.yml
+        extraDependencies: 
+          - name: acm-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: health/operator-status.yml
+        remediationAction: InformOnly
+        extraDependencies: 
+          - name: acm-operator-subscription
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+  - name: acm-multiclusterhub
+    remediationAction: enforce
+    dependencies:
+      - name: acm-operator
+        compliance: "Compliant"
+    manifests:
+      - path: multiclusterhub.yml
+
+policySets:
+  - name: acm-operator
+    placement:  
+      placementName: "ft-acm-hub"

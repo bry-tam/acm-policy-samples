@@ -6,6 +6,9 @@ metadata:
 spec:
   clusterSets:
     - TOBESET
+  tolerations:
+    - key: "cluster.open-cluster-management.io/unreachable"
+      operator: Exists
   predicates:
     - requiredClusterSelector:
         labelSelector:

@@ -35,8 +35,10 @@ spec:
                       values:
                         - OpenShift
                     - key: {{ $feature._0 }}
-                      operator: In
+                      operator: {{ (empty $feature._1) | ternary "Exists" "In" }}
+        {{- if not (empty $feature._1) }}
                       values:
                         - {{ $feature._1 }}
+        {{- end }}
       {{- end }}
     {{- end }}
