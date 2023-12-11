@@ -22,36 +22,36 @@ policies:
     manifests:
       - path: verify-deprecatedapi/constrainttemplate.yml
       - path: verify-deprecatedapi/verifydeprecatedapi-1.16.yml
-        extraDependencies: 
-          - name: verifydeprecatedapi
-            apiVersion: templates.gatekeeper.sh/v1beta1
-            kind: ConstraintTemplate
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: verifydeprecatedapi
+        #     apiVersion: templates.gatekeeper.sh/v1beta1
+        #     kind: ConstraintTemplate
+        #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.22.yml
-        extraDependencies: 
-          - name: verifydeprecatedapi
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: verifydeprecatedapi
+        #     kind: ConfigurationPolicy
+        #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.25.yml
-        extraDependencies: 
-          - name: verifydeprecatedapi
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: verifydeprecatedapi
+        #     kind: ConfigurationPolicy
+        #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.26.yml
-        extraDependencies: 
-          - name: verifydeprecatedapi
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: verifydeprecatedapi
+        #     kind: ConfigurationPolicy
+        #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.27.yml
-        extraDependencies: 
-          - name: verifydeprecatedapi
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: verifydeprecatedapi
+        #     kind: ConfigurationPolicy
+        #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.29.yml
-        extraDependencies: 
-          - name: verifydeprecatedapi
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        # extraDependencies: 
+        #   - name: verifydeprecatedapi
+        #     kind: ConfigurationPolicy
+        #     compliance: "Compliant"
 
 
 policySets:
