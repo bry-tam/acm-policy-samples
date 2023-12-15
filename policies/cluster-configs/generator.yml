@@ -17,39 +17,29 @@ placementBindingDefaults:
 
 policies:
   - name: acm-clusterclaims
-    remediationAction: enforce
     manifests:
       - path: clusterclaims/
-        complianceType: musthave
 
   - name: ocp-ingress-infra
-    remediationAction: enforce
     manifests:
       - path: ingress/
-        complianceType: musthave
 
   - name: etcd-backup
-    remediationAction: enforce
     configurationPolicyAnnotations:  
       policy.open-cluster-management.io/disable-templates: "true"
     manifests:
       - path: etcd-backup/
-        complianceType: musthave
 
   - name: ocp-monitoring
-    remediationAction: enforce
     manifests:
       - path: monitoring/
-        complianceType: musthave
 
-  - name: infra-machineset
-    remediationAction: enforce
+  - name: infra-nodes
     policySets: 
       - cluster-configs-infra
     manifests:
-      - path: machinesets/
-        complianceType: musthave
-
+      - path: machinesets/infra-machineset.yml
+      - path: machineconfigpools/infra.yml
         
 policySets:
   - name: cluster-configs

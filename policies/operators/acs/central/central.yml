@@ -9,8 +9,6 @@ spec:
     openshift:
       enabled: true
   central:
-    notifierSecretsEncryption:
-      enabled: false
     exposure:
       loadBalancer:
         enabled: false

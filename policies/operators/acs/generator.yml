@@ -110,6 +110,8 @@ policies:
     dependencies:
       - name: acs-central-init-bundle-cert
         compliance: "NonCompliant"
+    ## ignorePending prevents the NotCompliant dependency from causing this policy to always report as pending
+    ignorePending: true
     manifests:
       - path: central/init-bundle/expired-admission-control-tls.yml
       - path: central/init-bundle/expired-collector-tls.yml

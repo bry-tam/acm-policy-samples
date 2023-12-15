@@ -1,0 +1,15 @@
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfigPool
+metadata:
+  name: storage
+spec:
+  machineConfigSelector:
+    matchExpressions:
+      - {key: machineconfiguration.openshift.io/role, operator: In, values: [worker,storage]}
+  nodeSelector:
+    matchExpressions:
+      - key: node-role.kubernetes.io/infra
+        operator: Exists
+      - key: node-role.kubernetes.io/storage
+        operator: Exists
