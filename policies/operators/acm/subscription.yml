@@ -26,8 +26,7 @@ spec:
     {{- if ne $infraCount 0 }}
           config:
             nodeSelector: 
-              matchLabels:
-                node-role.kubernetes.io/infra: ""
+              node-role.kubernetes.io/infra: ""
             tolerations:
             - operator: Exists
               key: node-role.kubernetes.io/infra
