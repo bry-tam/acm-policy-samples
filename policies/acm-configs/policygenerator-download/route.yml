@@ -7,6 +7,7 @@ metadata:
   labels:
     app: policygen-downloader
 spec:
+  host: 'policygen-downloader.{{ (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain }}'
   to:
     kind: Service
     name: policygen-downloader
