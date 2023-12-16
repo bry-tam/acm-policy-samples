@@ -1,0 +1,33 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: policygen-downloader
+  namespace: open-cluster-management-downloader
+  labels:
+    app: policygen-downloader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: policygen-downloader
+  template:
+    metadata:
+      labels:
+        app: policygen-downloader
+        deployment: policygen-downloader
+    spec:
+      containers:
+        - name: policygen-downloader
+          image: registry.access.redhat.com/ubi8/httpd-24:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources: {}
+          imagePullPolicy: Always
+  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10

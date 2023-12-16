@@ -19,6 +19,9 @@ policies:
   - name: acm-policygenerator-downloader
     manifests:
       - path: namespace.yml
+      - path: deployment.yml
+      - path: service.yml
+      - path: route.yml
 
 policySets:
   - name: acm-pg-downloader-placements
