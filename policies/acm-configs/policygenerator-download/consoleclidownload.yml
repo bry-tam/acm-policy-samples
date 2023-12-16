@@ -1,0 +1,11 @@
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleCLIDownload
+metadata:
+  name: policygenerator
+spec:
+  description: Advanced Cluster Management PolicyGenerator kustomize plugin
+  displayName: Advanced Cluster Management
+  links:
+    - href: 'https://kam-openshift-gitops.apps.acm.sandbox3056.opentlc.com/kam/'
+      text: Advanced Cluster Management PolicyGenerator
