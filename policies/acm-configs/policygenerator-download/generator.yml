@@ -1,0 +1,26 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-policygen-downloader
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  ## set the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - acm-pg-downloader-placements
+placementBindingDefaults:
+  name: "acm-pg-downloader-placement-binding"
+
+policies:
+  - name: acm-policygenerator-downloader
+    manifests:
+      - path: namespace.yml
+
+policySets:
+  - name: acm-pg-downloader-placements
+    placement:
+      placementName: "ft-acm-hub--active"
