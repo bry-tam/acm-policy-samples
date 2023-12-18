@@ -5,7 +5,7 @@ metadata:
   name: policygenerator
 spec:
   description: Advanced Cluster Management PolicyGenerator kustomize plugin
-  displayName: Advanced Cluster Management
+  displayName: 'Advanced Cluster Management - v{{ (lookup "operator.open-cluster-management.io/v1" "MultiClusterHub" "open-cluster-management" "multiclusterhub").status.currentVersion }}''
   links:
     - href: 'https://policygen-downloader.{{ (lookup "config.openshift.io/v1" "Ingress" "" "cluster").spec.domain }}/PolicyGenerator'
       text: Advanced Cluster Management PolicyGenerator
