@@ -23,6 +23,7 @@ policies:
       - path: service.yml
       - path: route.yml
       - path: consoleclidownload.yml
+        complianceType: mustonlyhave
 
 policySets:
   - name: acm-pg-downloader-placements
