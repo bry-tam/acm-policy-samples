@@ -6,3 +6,4 @@ resources:
   - ./policy-alerts/
   - ./observability/
   - ./managedserviceaccount/
+  - ./policygenerator-download/
