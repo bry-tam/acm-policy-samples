@@ -28,6 +28,7 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: networkpolicy.yml
+        complianceType: mustnothave
         extraDependencies:
           - name: cluster-logging-operator
             kind: ConfigurationPolicy
