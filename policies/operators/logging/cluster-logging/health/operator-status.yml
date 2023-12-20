@@ -23,7 +23,7 @@ spec:
           state: AtLatestKnown
 
     ## Ensure the operator deployment exists and has reached full pod health
-    {{- $opDepList := list "clusterlogging-controller-manager" }}
+    {{- $opDepList := list "cluster-logging-operator" }}
 
     {{- range $depName := $opDepList }}
       {{- $dep := (lookup "apps/v1" "Deployment" $sub.metadata.namespace $depName) }}
