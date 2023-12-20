@@ -46,6 +46,25 @@ spec:
       {{- end }}
     {{- end }}
 
+    {{- /* Ensure the collector is deployed to all nodes */ -}}
+    {{- $nodeCount := (len (lookup "v1" "Node" "" "").items) }}
+    - complianceType: musthave
+      objectDefinition:
+        kind: DaemonSet
+        apiVersion: apps/v1
+        metadata:
+          name: collector
+          namespace: openshift-logging
+        status:
+          currentNumberScheduled: {{ $nodeCount }}
+          numberMisscheduled: 0
+          desiredNumberScheduled: {{ $nodeCount }}
+          numberReady: {{ $nodeCount }}
+          updatedNumberScheduled: {{ $nodeCount }}
+          numberAvailable: {{ $nodeCount }}
+
+
+
     - complianceType: musthave
       objectDefinition:
         apiVersion: logging.openshift.io/v1
@@ -57,3 +76,6 @@ spec:
           conditions:
             - status: 'True'
               type: Ready
+
+
+
