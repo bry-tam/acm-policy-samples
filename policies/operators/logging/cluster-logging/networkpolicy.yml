@@ -15,6 +15,10 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
+          project: "openshift-console"
+  - from:
+    - namespaceSelector:
+        matchLabels:
           name: "openshift-monitoring"
   - from:
     - namespaceSelector:
