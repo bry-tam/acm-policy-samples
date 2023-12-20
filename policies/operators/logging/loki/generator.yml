@@ -45,9 +45,13 @@ policies:
           - name: odf-operator-status
             kind: Policy
             compliance: "Compliant"
+      - path: ../openshift-logging-ns.yml
       - path: loki-secret.yml
         extraDependencies: 
           - name: loki-configure
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: loki-configure2
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: lokistack.yml
