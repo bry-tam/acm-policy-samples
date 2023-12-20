@@ -51,6 +51,9 @@ spec:
             secret:
               name: logging-loki-odf
               type: s3 
+            tls:
+              caName: noobaa-s3-serving-cert
+              caKey: ca.crt
           storageClassName: gp3-csi
           tenants:
             mode: openshift-logging

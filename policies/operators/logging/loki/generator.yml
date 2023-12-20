@@ -27,6 +27,11 @@ policies:
           - name: loki-operator
             kind: ConfigurationPolicy
             compliance: "Compliant"
+      - path: noobaa-s3-serving-cert.yml
+        extraDependencies:
+          - name: loki-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: health/operator-status.yml
         remediationAction: InformOnly
         extraDependencies:
