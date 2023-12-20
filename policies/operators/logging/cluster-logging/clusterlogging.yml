@@ -1,8 +1,8 @@
 ---
-apiVersion: "logging.openshift.io/v1"
-kind: "ClusterLogging"
+apiVersion: logging.openshift.io/v1
+kind: ClusterLogging
 metadata:
-  name: "instance"
+  name: instance
   namespace: openshift-logging
 spec:
   managementState: "Managed"
