@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: loki-secret
+  name: lokistack
 spec:
   remediationAction: enforce
   severity: high
