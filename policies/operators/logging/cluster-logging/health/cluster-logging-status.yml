@@ -2,17 +2,13 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: loki-status
+  name: cluster-logging-status
 spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
     {{- /* Create a list of all expected deployments in openshift-logging for loki */ -}}
-    {{- $depList := list "logging-loki-distributor"
-                          "logging-loki-gateway"
-                          "logging-loki-querier"
-                          "logging-loki-query-frontend"
-    }}
+    {{- $depList := list "logging-view-plugin" }}
 
     ## Create a CompilianceType objectDefinition for each deployment
     {{- range $depName := $depList }}
@@ -50,44 +46,14 @@ spec:
       {{- end }}
     {{- end }}
 
-    {{- /* Create a list of all expected statefulesets in openshift-logging for loki */ -}}
-    {{- $ssDepList := list "logging-loki-compactor"
-                          "logging-loki-index-gateway"
-                          "logging-loki-ingester"
-    }}
-
-    ## Create a CompilianceType objectDefinition for each statefulset
-    {{- range $depName := $ssDepList }}
-      {{- $dep := (lookup "apps/v1" "StatefulSet" "openshift-logging" $depName) }}
     - complianceType: musthave
       objectDefinition:
-        kind: StatefulSet
-        apiVersion: apps/v1
+        apiVersion: logging.openshift.io/v1
+        kind: ClusterLogging
         metadata:
-          namespace: openshift-logging
-          name: {{ $depName }}
-      ## If the statefulset does not exist we don't need to worry about the status
-      {{- if $dep }}
-        status:
-          availableReplicas: {{ $dep.spec.replicas }}
-          currentReplicas: {{ $dep.spec.replicas }}
-          updatedReplicas: {{ $dep.spec.replicas }}
-          replicas: {{ $dep.spec.replicas }}
-          collisionCount: 0
-          readyReplicas: {{ $dep.spec.replicas }}
-      {{- end }}
-    {{- end }}
-
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: loki.grafana.com/v1
-        kind: LokiStack
-        metadata:
-          name: logging-loki
+          name: instance
           namespace: openshift-logging
         status:
           conditions:
-            - message: All components ready
-              reason: ReadyComponents
-              status: 'True'
+            - status: 'True'
               type: Ready
