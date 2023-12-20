@@ -27,12 +27,6 @@ policies:
           - name: cluster-logging-operator
             kind: ConfigurationPolicy
             compliance: "Compliant"
-      - path: networkpolicy.yml
-        complianceType: mustnothave
-        extraDependencies:
-          - name: cluster-logging-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
       - path: health/operator-status.yml
         remediationAction: InformOnly
         extraDependencies:
