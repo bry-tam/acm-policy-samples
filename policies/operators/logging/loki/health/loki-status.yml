@@ -7,32 +7,22 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* Create a list of all expected deployments in openshift-pipelines
-          Normally we would use labels to identify them, however there isn't
-          a selector available to uniquely identify the deployments   */ -}}
-    {{- $depList := list "pipelines-as-code-controller"
-                          "pipelines-as-code-watcher"
-                          "pipelines-as-code-webhook"
-                          "tekton-chains-controller"
-                          "tekton-operator-proxy-webhook"
-                          "tekton-pipelines-controller"
-                          "tekton-pipelines-remote-resolvers"
-                          "tekton-pipelines-webhook"
-                          "tekton-triggers-controller"
-                          "tekton-triggers-core-interceptors"
-                          "tekton-triggers-webhook"
-                          "tkn-cli-serve"
+    {{- /* Create a list of all expected deployments in openshift-logging for loki */ -}}
+    {{- $depList := list "logging-loki-distributor"
+                          "logging-loki-gateway"
+                          "logging-loki-querier"
+                          "logging-loki-query-frontend"
     }}
 
     ## Create a CompilianceType objectDefinition for each deployment
     {{- range $depName := $depList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-pipelines" $depName) }}
+      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-logging" $depName) }}
     - complianceType: musthave
       objectDefinition:
         kind: Deployment
         apiVersion: apps/v1
         metadata:
-          namespace: openshift-pipelines
+          namespace: openshift-logging
       ## If the deployment does not exist we need to specify the name
       {{- if not $dep }}
           name: {{ $depName }}
@@ -55,7 +45,48 @@ spec:
           readyReplicas: {{ $dep.spec.replicas }}
           availableReplicas: {{ $dep.spec.replicas }}
           conditions:
-            - type: Available
               status: 'True'
-        {{- end }}
+      {{- end }}
     {{- end }}
+
+    {{- /* Create a list of all expected statefulesets in openshift-logging for loki */ -}}
+    {{- $ssDepList := list "logging-loki-compactor"
+                          "logging-loki-index-gateway"
+                          "logging-loki-ingester"
+    }}
+
+    ## Create a CompilianceType objectDefinition for each statefulset
+    {{- range $depName := $ssDepList }}
+      {{- $dep := (lookup "apps/v1" "StatefulSet" "openshift-logging" $depName) }}
+    - complianceType: musthave
+      objectDefinition:
+        kind: StatefulSet
+        apiVersion: apps/v1
+        metadata:
+          namespace: openshift-logging
+          name: {{ $depName }}
+      ## If the statefulset does not exist we don't need to worry about the status
+      {{- if $dep }}
+        status:
+          availableReplicas: {{ $dep.spec.replicas }}
+          currentReplicas: {{ $dep.spec.replicas }}
+          updatedReplicas: {{ $dep.spec.replicas }}
+          replicas: {{ $dep.spec.replicas }}
+          collisionCount: 0
+          readyReplicas: {{ $dep.spec.replicas }}
+      {{- end }}
+    {{- end }}
+
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: loki.grafana.com/v1
+        kind: LokiStack
+        metadata:
+          name: logging-loki
+          namespace: openshift-logging
+        status:
+          conditions:
+            - message: All components ready
+              reason: ReadyComponents
+              status: 'True'
+              type: Ready

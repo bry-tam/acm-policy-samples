@@ -4,7 +4,7 @@ kind: ConfigurationPolicy
 metadata:
   name: loki-operator-status
 spec:
-  remediationAction: InformOnly
+  remediationAction: inform
   severity: high
   object-templates-raw: |
     ## Get the subscription we are checking health for
