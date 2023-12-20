@@ -5,7 +5,7 @@ metadata:
   name: logging-loki 
   namespace: openshift-logging
 spec:
-  size: 1x.small 
+  size: 1x.extra-small
   storage:
     schemas:
     - version: v12
