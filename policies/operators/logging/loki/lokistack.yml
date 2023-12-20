@@ -1,18 +1,108 @@
 ---
-apiVersion: loki.grafana.com/v1
-kind: LokiStack
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
 metadata:
-  name: logging-loki 
-  namespace: openshift-logging
+  name: loki-secret
 spec:
-  size: 1x.extra-small
-  storage:
-    schemas:
-    - version: v12
-      effectiveDate: '2022-06-01'
-    secret:
-      name: logging-loki-odf
-      type: s3 
-  storageClassName: gp3-csi
-  tenants:
-    mode: openshift-logging
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: loki.grafana.com/v1
+        kind: LokiStack
+        metadata:
+          name: logging-loki 
+          namespace: openshift-logging
+        spec:
+          limits:
+            global: 
+              retention: 
+                days: 2
+                streams:
+                - days: 2
+                  priority: 1
+                  selector: '{kubernetes_namespace_name=~"test.+"}' 
+                - days: 1
+                  priority: 1
+                  selector: '{log_type="infrastructure"}'
+            tenants: 
+              application:
+                retention:
+                  days: 1
+                  streams:
+                    - days: 2
+                      selector: '{kubernetes_namespace_name=~"test.+"}' 
+              infrastructure:
+                retention:
+                  days: 1
+                  streams:
+                    - days: 1
+                      selector: '{kubernetes_namespace_name=~"openshift-cluster.+"}'
+              audit:
+                retention:
+                  days: 1
+          managementState: Managed
+          size: 1x.extra-small
+          storage:
+            schemas:
+            - version: v12
+              effectiveDate: '2022-06-01'
+            secret:
+              name: logging-loki-odf
+              type: s3 
+          storageClassName: gp3-csi
+          tenants:
+            mode: openshift-logging
+    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+    {{- if ne $infraCount 0 }}
+          template:
+            compactor:
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+            distributor:
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+            gateway:
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+            indexGateway:
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+            ingester:
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+            querier:
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+            queryFrontend:
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+            ruler:
+              nodeSelector:
+                node-role.kubernetes.io/infra: ""
+              tolerations:
+              - operator: Exists
+                key: node-role.kubernetes.io/infra
+    {{- end }}
