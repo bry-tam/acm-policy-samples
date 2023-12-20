@@ -45,6 +45,7 @@ spec:
           readyReplicas: {{ $dep.spec.replicas }}
           availableReplicas: {{ $dep.spec.replicas }}
           conditions:
+            - type: Available
               status: 'True'
       {{- end }}
     {{- end }}
