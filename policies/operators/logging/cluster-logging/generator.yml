@@ -46,6 +46,7 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: clusterlogging.yml
+      - path: console.yml
 
   - name: logging-operator-status
     remediationAction: InformOnly
