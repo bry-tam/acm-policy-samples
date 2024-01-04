@@ -42,6 +42,7 @@ policies:
     manifests:
       - path: clusterlogging.yml
       - path: console.yml
+      - path: logfilemetricexporter.yml
 
   - name: logging-operator-status
     remediationAction: InformOnly
