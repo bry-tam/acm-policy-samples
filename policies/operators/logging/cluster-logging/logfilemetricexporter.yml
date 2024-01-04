@@ -1,8 +1,8 @@
 apiVersion: logging.openshift.io/v1alpha1
 kind: LogFileMetricExporter
 metadata:
-name: instance
-namespace: openshift-logging
+  name: instance
+  namespace: openshift-logging
 spec:
   resources:
     limits:
