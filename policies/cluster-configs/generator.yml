@@ -6,6 +6,7 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
+  consolidateManifests: false
   ## turn off the default compliance annotations
   categories: []
   controls: []
