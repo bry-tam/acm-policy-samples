@@ -1,0 +1,9 @@
+apiVersion: operator.openshift.io/v1
+kind: OpenShiftAPIServer
+metadata:
+  name: cluster
+status:
+  conditions:
+  - status: "True"
+    type: Encrypted
+    reason: EncryptionCompleted

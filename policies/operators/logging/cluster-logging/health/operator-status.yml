@@ -2,13 +2,13 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: loki-operator-status
+  name: cluster-logging-operator-status
 spec:
-  remediationAction: inform
+  remediationAction: InformOnly
   severity: high
   object-templates-raw: |
     ## Get the subscription we are checking health for
-    {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-operators-redhat" "loki-operator") }}
+    {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-logging" "cluster-logging") }}
 
     ## Ensure the Subscription is at latest known release status
     - complianceType: musthave
@@ -16,14 +16,14 @@ spec:
         apiVersion: operators.coreos.com/v1alpha1
         kind: Subscription
         metadata:
-          namespace: openshift-operators-redhat
+          namespace: openshift-logging
           labels:
-            acm-policy: loki-operator
+            acm-policy: cluster-logging-operator
         status:
           state: AtLatestKnown
 
     ## Ensure the operator deployment exists and has reached full pod health
-    {{- $opDepList := list "loki-operator-controller-manager" }}
+    {{- $opDepList := list "cluster-logging-operator" }}
 
     {{- range $depName := $opDepList }}
       {{- $dep := (lookup "apps/v1" "Deployment" $sub.metadata.namespace $depName) }}
@@ -32,7 +32,7 @@ spec:
         kind: Deployment
         apiVersion: apps/v1
         metadata:
-          namespace: openshift-operators-redhat
+          namespace: openshift-logging
       {{- if not $dep }}
           name: {{ $depName }}
       {{- else }}

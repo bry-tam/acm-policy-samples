@@ -3,12 +3,12 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   labels:
-    acm-policy: loki-operator
-  name: loki-operator
-  namespace: openshift-operators-redhat
+    acm-policy: cluster-logging-operator
+  name: cluster-logging
+  namespace: openshift-logging
 spec:
   channel: stable-5.8
   installPlanApproval: Automatic
-  name: loki-operator
+  name: cluster-logging
   source: redhat-operators
   sourceNamespace: openshift-marketplace

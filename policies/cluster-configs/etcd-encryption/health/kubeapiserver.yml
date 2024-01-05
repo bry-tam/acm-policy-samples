@@ -1,0 +1,9 @@
+apiVersion: operator.openshift.io/v1
+kind: KubeAPIServer
+metadata:
+  name: cluster
+status:
+  conditions:
+    - status: "True"
+      type: Encrypted
+      reason: EncryptionCompleted
