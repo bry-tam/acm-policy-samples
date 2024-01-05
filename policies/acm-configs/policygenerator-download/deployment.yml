@@ -7,10 +7,10 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{- $ocmDeployment := (lookup "apps/v1" "Deployment" "open-cluster-management" "multicluster-operators-application") }}
+    {{- $ocmDeployment := (lookup "apps/v1" "Deployment" "open-cluster-management" "multicluster-operators-hub-subscription") }}
     {{- $ocmContainer := "" }}
     {{- range $cn := $ocmDeployment.spec.template.spec.containers }}
-      {{- if eq $cn.name "multicluster-operators-placementrule" }}
+      {{- if eq $cn.name "multicluster-operators-hub-subscription" }}
         {{- $ocmContainer = $cn }}
         {{- break }}
       {{- end }}
@@ -82,7 +82,7 @@ spec:
 
               volumes:
               - emptyDir: {}
-                name: policy-generator 
+                name: policy-generator
           strategy:
             type: RollingUpdate
             rollingUpdate:

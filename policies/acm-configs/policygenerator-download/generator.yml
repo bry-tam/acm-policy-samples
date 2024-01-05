@@ -2,14 +2,14 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-generator-policygen-downloader
+  name: policygenerator-download
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   ## set the default compliance annotations
   categories:
     - CM Configuration Management
-  controls: 
+  controls:
     - CM-2 Baseline Configuration
   standards:
     - NIST SP 800-53
