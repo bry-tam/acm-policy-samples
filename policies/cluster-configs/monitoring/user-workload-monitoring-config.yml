@@ -85,4 +85,13 @@ spec:
           name: hub-alertmanager-router-ca
           namespace: openshift-user-workload-monitoring
         data: '{{ copySecretData "openshift-monitoring" "hub-alertmanager-router-ca" }}'
+
+    - complianceType: mustonlyhave
+      objectDefinition:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: observability-alertmanager-accessor
+          namespace: openshift-user-workload-monitoring
+        data: '{{ copySecretData "openshift-monitoring" "observability-alertmanager-accessor" }}'
     {{- end }}
