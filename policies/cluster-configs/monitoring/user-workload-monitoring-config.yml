@@ -74,3 +74,15 @@ spec:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
     {{- end }}
+
+    {{- if and (not (empty $isObservabilityEnabled ))
+                (eq $isObservabilityEnabled.spec.value "enabled")  }}
+    - complianceType: mustonlyhave
+      objectDefinition:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: hub-alertmanager-router-ca
+          namespace: openshift-user-workload-monitoring
+        data: '{{ copySecretData "openshift-monitoring" "hub-alertmanager-router-ca" }}'
+    {{- end }}
