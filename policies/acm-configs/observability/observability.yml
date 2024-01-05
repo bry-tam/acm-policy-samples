@@ -10,3 +10,4 @@ spec:
       name: thanos-object-storage
       key: thanos.yaml
       tlsSecretName: noobaa-cert
+      tlsSecretMountPath: /etc/minio/certs

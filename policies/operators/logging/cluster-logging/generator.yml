@@ -1,0 +1,59 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-logging
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - cluster-logging-operator
+placementBindingDefaults:
+  name: "logging-binding"
+
+policies:
+  - name: cluster-logging-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorgroup.yml
+        extraDependencies:
+          - name: cluster-logging-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: subscription.yml
+        extraDependencies:
+          - name: cluster-logging-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: health/operator-status.yml
+        remediationAction: InformOnly
+        extraDependencies:
+          - name: cluster-logging-operator3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+  - name: cluster-logging-configure
+    remediationAction: enforce
+    dependencies:
+      - name: "cluster-logging-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: clusterlogging.yml
+      - path: console.yml
+      - path: logfilemetricexporter.yml
+
+  - name: logging-operator-status
+    remediationAction: InformOnly
+    dependencies:
+      - name: "cluster-logging-configure"
+        compliance: "Compliant"
+    manifests:
+      - path: health/cluster-logging-status.yml
+
+policySets:
+  - name: cluster-logging-operator
+    placement:
+      placementName: "ft-logging--loki"
+

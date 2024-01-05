@@ -2,13 +2,13 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-generator
+  name: gen-policy-generator-loki
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
   policySets:
-    - loki-operator
+    - loki-logging-operator
 placementBindingDefaults:
   name: "loki-binding"
 
@@ -18,25 +18,55 @@ policies:
     manifests:
       - path: namespace.yml
       - path: operatorgroup.yml
+        extraDependencies:
+          - name: loki-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: subscription.yml
-      - path: approve-installplan.yml
-        extraDependencies: 
-          - name: loki-operator3
+        extraDependencies:
+          - name: loki-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: noobaa-s3-serving-cert.yml
+        extraDependencies:
+          - name: loki-operator
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: health/operator-status.yml
-        remediationAction: inform
+        remediationAction: InformOnly
+        extraDependencies:
+          - name: loki-operator3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
 
-  # - name: loki-configure
-  #   remediationAction: enforce
-  #   dependencies:
-  #     - name: "loki-operator"
-  #       compliance: "Compliant"
-  #   manifests:
-  #     - path: tektonconfig.yml
+  - name: loki-configure
+    remediationAction: enforce
+    dependencies:
+      - name: "loki-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: objectbucketclaim.yml
+        extraDependencies: 
+          - name: odf-operator-status
+            kind: Policy
+            compliance: "Compliant"
+      - path: openshift-logging-ns.yml
+      - path: loki-secret.yml
+        extraDependencies: 
+          - name: loki-configure
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: loki-configure2
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: lokistack.yml
+        extraDependencies: 
+          - name: loki-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
 
   - name: loki-operator-status
-    remediationAction: inform
+    remediationAction: InformOnly
     dependencies:
       - name: "loki-configure"
         compliance: "Compliant"
@@ -44,7 +74,7 @@ policies:
       - path: health/loki-status.yml
 
 policySets:
-  - name: loki-operator
+  - name: loki-logging-operator
     placement:
       placementName: "ft-logging--loki"
 
