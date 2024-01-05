@@ -1,0 +1,9 @@
+apiVersion: operator.openshift.io/v1
+kind: Authentication
+metadata:
+  name: cluster
+status:
+  conditions:
+    - status: 'True'
+      reason: EncryptionCompleted
+      type: Encrypted

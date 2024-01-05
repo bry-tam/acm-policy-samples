@@ -16,6 +16,16 @@ placementBindingDefaults:
   name: "cluster-config-binding"
 
 policies:
+  - name: etcd-encryption
+    manifests:
+      - path: etcd-encryption/apiserver.yml
+      - path: etcd-encryption/health/
+        remediationAction: InformOnly
+        extraDependencies:
+          - name: etcd-encryption
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
   - name: acm-clusterclaims
     manifests:
       - path: clusterclaims/
@@ -27,6 +37,9 @@ policies:
   - name: etcd-backup
     configurationPolicyAnnotations:  
       policy.open-cluster-management.io/disable-templates: "true"
+    dependencies:
+      - name: etcd-encryption
+        compliance: "Compliant"
     manifests:
       - path: etcd-backup/
 
@@ -35,6 +48,9 @@ policies:
       - path: monitoring/
 
   - name: infra-nodes
+    dependencies:
+      - name: etcd-encryption
+        compliance: "Compliant"
     policySets: 
       - cluster-configs-infra
     manifests:
