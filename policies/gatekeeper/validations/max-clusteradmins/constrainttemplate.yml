@@ -36,11 +36,11 @@ spec:
           package lib.helpers
 
           count_kinds := {"User", "Group"}
-          should_count(kind, roleRef) = true {
+          should_count(kind, roleRef) {
             kind == count_kinds[_]
             is_cluster-admin_ref(roleRef)
           }
-          is_cluster-admin_ref(role) = true {
+          is_cluster-admin_ref(role) {
             role.kind == "ClusterRole"
             role.name == "cluster-admin"
           }
