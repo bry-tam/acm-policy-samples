@@ -61,14 +61,14 @@ spec:
 
         # check if the requested role references 'cluster-admin' 
         crb := input.review.object
-        is_cluster-admin_ref(crb.roleRef)
+        data.lib.helpers.is_cluster-admin_ref(crb.roleRef)
 
         # Get the total number of current admins
-        current_subjects := {sub | should_count(data.inventory.roles[i].subjects[s].kind, data.inventory.roles[i].roleRef); sub = data.inventory.roles[i].subjects[s].name}
+        current_subjects := {sub | data.lib.helpers.should_count(data.inventory.roles[i].subjects[s].kind, data.inventory.roles[i].roleRef); sub = data.inventory.roles[i].subjects[s].name}
 
 
         violation[{"msg": msg}] {
-          new_subjects := {sub | should_count(crb.subjects[s].kind, crb.roleRef); sub = crb.subjects[s].name}
+          new_subjects := {sub | data.lib.helpers.should_count(crb.subjects[s].kind, crb.roleRef); sub = crb.subjects[s].name}
           total_admins := count(current_subjects | new_subjects)
           max_admins > total_admins
 
