@@ -24,7 +24,7 @@ policies:
     remediationAction: enforce
     manifests:
       - path: gatekeeper.yml
-      - path: sync0configmap.yml
+      - path: sync-configmap.yml
       - path: health/gatekeeper-status.yml
         remediationAction: inform
 
