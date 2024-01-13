@@ -65,7 +65,7 @@ spec:
           is_clusteradmin_ref(input.review.object.roleRef)
         
           # Get the total number of current admins 
-          exclude_new_crb := {crb | data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i] != input.review.object.metadata.name; data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
+          exclude_new_crb := {crb | data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i] != input.review.object.metadata.name; crb := data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
           current_subjects := {sub | validate_subject(exclude_new_crb[i].subjects[s].kind, exclude_new_crb[i].roleRef); sub := exclude_new_crb[i].subjects[s].name}
 
           new_subjects := {sub | validate_subject(input.review.object.subjects[s].kind, input.review.object.roleRef); sub := input.review.object.subjects[s].name}
