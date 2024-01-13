@@ -49,7 +49,7 @@ spec:
       rego: |
         package maxclusteradmins
 
-        import data.lib.helpers.should-count
+        import data.lib.helpers.should_count
         import data.lib.helpers.is_cluster-admin_ref
 
         max_admins := input.parameters.maxAdmins
