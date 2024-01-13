@@ -38,10 +38,10 @@ spec:
           count_kinds := {"User", "Group"}
           should_count(kind, roleRef) {
             kind == count_kinds[_]
-            is_cluster-admin_ref(roleRef)
+            is_clusteradmin_ref(roleRef)
           }
 
-          is_cluster-admin_ref(role) {
+          is_clusteradmin_ref(role) {
             role.kind == "ClusterRole"
             role.name == "cluster-admin"
           }
@@ -50,7 +50,7 @@ spec:
         package maxclusteradmins
 
         import data.lib.helpers.should_count
-        import data.lib.helpers.is_cluster-admin_ref
+        import data.lib.helpers.is_clusteradmin_ref
 
         max_admins := input.parameters.maxAdmins
         violation[{"msg": msg}] {
