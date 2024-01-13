@@ -59,14 +59,14 @@ spec:
           msg = sprintf("max_admins parameter must be greater than 0(zero) max-admins: %v", [max_admins] )
         }
 
-        # check if the requested role references 'cluster-admin' 
-        is_clusteradmin_ref(input.review.object.roleRef)
-
-        # Get the total number of current admins
-        current_subjects := {sub | validate_subject(data.inventory.roles[i].subjects[s].kind, data.inventory.roles[i].roleRef); sub := data.inventory.roles[i].subjects[s].name}
-
 
         violation[{"msg": msg}] {
+          # check if the requested role references 'cluster-admin' 
+          is_clusteradmin_ref(input.review.object.roleRef)
+        
+          # Get the total number of current admins
+          current_subjects := {sub | validate_subject(data.inventory.roles[i].subjects[s].kind, data.inventory.roles[i].roleRef); sub := data.inventory.roles[i].subjects[s].name}
+
           new_subjects := {sub | validate_subject(input.review.object.subjects[s].kind, input.review.object.roleRef); sub := input.review.object.subjects[s].name}
           total_admins := count(current_subjects | new_subjects)
           max_admins > total_admins
