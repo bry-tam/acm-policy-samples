@@ -69,7 +69,7 @@ spec:
 
           new_subjects := {sub | validate_subject(input.review.object.subjects[s].kind, input.review.object.roleRef); sub := input.review.object.subjects[s].name}
           total_admins := count(current_subjects | new_subjects)
-          max_admins > total_admins
+          total_admins > max_admins
 
           msg := sprintf("Total number of cluster-admins exceeded. max-admins allowed: %v - current total: %v", [max_admins, total_admins] )
         }
