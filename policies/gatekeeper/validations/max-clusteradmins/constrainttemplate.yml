@@ -1,7 +1,7 @@
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
-  name: nax-cluster-admins
+  name: maxclusteradmins
   annotations:
     metadata.gatekeeper.sh/title: "Prevent number of cluster admins from exceeding limit"
     metadata.gatekeeper.sh/version: 1.0.0
