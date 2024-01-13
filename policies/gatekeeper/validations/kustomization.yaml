@@ -4,3 +4,4 @@ kind: Kustomization
 
 generators:
   - ./verify-deprecatedapi/generator.yml
+  - ./max-clusteradmins/generator.yml

@@ -1,0 +1,77 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: nax-cluster-admins
+  annotations:
+    metadata.gatekeeper.sh/title: "Prevent number of cluster admins from exceeding limit"
+    metadata.gatekeeper.sh/version: 1.0.0
+    metadata.gatekeeper.sh/requires-sync-data: |
+      "[
+        [
+          {
+            "groups": ["rbac.authorization.k8s.io"],
+            "versions": ["v1"],
+            "kinds": ["ClusterRoleBinding"]
+          }
+        ]
+      ]"
+    description: |
+      validates the number of users and groups assigned the cluster-admin role does not exceed the specified count
+spec:
+  crd:
+    spec:
+      names:
+        kind: MaxClusterAdmins
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            maxAdmins:
+              type: number
+              description: Maximum number of users and groups allowed to be bound to cluster-admin role
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      libs:
+        - |
+          package lib.helpers
+
+          import rego.v1
+
+          count_kinds := {"User", "Group"}
+          should_count(kind, roleRef) = true if {
+            kind == count_kinds[_]
+            is_cluster-admin_ref(roleRef)
+          }
+          is_cluster-admin_ref(role) = true if {
+            role.kind == "ClusterRole"
+            role.name == "cluster-admin"
+          }
+
+      rego: |
+        package maxclusteradmins
+
+        import data.lib.helpers
+        import rego.v1
+
+        max_admins := input.parameters.maxAdmins
+        violation[{"msg": msg}] {
+          is_number(max_admins)
+          max_admins < 1
+          msg = sprintf("max_admins parameter must be greater than 0(zero) max-admins: %v", [max_admins] )
+        }
+
+        # check if the requested role references 'cluster-admin' 
+        crb := input.review.object
+        is_cluster-admin_ref(crb.roleRef)
+
+        # Get the total number of current admins
+        current_subjects := {sub | should_count(data.inventory.roles[i].subjects[s].kind, data.inventory.roles[i].roleRef); sub := data.inventory.roles[i].subjects[s].name}
+
+
+        violation[{"msg": msg}] {
+          new_subjects := {sub | should_count(crb.subjects[s].kind, crb.roleRef); sub := crb.subjects[s].name}
+          total_admins := count(current_subjects | new_subjects)
+          max_admins > total_admins
+
+          msg := sprintf("Total number of cluster-admins exceeded. max-admins allowed: %v - current total: %v", [max_admins, total_admins] )
+        }
