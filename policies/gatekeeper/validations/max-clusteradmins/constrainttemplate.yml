@@ -35,14 +35,12 @@ spec:
         - |
           package lib.helpers
 
-          import rego.v1
-
           count_kinds := {"User", "Group"}
-          should_count(kind, roleRef) = true if {
+          should_count(kind, roleRef) = true {
             kind == count_kinds[_]
             is_cluster-admin_ref(roleRef)
           }
-          is_cluster-admin_ref(role) = true if {
+          is_cluster-admin_ref(role) = true {
             role.kind == "ClusterRole"
             role.name == "cluster-admin"
           }
@@ -51,7 +49,6 @@ spec:
         package maxclusteradmins
 
         import data.lib.helpers
-        import rego.v1
 
         max_admins := input.parameters.maxAdmins
         violation[{"msg": msg}] {
