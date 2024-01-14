@@ -1,0 +1,104 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: maxiamclusterbindings
+  annotations:
+    metadata.gatekeeper.sh/title: "Prevent number of users assigned to all ClusterRoleBindings from exceeding limit for the specified role"
+    metadata.gatekeeper.sh/version: 1.0.0
+    metadata.gatekeeper.sh/requires-sync-data: |
+      "[
+        [
+          {
+            "groups": ["rbac.authorization.k8s.io"],
+            "versions": ["v1"],
+            "kinds": ["ClusterRoleBinding"]
+          }
+        ]
+      ]"
+    description: |
+      validates the number of users and users in groups assigned the specified cluster role does not exceed the specified count
+spec:
+  crd:
+    spec:
+      names:
+        kind: MaxIAMClusterBindings
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            maxClusterRoleBindingUsers:
+              type: number
+              description: Maximum number of users and users within groups allowed to be bound to the specified role
+              example: 5
+            clusterRole:
+              type: string
+              description: Name of the ClusterRole to validate
+              example: "cluster-admin"
+            ignoreClusterRoleBindings: 
+              type: array
+              items:
+                type: string
+              description: List of ClusterRoleBindings to exclude from the validation count
+              example: '["myclusteradmins-crb", "system-admins"]'
+            
+
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      libs:
+        - |
+          package lib.helpers
+
+          count_kinds := {"User", "Group"}
+          validate_subject(kind, roleRef) {
+            kind == count_kinds[_]
+            is_clusterrole_ref(roleRef)
+          }
+
+          is_clusterrole_ref(role) {
+            role.kind == "ClusterRole"
+            role.name == input.parameters.clusterRole
+          }
+
+          excluded_rolebindings binding := {
+            binding =: {crb_name | crb_name := ([input.review.object.metadata.name] | input.parameters.ignoreClusterRoleBindings[_])}
+          }
+
+          get_user_names("User", s_name) names := {
+            names := {s_name}
+          }
+
+          get_user_names("Group", s_name) names := {
+            names :=  {nm | nm := data.inventory.cluster["user.openshift.io/v1"].Group[s_name].users[_]}
+          }
+
+      rego: |
+        package maxiamclusterbindings
+
+        import data.lib.helpers.validate_subject
+        import data.lib.helpers.is_clusterrole_ref
+        import data.lib.helpers.excluded_rolebindings
+        import data.lib.helpers.get_user_names
+
+        max_admins := input.parameters.maxClusterRoleBindingUsers
+        violation[{"msg": msg}] {
+          is_number(max_admins)
+          max_admins < 1
+          msg = sprintf("maxClusterRoleBindingUsers parameter must be greater than 0(zero) maxClusterRoleBindingUsers: %v", [max_admins] )
+        }
+
+
+        violation[{"msg": msg}] {
+          # check if the requested role references clusterRole parameter 
+          is_clusterrole_ref(input.review.object.roleRef)
+        
+          # Get the total number of current admins
+          bindings_to_exclude := 
+          crb_list := {crb | data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i].metadata.name != excluded_rolebindings[_]; crb := data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
+          current_subjects := {sub | validate_subject(crb_list[i].subjects[s].kind, crb_list[i].roleRef); sub := get_user_names(crb_list[i].subjects[s].kind, crb_list[i].subjects[s].name)[_]}
+
+          new_subjects := {sub | validate_subject(input.review.object.subjects[s].kind, input.review.object.roleRef); sub := get_user_names(input.review.object.subjects[s].kind, input.review.object.subjects[s].name)[_]}
+          total_admins := count(current_subjects | new_subjects)
+          total_admins > max_admins
+
+          msg := sprintf("Total number of cluster-admins exceeded. max-admins allowed: %v - current total: %v", [max_admins, total_admins] )
+        }

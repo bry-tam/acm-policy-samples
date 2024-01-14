@@ -6,6 +6,9 @@ metadata:
 spec:
   sync:
     syncOnly:
-      - group: rbac.authorization.k8s.io
+      - group: "rbac.authorization.k8s.io"
         version: "v1"
         kind: "ClusterRoleBinding"
+      - group: "user.openshift.io"
+        version: "v1"
+        kind: "Group"
