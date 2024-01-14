@@ -4,4 +4,4 @@ kind: Kustomization
 
 generators:
   - ./verify-deprecatedapi/generator.yml
-  - ./max-maxiamclusterbindings/generator.yml
+  - ./max-iamclusterbindings/generator.yml

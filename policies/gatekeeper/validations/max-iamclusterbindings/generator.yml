@@ -20,8 +20,8 @@ policies:
       - name: "gatekeeper-instance"
         compliance: "Compliant"
     manifests:
-      - path: max-clusterrolebindings/constrainttemplate.yml
-      - path: max-clusterrolebindings/maxiamclusterbindings.yml
+      - path: max-iamclusterbindings/constrainttemplate.yml
+      - path: max-iamclusterbindings/maxiamclusterbindings.yml
         # extraDependencies: 
         #   - name: maxclusteradmins
         #     apiVersion: templates.gatekeeper.sh/v1beta1
