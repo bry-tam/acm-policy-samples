@@ -29,7 +29,7 @@ policies:
         #     compliance: "Compliant"
 
 policySets:
-  - name: gp-valid-max-clusterrolebindings
+  - name: gp-valid-max-iamclusterbindings
     placement:
       placementName: "env-bound-placement"
 
