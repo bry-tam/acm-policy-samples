@@ -64,7 +64,7 @@ spec:
           }
 
           get_user_names("Group", s_name) names := {
-            names :=  {nm | nm := data.inventory.cluster["user.openshift.io/v1"].Group[s_name].users[_]}
+            names := {nm | nm := data.inventory.cluster["user.openshift.io/v1"].Group[s_name].users[_]}
           }
 
       rego: |
