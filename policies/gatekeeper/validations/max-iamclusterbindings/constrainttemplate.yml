@@ -96,12 +96,12 @@ spec:
           crd_name := input.parameters.ignoreClusterRoleBindings[_]
         }
 
-        violation[{"msg": msg}] {
-          # check if the requested binding should be excluded
-          is_excluded(bindings_to_exclude, input.review.object.metadata.name)
+        # violation[{"msg": msg}] {
+        #   # check if the requested binding should be excluded
+        #   is_excluded(bindings_to_exclude, input.review.object.metadata.name)
 
-          msg := sprintf("input is not excluded %v", [input.review.object.metadata.name])
-        }
+        #   msg := sprintf("input is not excluded %v", [input.review.object.metadata.name])
+        # }
 
         violation[{"msg": msg}] {
           # check if the requested role references clusterRole parameter 
@@ -111,7 +111,7 @@ spec:
           not is_excluded(bindings_to_exclude, input.review.object.metadata.name)
 
           # Get all ClusterRoleBinding that are not excluded
-          crb_list := {crb | not is_excluded(bindings_to_exclude, data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i].metadata.name); crb := data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
+          crb_list := {crb | is_excluded(bindings_to_exclude, data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i].metadata.name); crb := data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
           
           # Get the list of all users in the list
           current_subjects := {sub | validate_subject(crb_list[i].subjects[s].kind, crb_list[i].roleRef); sub := get_user_names(crb_list[i].subjects[s].kind, crb_list[i].subjects[s].name)[_]}
