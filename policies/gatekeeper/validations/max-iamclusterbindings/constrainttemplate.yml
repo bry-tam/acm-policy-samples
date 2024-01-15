@@ -101,6 +101,9 @@ spec:
           # check if the requested role references clusterRole parameter 
           is_clusterrole_ref(input.review.object.roleRef)
 
+          # check if the requested binding should be excluded
+          not is_excluded(input.review.object.metadata.name)
+
           # Get all ClusterRoleBinding that are not excluded
           crb_list := {crb | not is_excluded(data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i].metadata.name); crb := data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
           
