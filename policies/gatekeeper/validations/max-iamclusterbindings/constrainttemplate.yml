@@ -97,16 +97,6 @@ spec:
           crd_name := input.parameters.ignoreClusterRoleBindings[_]
         }
 
-        # violation[{"msg": msg}] {
-        #   # check if the requested role references clusterRole parameter 
-        #   is_clusterrole_ref(input.review.object.roleRef)
-
-        #   # check if the requested binding should be excluded
-        #   is_excluded(input.parameters.ignoreClusterRoleBindings, input.review.object.metadata.name)
-        #   msg := sprintf("Current role eval '%v' excluded by %v", [input.review.object.metadata.name, input.parameters.ignoreClusterRoleBindings] )
-        # }
-
-
         violation[{"msg": msg}] {
           # check if the requested role references clusterRole parameter 
           is_clusterrole_ref(input.review.object.roleRef)
