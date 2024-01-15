@@ -11,4 +11,4 @@ spec:
   parameters:
     maxClusterRoleBindingUsers: 5
     clusterRole: "cluster-admin"
-    
+    ignoreClusterRoleBindings: ["iam-max-groups"]
