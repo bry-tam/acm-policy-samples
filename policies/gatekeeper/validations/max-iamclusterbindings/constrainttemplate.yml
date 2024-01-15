@@ -59,11 +59,11 @@ spec:
             role.name == input.parameters.clusterRole
           }
 
-          get_user_names("User", s_name) names := {
+          get_user_names("User", s_name) names = {
             names := {s_name}
           }
 
-          get_user_names("Group", s_name) names := {
+          get_user_names("Group", s_name) names = {
             names := {nm | nm := data.inventory.cluster["user.openshift.io/v1"].Group[s_name].users[_]}
           }
 
