@@ -1,0 +1,14 @@
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: MaxIAMClusterBindings
+metadata:
+  name: max-cluster-admins
+spec:
+  match:
+    kinds:
+      - apiGroups: ["rbac.authorization.k8s.io"]
+        kinds: ["ClusterRoleBinding"]
+  parameters:
+    maxClusterRoleBindingUsers: 5
+    clusterRole: "cluster-admin"
+    ignoreClusterRoleBindings: ["iam-max-groups"]
