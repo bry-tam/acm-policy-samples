@@ -14,7 +14,7 @@ placementBindingDefaults:
   name: "gp-valid-max-iamclusterbindings-binding"
 
 policies:
-  - name: gp-valid-max-clusterrolebindings
+  - name: gp-valid-max-iamclusterbindings
     remediationAction: enforce
     dependencies:
       - name: "gatekeeper-instance"
