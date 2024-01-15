@@ -86,7 +86,7 @@ spec:
           crd_name := input.review.object.metadata.name
         }
         bindings_to_exclude[crd_name] {
-          crd_name := input.review.object.metadata.name
+          crd_name := {cname | cname := input.parameters.ignoreClusterRoleBindings[_]}
         }
 
         violation[{"msg": msg}] {
@@ -103,5 +103,5 @@ spec:
           total_admins := count(current_subjects | new_subjects)
           total_admins > max_admins
 
-          msg := sprintf("Total number of cluster-admins exceeded. max-admins allowed: %v - current total: %v", [max_admins, total_admins] )
+          msg := sprintf("Total number of %s exceeded. max-admins allowed: %v - current total: %v", [constrainttemplate.yml, max_admins, total_admins] )
         }
