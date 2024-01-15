@@ -60,7 +60,7 @@ spec:
           }
 
           get_user_names("User", s_name) := names {
-            names := s_name
+            names := {nm | nm := s_name}
           }
 
           get_user_names("Group", s_name) := names {
