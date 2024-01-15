@@ -98,7 +98,7 @@ spec:
 
         violation[{"msg": msg}] {
           # check if the requested binding should be excluded
-          not is_excluded(bindings_to_exclude, input.review.object.metadata.name)
+          is_excluded(bindings_to_exclude, input.review.object.metadata.name)
 
           msg := sprintf("input is not excluded %v", [input.review.object.metadata.name])
         }
