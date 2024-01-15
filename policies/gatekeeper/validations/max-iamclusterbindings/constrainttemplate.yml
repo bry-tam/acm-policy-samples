@@ -103,5 +103,5 @@ spec:
           total_admins := count(current_subjects | new_subjects)
           total_admins > max_admins
 
-          msg := sprintf("Total number of bindings to role '%v' exceeded. max-admins allowed: %v - current total: %v", [constrainttemplate.yml, max_admins, total_admins] )
+          msg := sprintf("Total number of bindings to role '%v' exceeded. max-admins allowed: %v - current total: %v", [input.parameters.clusterRole, max_admins, total_admins] )
         }
