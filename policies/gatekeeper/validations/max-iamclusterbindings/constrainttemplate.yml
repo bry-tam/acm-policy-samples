@@ -90,10 +90,6 @@ spec:
         }
 
         violation[{"msg": msg}] {
-          msg := sprintf("ignored list: %v", [bindings_to_exclude])
-        }
-
-        violation[{"msg": msg}] {
           # check if the requested role references clusterRole parameter 
           is_clusterrole_ref(input.review.object.roleRef)
 
