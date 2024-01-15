@@ -70,7 +70,7 @@ spec:
           }
 
           is_excluded(exclusion_list, crd_name) {
-            exclusion_list[_] = crd_name
+            exclusion_list[crd_name]
           }
 
       rego: |
