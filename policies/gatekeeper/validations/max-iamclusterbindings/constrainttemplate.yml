@@ -48,7 +48,17 @@ spec:
         - |
           package lib.helpers
 
+          # Types of subjects to count
           count_kinds := {"User", "Group"}
+          
+          # Make a list of all ClusterRoleBindings that should be excluded from the count
+          bindings_to_exclude[crd_name] {
+            crd_name := input.review.object.metadata.name
+          }
+          bindings_to_exclude[crd_name] {
+            crd_name := input.parameters.ignoreClusterRoleBindings[_]
+          }
+          
           validate_subject(kind, roleRef) {
             kind == count_kinds[_]
             is_clusterrole_ref(roleRef)
@@ -67,12 +77,17 @@ spec:
             names := {nm | nm := data.inventory.cluster["user.openshift.io/v1"].Group[s_name].users[_]}
           }
 
+          is_excluded(crd_name) {
+            bindings_to_exclude[_] = crd_name
+          }
+
       rego: |
         package maxiamclusterbindings
 
         import data.lib.helpers.validate_subject
         import data.lib.helpers.is_clusterrole_ref
         import data.lib.helpers.get_user_names
+        import data.lib.helpers.is_excluded
 
         max_admins := input.parameters.maxClusterRoleBindingUsers
         violation[{"msg": msg}] {
@@ -81,20 +96,13 @@ spec:
           msg = sprintf("maxClusterRoleBindingUsers parameter must be greater than 0(zero) maxClusterRoleBindingUsers: %v", [max_admins] )
         }
 
-        # Make a list of all ClusterRoleBindings that should be excluded from the count
-        bindings_to_exclude[crd_name] {
-          crd_name := input.review.object.metadata.name
-        }
-        bindings_to_exclude[crd_name] {
-          crd_name := input.parameters.ignoreClusterRoleBindings[_]
-        }
 
         violation[{"msg": msg}] {
           # check if the requested role references clusterRole parameter 
           is_clusterrole_ref(input.review.object.roleRef)
 
-          # Get all ClusterRoleBinding excluding the list above
-          crb_list := {crb | data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i].metadata.name != bindings_to_exclude[_]; crb := data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
+          # Get all ClusterRoleBinding that are not excluded
+          crb_list := {crb | not is_excluded(data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i].metadata.name); crb := data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
           
           # Get the list of all users in the list
           current_subjects := {sub | validate_subject(crb_list[i].subjects[s].kind, crb_list[i].roleRef); sub := get_user_names(crb_list[i].subjects[s].kind, crb_list[i].subjects[s].name)[_]}
