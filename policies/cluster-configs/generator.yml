@@ -47,6 +47,10 @@ policies:
   - name: ocp-monitoring
     manifests:
       - path: monitoring/
+ 
+   - name: node-kubeletconfigs
+    manifests:
+      - path: kubeletconfig/
 
   - name: infra-nodes
     dependencies:
