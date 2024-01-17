@@ -48,7 +48,7 @@ policies:
     manifests:
       - path: monitoring/
  
-   - name: node-kubeletconfigs
+  - name: node-kubeletconfigs
     manifests:
       - path: kubeletconfig/
 
