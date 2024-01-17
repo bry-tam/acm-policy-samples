@@ -12,6 +12,11 @@ metadata:
             "groups": ["rbac.authorization.k8s.io"],
             "versions": ["v1"],
             "kinds": ["ClusterRoleBinding"]
+          },
+          {
+            "groups": ["user.openshift.io"],
+            "versions": ["v1"],
+            "kinds": ["Group"]
           }
         ]
       ]"
