@@ -12,6 +12,11 @@ metadata:
             "groups": ["rbac.authorization.k8s.io"],
             "versions": ["v1"],
             "kinds": ["ClusterRoleBinding"]
+          },
+          {
+            "groups": ["user.openshift.io"],
+            "versions": ["v1"],
+            "kinds": ["Group"]
           }
         ]
       ]"
@@ -90,6 +95,8 @@ spec:
         }
 
         # Make a list of all ClusterRoleBindings that should be excluded from the count
+        # Exclude the binding under review so if the number of subjects decreases we don't have an incorrect count.
+        # The updated subjects will be added back in to the count below.
         bindings_to_exclude[crd_name] {
           crd_name := input.review.object.metadata.name
         }
@@ -105,12 +112,15 @@ spec:
           not is_excluded(input.parameters.ignoreClusterRoleBindings, input.review.object.metadata.name)
 
           # Get all ClusterRoleBinding that are not excluded
-          crb_list := {crb | not is_excluded(bindings_to_exclude, data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i].metadata.name); crb := data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
+          crb_list := {crb | not is_excluded(bindings_to_exclude, data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i].metadata.name); 
+                        crb := data.inventory.cluster["rbac.authorization.k8s.io/v1"].ClusterRoleBinding[i]}
           
           # Get the list of all users in the list
-          current_subjects := {sub | validate_subject(crb_list[i].subjects[s].kind, crb_list[i].roleRef); sub := get_user_names(crb_list[i].subjects[s].kind, crb_list[i].subjects[s].name)[_]}
+          current_subjects := {sub | validate_subject(crb_list[i].subjects[s].kind, crb_list[i].roleRef); 
+                                sub := get_user_names(crb_list[i].subjects[s].kind, crb_list[i].subjects[s].name)[_]}
 
-          new_subjects := {sub | validate_subject(input.review.object.subjects[s].kind, input.review.object.roleRef); sub := get_user_names(input.review.object.subjects[s].kind, input.review.object.subjects[s].name)[_]}
+          new_subjects := {sub | validate_subject(input.review.object.subjects[s].kind, input.review.object.roleRef); 
+                            sub := get_user_names(input.review.object.subjects[s].kind, input.review.object.subjects[s].name)[_]}
           total_admins := count(current_subjects | new_subjects)
           total_admins > max_admins
 

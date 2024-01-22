@@ -1,14 +1,52 @@
-apiVersion: config.gatekeeper.sh/v1alpha1
-kind: Config
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
 metadata:
-  name: config
-  namespace: "openshift-gatekeeper-system"
+  name: gatekeeper-syncdata
 spec:
-  sync:
-    syncOnly:
-      - group: "rbac.authorization.k8s.io"
-        version: "v1"
-        kind: "ClusterRoleBinding"
-      - group: "user.openshift.io"
-        version: "v1"
-        kind: "Group"
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    {{- /* Gather all ConstraintTemplates that have a syncdata annotation */ -}}
+    {{- $syncAnnotations := list "" }}
+    {{- $syncTracker := list "" }}
+
+    {{- range $ct := (lookup "templates.gatekeeper.sh/v1" "ConstraintTemplate" "" "").items }}
+      {{- range $a, $an := $ct.metadata.annotations }}
+        {{- if eq "metadata.gatekeeper.sh/requires-sync-data" $a }}
+          {{- $syncAnnotations = append $syncAnnotations $an }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
+    {{- /* Build the sync data config */ -}}
+    - complianceType: mustonlyhave
+      objectDefinition:
+        apiVersion: config.gatekeeper.sh/v1alpha1
+        kind: Config
+        metadata:
+          name: config
+          namespace: "openshift-gatekeeper-system"
+        spec:
+          sync:
+            syncOnly:
+    {{- range $syncAnn := (slice $syncAnnotations 1) }}{{- /* loop through all the annotations except the first */ -}}
+      {{- $annLen := ((sub (len $syncAnn) 3) | toInt) }}
+      {{- $annData := (fromJson (substr 2 $annLen $syncAnn)) }}{{- /* trim off leading trailing quotes and extra array wrapper */ -}}
+      {{- range $obj := $annData }}{{- /* loop through the sync data within each annotation */ -}}
+        {{- range $g := $obj.groups }}
+          {{- range $v := $obj.versions }}
+            {{- range $k := $obj.kinds }}
+              {{- $syncData := (printf "%s/%s-%s" $g $v $k) }}
+              {{- if not (has $syncData $syncTracker) }}{{- /*  track if the given data is already required by a different constraint */ -}}
+                {{- $syncTracker = append $syncTracker $syncData }}
+            - group: '{{ $g }}'
+              kind: '{{ $k }}'
+              version: '{{ $v }}'
+              {{- end }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    
