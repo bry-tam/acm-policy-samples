@@ -32,7 +32,6 @@ configMapGenerator:
   literals:
   - evaluationInterval-compliant=30s
   - evaluationInterval-noncompliant=30s
-  - pruneObjectBehavior=None
   - copyPolicyMetadata=false
 
 # patches:

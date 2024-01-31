@@ -27,17 +27,17 @@ replacements:
     options:
       create: true
 
-- source: 
-    kind: ConfigMap
-    name: policy-defaults
-    fieldPath: data.pruneObjectBehavior
-  targets:
-  - select:
-      kind: Policy
-    fieldPaths: 
-    - spec.policy-templates.*.objectDefinition.spec.pruneObjectBehavior
-    options:
-      create: true
+# - source: 
+#     kind: ConfigMap
+#     name: policy-defaults
+#     fieldPath: data.pruneObjectBehavior
+#   targets:
+#   - select:
+#       kind: Policy
+#     fieldPaths: 
+#     - spec.policy-templates.*.objectDefinition.spec.pruneObjectBehavior
+#     options:
+#       create: true
 
 - source: 
     kind: ConfigMap
