@@ -1,0 +1,19 @@
+---
+apiVersion: autoscaling.openshift.io/v1
+kind: ClusterAutoscaler
+metadata:
+  name: default
+spec:
+  balanceSimilarNodeGroups: true
+  balancingIgnoredLabels:
+  - topology.kubernetes.io/zone
+  logVerbosity: 4
+  podPriorityThreshold: -10
+  resourceLimits:
+    maxNodesTotal: 12
+  scaleDown:
+    delayAfterAdd: 10m
+    delayAfterDelete: 5m
+    delayAfterFailure: 30s
+    enabled: true
+    unneededTime: 60s

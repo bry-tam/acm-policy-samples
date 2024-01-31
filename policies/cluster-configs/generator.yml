@@ -62,6 +62,12 @@ policies:
       - path: machinesets/infra-machineset.yml
       - path: machineconfigpools/infra.yml
         
+  - name: cluster-autoscaling
+    policySets: 
+      - cluster-autoscaling
+    manifests:
+      - path: cluster-autoscaling/
+
 policySets:
   - name: cluster-configs
     placement:
@@ -70,3 +76,7 @@ policySets:
   - name: cluster-configs-infra
     placement:
       placementName: "ft-inframachines--enabled"
+
+  - name: cluster-autoscaling
+    placement:
+      placementName: "ft-autoscaling--enabled"
