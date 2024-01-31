@@ -1,0 +1,28 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: machineset-autoscaler
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    {{- /* create autoscaler based on labels set on machine set for minimum and maximum sizing  */ -}}
+    {{- $machinesets := (lookup "machine.openshift.io/v1beta1" "MachineSet" "openshift-machine-api" "" "autoscale.minreplicas" "autoscale.maxreplicas").items) }}
+
+    {{- /* Generate the MachineSet for each zone as specified  */ -}}
+    {{- range $ms := $machinesets }}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: "autoscaling.openshift.io/v1beta1"
+        kind: "MachineAutoscaler"
+        metadata:
+          name: {{ $ms.metadata.name }}
+          namespace: openshift-machine-api
+        spec:
+          minReplicas: {{ (index $ms.metadata.labels "autoscale.minreplicas") | toInt }}
+          maxReplicas: {{ (index $ms.metadata.labels "autoscale.maxreplicas") | toInt }}
+          scaleTargetRef: 
+            apiVersion: machine.openshift.io/v1beta1
+            kind: MachineSet 
+            name: {{ $ms.metadata.name }}
+    {{- end }}
