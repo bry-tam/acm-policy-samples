@@ -20,11 +20,13 @@ spec:
     - complianceType: musthave
       metadataComplianceType: mustonlyhave
       objectDefinition:
-        kind: Node
+        kind: ConfigMap
         apiVersion: v1
         metadata:
           name: {{ $nd.metadata.name }}
-          labels:
+          namespace: default
+        data:
+          labels: |
         {{- range $k, $v := $nd.metadata.labels }}
           {{- if ne $k "bry-tam/worker" }}
             {{ $k }}: {{ (empty $v) | ternary "''" $v }}
