@@ -68,6 +68,18 @@ policies:
     manifests:
       - path: cluster-autoscaling/
 
+  - name: cluster-scheduler
+    policySets: 
+      - cluster-scheduler
+    manifests:
+      - path: default-scheduler/bry-tam-worker-node-label.yml
+      - path: default-scheduler/special-workload-worker-node-label.yml
+      - path: default-scheduler/scheduler.yml
+        extraDependencies:
+          - name: bry-tam-worker-node-label
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
 policySets:
   - name: cluster-configs
     placement:
@@ -80,3 +92,7 @@ policySets:
   - name: cluster-autoscaling
     placement:
       placementName: "ft-autoscaling--enabled"
+
+  - name: cluster-scheduler
+    placement:
+      placementName: "ft-default-scheduler--enabled"
