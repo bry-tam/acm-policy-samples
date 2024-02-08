@@ -25,8 +25,9 @@ spec:
         metadata:
           name: {{ $nd.metadata.name }}
           labels:
+            portworx: enabled
         {{- range $k, $v := $nd.metadata.labels }}
-          {{- if ne $k "bry-tam/worker" }}
+          {{- if ne $k "bry-tam/worker" "portworx" }}
             {{ $k }}: {{ $v | quote }}
           {{- end }}
         {{- end }}
