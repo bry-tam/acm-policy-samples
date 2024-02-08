@@ -25,7 +25,7 @@ spec:
           name: {{ $nd.metadata.name }}
           labels:
         {{- range $k, $v := $nd.metadata.labels }}
-          {{- if ne $k 'bry-tam/worker' }}
+          {{- if ne $k "bry-tam/worker" }}
               {{ $k }}: {{ (empty $v) | ternary "''" $v }}
           {{- end }}
         {{- end }}
