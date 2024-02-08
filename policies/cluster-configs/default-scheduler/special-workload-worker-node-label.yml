@@ -16,7 +16,7 @@ spec:
 
     {{- /* Add the special-workload label to the node and remove the default worker label  */ -}}
     {{- range $nd := $worker_nodes }}
-      {{- if haskey $nd.metadata.labels "isSpecial" }}
+      {{- if eq (dig "isSpecial" "false" $nd.metadata.labels) "true" }}
     - complianceType: musthave
       metadataComplianceType: mustonlyhave
       objectDefinition:
