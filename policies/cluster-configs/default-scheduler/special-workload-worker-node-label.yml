@@ -1,0 +1,35 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: special-workload-worker-node-label
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    {{- /* Lookup nodes that are not labeled with a known set of other labels like infra
+            then apply our standard label what will be used by the default scheduler
+     */ -}}
+    {{- $worker_nodes := (lookup "v1" "Node" "" "" "node-role.kubernetes.io/worker" 
+                                                    "!node-role.kubernetes.io/infra" 
+                                                    "!node-role.kubernetes.io/storage" 
+                                                    ).items }}
+
+    {{- /* Add the special-workload label to the node and remove the default worker label  */ -}}
+    {{- range $nd := $worker_nodes }}
+      {{- if eq (dig "isSpecial" "false" $nd.metadata.labels) "true" }}
+    - complianceType: musthave
+      metadataComplianceType: mustonlyhave
+      objectDefinition:
+        kind: Node
+        apiVersion: v1
+        metadata:
+          name: {{ $nd.metadata.name }}
+          labels:
+            portworx: enabled
+        {{- range $k, $v := $nd.metadata.labels }}
+          {{- if not (eq $k "bry-tam/worker" "portworx") }}
+            {{ $k }}: {{ $v | quote }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
