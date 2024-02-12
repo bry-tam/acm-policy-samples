@@ -61,15 +61,15 @@ You can manage the versioning and releases using either tags on a main branch or
 
 A separate repository is used to manage the versioning and release, a sample can be found in https://github.com/bry-tam/policy-release-management.  The release management repo has two directories; the "argo-config" hosts the ArgoCD Application which applies and manages the ApplicationSet in the "policy-manager" directory.  The ApplicationSet is where you would manage each release.
 
-  ### Main line development with tags
-  Only having one branch makes overall code management easier.  You would define a release, apply the tag to that specific revision in git, then update the tag as specified in the release-management repository for the environment you are releasing to.  To move the changes through Dev -> QA -> Prod you would set the tag for each environment as your release cycle specifies.
-
-  One drawback to this approach is an all or nothing approach to changes.  Once a change is merged and included with a tag that change plus all other commits prior would be included.  You can manage this by controlling when changes are merged in.  In a more emergency situation, such as when a fix is need for production that needs to be fast tracked while other changes may have already been merged in, you can branch from the current tag representing the prod release.  This would let you apply the isolated fix to the new branch, tag that commit and update the release-management repository.  You can then delete the branch and tag once you have released back to a tag on the main branch.
-
-  ### Branch based releases 
-  Managing the changes to policies between branches is a bit more work since you would have to create a pull-request for each change for each branch.  But this does allow far greater control over when a particular change is introduced into each release.  However note this greater control comes at the cost of increased management overhead.
-
-  The ApplicationSet defined in the release-management repository will generate an application for each branch based on the path in environments/* with the expectations the directory matches the branch name.
+  >### Main line development with tags
+  >Only having one branch makes overall code management easier.  You would define a release, apply the tag to that specific revision in git, then update the tag as specified in the release-management repository for the environment you are releasing to.  To move the changes through Dev -> QA -> Prod you would set the tag for each environment as your release cycle specifies.
+>
+  >One drawback to this approach is an all or nothing approach to changes.  Once a change is merged and included with a tag that change plus all other commits prior would be included.  You can manage this by controlling when changes are merged in.  In a more emergency situation, such as when a fix is need for production that needs to be fast tracked while other changes may have already been merged in, you can branch from the current tag representing the prod release.  This would let you apply the isolated fix to the new branch, tag that commit and update the release-management repository.  You can then delete the branch and tag once you have released back to a tag on the main branch.
+>
+  >### Branch based releases 
+  >Managing the changes to policies between branches is a bit more work since you would have to create a pull-request for each change for each branch.  But this does allow far greater control over when a particular change is introduced into each release.  However note this greater control comes at the cost of increased management overhead.
+>
+  >The ApplicationSet defined in the release-management repository will generate an application for each branch based on the path in environments/* with the expectations the directory matches the branch name.
 
 
  Using a kustomize approach with appropriate tags/branches allows a better workflow when moving changes between environments.  Assuming one ACM Hub will manage all clusters this approach allows the same policy to be reused for each environment.  Changing the tag for each environment or merging to the specific branches allow us to control when changes to the policy are propagated through the stack.
