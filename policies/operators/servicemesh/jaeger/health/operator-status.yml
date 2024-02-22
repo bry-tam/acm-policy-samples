@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: elasticsearch-operator-status
+  name: jaeger-operator-status
 spec:
   remediationAction: InformOnly
   severity: high
