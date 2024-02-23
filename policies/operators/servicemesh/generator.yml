@@ -97,7 +97,14 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
-
+  - name: servicemesh-controlplane
+    remediationAction: enforce
+    dependencies:
+      - name: "servicemesh-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: servicemesh/controlplane/namespace.yml
+      - path: servicemesh/controlplane/servicemeshcontrolplane.yml
 
   # - name: servicemesh-status
   #   remediationAction: InformOnly
