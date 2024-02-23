@@ -4,7 +4,7 @@ metadata:
   name: basic
   namespace: istio-system
 spec:
-  version: v2.4.2
+  version: v2.4
   mode: ClusterWide
   tracing:
     type: Jaeger
