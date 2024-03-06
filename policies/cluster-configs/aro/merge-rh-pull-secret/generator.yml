@@ -23,9 +23,6 @@ policies:
   
   - name: rh-pull-secret-merge
     remediationAction: enforce
-    dependencies:
-      - name: rh-pull-secret-prepare
-        compliance: "Compliant"
     manifests:
       - path: propagate-rh-pull-secret.yml
       - path: merge-pull-secret-with-aro.yml
