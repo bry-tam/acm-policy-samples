@@ -10,3 +10,4 @@ resources:
   - ./data-foundation/
   - ./acs/
   - ./acm/
+  - ./servicemesh/
