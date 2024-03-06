@@ -1,0 +1,44 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-aro-pull-secret
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - rh-pull-secret-merge
+placementBindingDefaults:
+  name: "merge-rh-pull-secret-binding"
+
+policies:
+  - name: rh-pull-secret-prepare
+    remediationAction: enforce
+    policySets:
+      - rh-pull-secret-hub
+    manifests:
+      - path: prepare-rh-pull-secret.yml
+
+  
+  - name: rh-pull-secret-merge
+    remediationAction: enforce
+    dependencies:
+      - name: rh-pull-secret-prepare
+        compliance: "Compliant"
+    manifests:
+      - path: propagate-rh-pull-secret.yml
+      - path: merge-pull-secret-with-aro.yml
+        extraDependencies: 
+          - name: rh-pull-secret-merge
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: rh-pull-secret-hub
+    placement:  
+      placementName: "env-bound-hub-placement"
+
+  - name: rh-pull-secret-merge
+    placement:
+      placementName: "env-bound-nohub-placement"
