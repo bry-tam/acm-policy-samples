@@ -1,0 +1,35 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: alert-clusterrole-unused
+spec:
+  remediationAction: InformOnly
+  severity: low
+  object-templates-raw: |
+    {{- /* create list of all ClusterRoles and bindings */ -}} 
+    {{- $clusterRoles := (lookup "rbac.authorization.k8s.io/v1" "ClusterRole" "" "").items }}
+    {{- $bindings := concat (lookup "rbac.authorization.k8s.io/v1" "ClusterRoleBinding" "" "").items 
+                            (lookup "rbac.authorization.k8s.io/v1" "RoleBinding" "" "").items }}
+
+    {{- range $cr := $clusterRoles }}
+      {{- /* try to exit early from looping if role is found in binding */ -}}
+      {{- $bindingFound := false }}
+      {{- range $bnd := $bindings }}
+        {{- if and (eq $bnd.roleRef.name $cr.metadata.name) (eq $bnd.roleRef.kind $cr.kind) }}
+          {{- $bindingFound = true }}
+          {{- break }}
+        {{- end }}
+      {{- end }}
+
+      {{- /* skip CR if binding found */ -}}
+      {{- if $bindingFound }}
+        {{- continue }}
+      {{- end }}
+
+    - complianceType: mustnothave
+      objectDefinition:
+        kind: ClusterRole
+        apiVersion: rbac.authorization.k8s.io/v1
+        metadata:
+          name: {{ $cr.metadata.name }}
+    {{- end }}

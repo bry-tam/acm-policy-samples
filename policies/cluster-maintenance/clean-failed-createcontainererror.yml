@@ -1,0 +1,26 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: createcontainererror-failed-pod-cleaner
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    {{- /* find pods in terminated state due to CreateContainerError */ -}} 
+    {{- /* corrects known https://access.redhat.com/solutions/6221251 */ -}}
+    {{- range $pp := (lookup "v1" "Pod" "" "").items }}
+      {{- /* if the pod is blocked because the container failed to create we should delete the pod */ -}}
+      {{- range $cns := $pp.staus.containerStatuses }}
+      {{- if and (eq $cns.laststate.terminated.reason "Error") 
+                 (eq $cns.started "false")
+                 (eq $cns.state.waiting.reason "CreateContainerError")
+                  }}
+    - complianceType: mustnothave
+      objectDefinition:
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: {{ $pp.metadata.name }}
+          namespace: {{ $pp.metadata.namespace }}
+      {{- end }}
+    {{- end }}
