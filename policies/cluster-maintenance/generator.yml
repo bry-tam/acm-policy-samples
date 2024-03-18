@@ -22,10 +22,22 @@ policies:
     manifests:
       - path: clean-rolebinding.yml
 
+  - name: alert-clusterrole-unused
+    remediationAction: InformOnly
+    manifests:
+      - path: alert-clusterrole-unused.yml
+
   - name: clean-groups
     remediationAction: inform
     manifests:
       - path: clean-groups.yml
+
+  - name: clean-failed-pods
+    remediationAction: enforce
+    manifests:
+      - path: clean-failed-nodeshutdown.yml
+      - path: clean-failed-createcontainererror.yml
+      
 
 policySets:
   - name: cluster-maintenance
