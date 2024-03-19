@@ -6,6 +6,7 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
+  consolidateManifests: false
   policySets:
     - cluster-maintenance
 placementBindingDefaults:
@@ -23,7 +24,6 @@ policies:
       - path: clean-rolebinding.yml
 
   - name: alert-clusterrole-unused
-    remediationAction: inform
     manifests:
       - path: alert-clusterrole-unused.yml
 
