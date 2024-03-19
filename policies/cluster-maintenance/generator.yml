@@ -23,7 +23,7 @@ policies:
       - path: clean-rolebinding.yml
 
   - name: alert-clusterrole-unused
-    remediationAction: InformOnly
+    remediationAction: inform
     manifests:
       - path: alert-clusterrole-unused.yml
 
