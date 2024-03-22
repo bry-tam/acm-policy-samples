@@ -1,0 +1,45 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: clusterrole-clp-tigera-ui-user-test
+spec:
+  object-templates-raw: |
+    {{- $oClusterRole := (lookup "rbac.authorization.k8s.io/v1" "ClusterRole" "" "tigera-ui-user") }}
+
+    - complianceType: mustonlyhave
+      objectDefinition:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: ClusterRole
+        metadata:
+          name: clp-tigera-ui-user
+          annotations:
+            rbac.authorization.ms.com/type: pa
+          labels:
+            rbac.authorization.ms.com/aggregate-to-clp-read-only: "true"
+        rules:
+    {{- range $ru := $oClusterRole.rules }}
+          - verbs:
+        {{- range $i := $ru.verbs }}
+              - {{ $i }}
+        {{- end }}
+      {{- if not (empty $ru.apiGroups) }}
+            apiGroups:
+        {{- range $i := $ru.apiGroups }}
+              - {{ $i }}
+        {{- end }}
+      {{- end }}
+      {{- if not (empty $ru.resources) }}
+            resources:
+        {{- range $i := $ru.resources }}
+              - {{ $i }}
+        {{- end }}
+      {{- end }}
+      {{- if not (empty $ru.resourceNames) }}
+            resourceNames:
+        {{- range $i := $ru.resourceNames }}
+              - {{ $i }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  remediationAction: enforce
+  severity: low

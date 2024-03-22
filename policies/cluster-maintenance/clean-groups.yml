@@ -6,15 +6,6 @@ spec:
   remediationAction: inform
   severity: low
   object-templates-raw: |
-    - complianceType: mustnothave
-      objectDefinition:
-        kind: ConfigMap
-        apiVersion: v1
-        metadata:
-          name: fake-policy-holder
-          namespace: default
-        data:
-          fake: holder so policy is not generated empty
     {{- range $grp := (lookup "user.openshift.io/v1" "Group" "" "").items }}
       {{- $savedUsers := "" }}
       {{- $hasUserRemoved := false }}
