@@ -15,7 +15,7 @@ spec:
         /policy-generator/PolicyGenerator
       command:
       - /bin/bash
-      image: '{{ (index (lookup "apps/v1" "Deployment" "open-cluster-management" "multicluster-operators-hub-subscription").spec.template.spec.containers 0).image }}'
+      image: registry.redhat.io/rhacm2/multicluster-operators-subscription-rhel8:v2.9
       name: policy-generator-install
       volumeMounts:
       - mountPath: /policy-generator
