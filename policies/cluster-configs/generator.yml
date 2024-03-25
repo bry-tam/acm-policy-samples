@@ -67,7 +67,7 @@ policies:
       - name: etcd-encryption
         compliance: "Compliant"
     policySets: 
-      - cluster-configs-sstorage
+      - cluster-configs-storage
     manifests:
       - path: machinesets/infra-storage-machineset.yml
       - path: machineconfigpools/storage.yml
