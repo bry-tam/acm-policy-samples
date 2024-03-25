@@ -61,7 +61,17 @@ policies:
     manifests:
       - path: machinesets/infra-machineset.yml
       - path: machineconfigpools/infra.yml
-        
+
+  - name: storage-nodes
+    dependencies:
+      - name: etcd-encryption
+        compliance: "Compliant"
+    policySets: 
+      - cluster-configs-sstorage
+    manifests:
+      - path: machinesets/infra-storage-machineset.yml
+      - path: machineconfigpools/storage.yml
+
   - name: cluster-autoscaling
     policySets: 
       - cluster-autoscaling
@@ -96,3 +106,7 @@ policySets:
   - name: cluster-scheduler
     placement:
       placementName: "ft-default-scheduler--enabled"
+
+  - name: cluster-configs-storage
+    placement:
+      placementName: "ft-storage--odf"
