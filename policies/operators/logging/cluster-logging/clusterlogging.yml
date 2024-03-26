@@ -19,7 +19,7 @@ spec:
           collection:
             type: "vector"
 
-    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
     {{- if ne $infraCount 0 }}
             tolerations:
             - operator: Exists
