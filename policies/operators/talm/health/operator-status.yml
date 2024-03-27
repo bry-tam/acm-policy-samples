@@ -10,7 +10,7 @@ spec:
     {{- /* ## Get the subscription we are checking health for */ -}}
     {{- $op_namespace := "openshift-operators" }}
     {{- $op_subName := "openshift-topology-aware-lifecycle-manager-subscription"}}
-    
+
     {{- /* ## Ensure the Subscription is at latest known release status */ -}}
     {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" $op_namespace $op_subName) }}
     - complianceType: musthave
@@ -22,6 +22,18 @@ spec:
           name: {{ $op_subName }}
         status:
           state: AtLatestKnown
+
+    {{- /* ## Ensure the ClusterServiceVersion is at latest known release status */ -}}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: ClusterServiceVersion
+        metadata:
+          name: {{- $sub.status.currentCSV }}
+          namespace: {{- $op_namespace }}
+        status:
+          phase: Succeeded
+          reason: InstallSucceeded
 
     {{- /* ## Ensure the operator deployment exists and has reached full pod health */ -}}
     {{- $currentCSV := (lookup "operators.coreos.com/v1alpha1" "ClusterServiceVersion"  $op_namespace $sub.status.currentCSV) }}
