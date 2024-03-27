@@ -4,53 +4,55 @@ kind: ConfigurationPolicy
 metadata:
   name: loki-operator-status
 spec:
-  remediationAction: inform
+  remediationAction: InformOnly
   severity: high
   object-templates-raw: |
-    ## Get the subscription we are checking health for
-    {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-operators-redhat" "loki-operator") }}
-
-    ## Ensure the Subscription is at latest known release status
+    {{/* ##  Get the subscription we are checking health for ## */}}
+    {{- $op_namespace := "openshift-operators-redhat" }}
+    {{- $op_subName := "loki-operator"}}
+    
+    {{/* ##  Ensure the Subscription is at latest known release status ## */}}
+    {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" $op_namespace $op_subName) }}
     - complianceType: musthave
       objectDefinition:
         apiVersion: operators.coreos.com/v1alpha1
         kind: Subscription
         metadata:
-          namespace: openshift-operators-redhat
-          labels:
-            acm-policy: loki-operator
+          namespace: {{ $op_namespace }}
+          name: {{ $op_subName }}
         status:
           state: AtLatestKnown
 
-    ## Ensure the operator deployment exists and has reached full pod health
-    {{- $opDepList := list "loki-operator-controller-manager" }}
+    {{/* ##  Ensure the ClusterServiceVersion is at latest known release status ## */}}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: ClusterServiceVersion
+        metadata:
+          name: {{ $sub.status.currentCSV }}
+          namespace: {{ $op_namespace }}
+        status:
+          phase: Succeeded
+          reason: InstallSucceeded
 
-    {{- range $depName := $opDepList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" $sub.metadata.namespace $depName) }}
+    {{/* ##  Ensure the operator deployment exists and has reached full pod health ## */}}
+    {{- $currentCSV := (lookup "operators.coreos.com/v1alpha1" "ClusterServiceVersion"  $op_namespace $sub.status.currentCSV) }}
+    {{- range $dep := $currentCSV.spec.install.spec.deployments }}
     - complianceType: musthave
       objectDefinition:
         kind: Deployment
         apiVersion: apps/v1
         metadata:
-          namespace: openshift-operators-redhat
-      {{- if not $dep }}
-          name: {{ $depName }}
-      {{- else }}
+          namespace: {{ $op_namespace }}
+          name: {{ $dep.name }}
           labels:
             olm.owner: '{{ $sub.status.currentCSV }}'
-        spec:
-          selector:
-            matchLabels:
-        {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-        {{- end }}
         status:
-          replicas: {{ $dep.spec.replicas }}
-          updatedReplicas: {{ $dep.spec.replicas }}
-          readyReplicas: {{ $dep.spec.replicas }}
-          availableReplicas: {{ $dep.spec.replicas }}
+          replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
           conditions:
             - type: Available
               status: 'True'
-      {{- end }}
     {{- end }}

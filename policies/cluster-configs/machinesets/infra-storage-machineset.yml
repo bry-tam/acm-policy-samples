@@ -1,13 +1,13 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: create-infra-machineset
+  name: create-storage-machineset
 spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
     {{/* ##  Specify the parameters needed to create the MachineSet  ## */}}
-    {{- $machineset_role := "infra" }}
+    {{- $machineset_role := "storage" }}
     {{- $infrastructure := (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status }}
     {{- $region := $infrastructure.platformStatus.aws.region }}
     {{- $zones := list (printf "%sa" $region)
@@ -43,9 +43,11 @@ spec:
             spec:
               metadata:
                 labels:
-                  node-role.kubernetes.io/{{ $machineset_role }}: "" 
+                  node-role.kubernetes.io/{{ $machineset_role }}: ""
+                  node-role.kubernetes.io/infra: ""
+                  cluster.ocs.openshift.io/openshift-storage: ""
               taints: 
-                - key: node-role.kubernetes.io/{{ $machineset_role }}
+                - key: node.ocs.openshift.io/storage
                   effect: NoSchedule
               providerSpec:
                 value:

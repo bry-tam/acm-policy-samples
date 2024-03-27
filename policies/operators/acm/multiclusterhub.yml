@@ -7,7 +7,7 @@ spec:
   remediationAction: enforce
   severity: high
   object-templates-raw: |
-    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
     - complianceType: musthave
       objectDefinition:
         apiVersion: operator.open-cluster-management.io/v1
@@ -17,10 +17,7 @@ spec:
           namespace: open-cluster-management
         spec:
           disableHubSelfManagement: {{ (eq (fromClusterClaim "acm-hub") "active") | ternary false true }}
-          overrides:
-            components:
-            - name: managedserviceaccount
-              enabled: true
+
     {{- if ne $infraCount 0 }}
           nodeSelector:
             node-role.kubernetes.io/infra: ""

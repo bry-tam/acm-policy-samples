@@ -7,7 +7,7 @@ spec:
   remediationAction: InformOnly
   severity: high
   object-templates-raw: |
-    {{- /* ## Ensure the central deployments exists and has reached full pod health */ -}}
+    {{/* ##  Ensure the central deployments exists and has reached full pod health ## */}}
     {{- $opDepList := list "central" "central-db" "scanner" "scanner-db" }}
 
     {{- range $depName := $opDepList }}

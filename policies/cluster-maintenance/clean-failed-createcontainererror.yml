@@ -6,15 +6,14 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{- /* find pods in terminated state due to CreateContainerError */ -}} 
-    {{- /* corrects known https://access.redhat.com/solutions/6221251 */ -}}
+    {{/* ##  find pods in terminated state due to CreateContainerError ## */}}
     {{- range $pp := (lookup "v1" "Pod" "" "").items }}
-      {{- /* if the pod is blocked because the container failed to create we should delete the pod */ -}}
+
+      {{/* ##  if the pod is blocked because the container failed to create we should delete the pod ## */}}
       {{- range $cns := $pp.staus.containerStatuses }}
-      {{- if and (eq $cns.laststate.terminated.reason "Error") 
-                 (eq $cns.started "false")
-                 (eq $cns.state.waiting.reason "CreateContainerError")
-                  }}
+        {{- if and (eq $cns.laststate.terminated.reason "Error") 
+                  (eq $cns.started "false")
+                  (eq $cns.state.waiting.reason "CreateContainerError") }}
     - complianceType: mustnothave
       objectDefinition:
         apiVersion: v1
@@ -22,5 +21,6 @@ spec:
         metadata:
           name: {{ $pp.metadata.name }}
           namespace: {{ $pp.metadata.namespace }}
+        {{- end }}
       {{- end }}
     {{- end }}

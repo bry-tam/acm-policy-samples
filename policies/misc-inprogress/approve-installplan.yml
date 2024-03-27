@@ -7,15 +7,15 @@ spec:
   remediationAction: enforce
   severity: high
   object-templates-raw: |
-    {{- /* Create a list of all installplans  */ -}}
+    {{/* ##  Create a list of all installplans  ## */}}
     {{- $opNamespace := "openshift-operators-redhat" }}
     {{- $csvPrefix := "loki-operator.v" }}
 
-    {{- /* maxVersion determins what versions will be approved.  Required to be in semverCompare format  */ -}}
+    {{/* ##  maxVersion determins what versions will be approved.  Required to be in semverCompare format  ## */}}
     {{- $maxVersion := "<=5.7.8" }}
 
     {{- range $ip := (lookup "operators.coreos.com/v1alpha1" "InstallPlan" $opNamespace "").items }}
-      {{- /* check if the InstallPlan found contains the operator with an acceptable version  */ -}}
+      {{/* ##  check if the InstallPlan found contains the operator with an acceptable version  ## */}}
       {{- range $csv := $ip.spec.clusterServiceVersionNames }}
         {{- if and (hasPrefix $csvPrefix $csv) (semverCompare $maxVersion ($csv | replace $csvPrefix "")) }}
     - complianceType: musthave

@@ -6,9 +6,9 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{- /* Lookup nodes that are not labeled with a known set of other labels like infra
+    {{/* ##  Lookup nodes that are not labeled with a known set of other labels like infra
             then apply our standard label what will be used by the default scheduler
-     */ -}}
+     ## */}}
     {{- $worker_nodes := (lookup "v1" "Node" "" "" "node-role.kubernetes.io/worker" 
                                                     "!node-role.kubernetes.io/infra" 
                                                     "!node-role.kubernetes.io/storage" 
@@ -16,7 +16,7 @@ spec:
                                                     "portworx!=enabled"
                                                     ).items }}
 
-    {{- /* Add the default worker label to the nodes  */ -}}
+    {{/* ##  Add the default worker label to the nodes  ## */}}
     {{- range $nd := $worker_nodes }}
     - complianceType: musthave
       objectDefinition:
