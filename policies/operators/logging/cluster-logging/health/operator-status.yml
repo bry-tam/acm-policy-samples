@@ -32,8 +32,8 @@ spec:
         apiVersion: operators.coreos.com/v1alpha1
         kind: ClusterServiceVersion
         metadata:
-          name: {{- $sub.status.currentCSV }}
-          namespace: {{- $op_namespace }}
+          name: {{ $sub.status.currentCSV }}
+          namespace: {{ $op_namespace }}
         status:
           phase: Succeeded
           reason: InstallSucceeded
