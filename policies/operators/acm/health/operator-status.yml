@@ -9,7 +9,7 @@ spec:
   object-templates-raw: |
     {{/* ##  Get the subscription we are checking health for ## */}}
     {{- $op_namespace := "open-cluster-management" }}
-    {{- $op_subName := ""advanced-cluster-management"}}
+    {{- $op_subName := "advanced-cluster-management" }}
     
     {{/* ##  Ensure the Subscription is at latest known release status ## */}}
     {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" $op_namespace $op_subName) }}
