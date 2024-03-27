@@ -7,9 +7,9 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* Create a list of all expected deployments in openshift-pipelines
+    {{/* ##  Create a list of all expected deployments in openshift-pipelines
           Normally we would use labels to identify them, however there isn't
-          a selector available to uniquely identify the deployments   */ -}}
+          a selector available to uniquely identify the deployments   ## */}}
     {{- $depList := list "csi-addons-controller-manager"
                           "noobaa-endpoint"
                           "noobaa-operator"

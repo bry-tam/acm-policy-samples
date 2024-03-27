@@ -6,38 +6,29 @@ spec:
   remediationAction: inform
   severity: low
   object-templates-raw: |
-    - complianceType: mustnothave
-      objectDefinition:
-        kind: ConfigMap
-        apiVersion: v1
-        metadata:
-          name: fake-policy-holder
-          namespace: default
-        data:
-          fake: holder so policy is not generated empty
     {{- range $grp := (lookup "user.openshift.io/v1" "Group" "" "").items }}
       {{- $savedUsers := "" }}
       {{- $hasUserRemoved := false }}
       {{- if or (not $grp.users) (eq (len $grp.users) 0) }}
-        {{- /* There are no users in the group, mark as users removed */ -}}
+        {{/* ##  There are no users in the group, mark as users removed ## */}}
         {{- $hasUserRemoved = true }}
       {{- else }}
         {{- range $i, $usr := $grp.users }}
           {{- $user := false }}
           {{- $user = (lookup "user.openshift.io/v1" "User" "" $usr) }}
           {{- if not $user }}
-            {{- /* user is not in the cluster, mark to remove. */ -}}
+            {{/* ##  user is not in the cluster, mark to remove. ## */}}
             {{- $hasUserRemoved = true }}
           {{- else }}
-            {{- /* user is in the cluster so we should save it for later */ -}}
+            {{/* ##  user is in the cluster so we should save it for later ## */}}
             {{- $tUsr := `
         - %s` }}
             {{- $savedUsers = (cat $savedUsers (printf $tUsr $usr)) }}
           {{- end }}
         {{- end }}
       {{- end }}
-      {{- /* all users have been evaluated. */ -}}
-      {{- /* if there are no users in savedUsers list and hasUserRemoved we should remove the group */ -}}
+      {{/* ##  all users have been evaluated. ## */}}
+      {{/* ##  if there are no users in savedUsers list and hasUserRemoved we should remove the group ## */}}
       {{- if and ($hasUserRemoved) (not $savedUsers) }}
     - complianceType: mustnothave
       objectDefinition:

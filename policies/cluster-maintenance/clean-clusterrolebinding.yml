@@ -6,16 +6,6 @@ spec:
   remediationAction: inform
   severity: low
   object-templates-raw: |
-    - complianceType: mustnothave
-      objectDefinition:
-        kind: ConfigMap
-        apiVersion: v1
-        metadata:
-          name: fake-policy-holder
-          namespace: default
-        data:
-          fake: holder so policy is not generated empty
-        
     {{- range $crb := (lookup "rbac.authorization.k8s.io/v1" "ClusterRoleBinding" "" "").items }}
       {{- $hasAnn := false }}
       {{- range $a, $an := $crb.metadata.annotations }}

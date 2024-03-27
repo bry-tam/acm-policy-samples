@@ -7,7 +7,7 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* Create a list of all expected deployments in openshift-gatekeeper-system   */ -}}
+    {{/* ##  Create a list of all expected deployments in openshift-gatekeeper-system   ## */}}
     {{- $depList := list "gatekeeper-audit"
                           "gatekeeper-controller-manager"
     }}

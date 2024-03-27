@@ -7,10 +7,10 @@ spec:
   severity: low
   pruneObjectBehavior: DeleteIfCreated
   object-templates-raw: |
-    {{- /* create autoscaler based on labels set on machine set for minimum and maximum sizing  */ -}}
+    {{/* ##  create autoscaler based on labels set on machine set for minimum and maximum sizing  ## */}}
     {{- $machinesets := (lookup "machine.openshift.io/v1beta1" "MachineSet" "" "" "autoscale.minreplicas" "autoscale.maxreplicas").items }}
 
-    {{- /* Generate the MachineSet for each zone as specified  */ -}}
+    {{/* ##  Generate the MachineSet for each zone as specified  ## */}}
     {{- range $ms := $machinesets }}
     - complianceType: musthave
       objectDefinition:

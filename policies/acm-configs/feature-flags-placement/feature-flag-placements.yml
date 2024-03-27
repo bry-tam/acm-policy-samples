@@ -7,14 +7,14 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{- /* Gather all PlacementBindings from the hub cluster */ -}}
+    {{/* ##  Gather all PlacementBindings from the hub cluster ## */}}
     {{- range $pb := (lookup "policy.open-cluster-management.io/v1" "PlacementBinding" "" "").items }}
-      {{- /* test if the name of the Placement in the PlacementBinding matches the naming of a feature flag */ -}}
+      {{/* ##  test if the name of the Placement in the PlacementBinding matches the naming of a feature flag ## */}}
       {{- $pname := $pb.placementRef.name }}
       {{- if hasPrefix "ft-" $pname }}
         {{- $feature := (split "--" ($pname | replace "ft-" "")) }}
 
-        {{- /* Lookup an existing Placement in the same namespace so we can use the same ClusterSet */ -}}
+        {{/* ##  Lookup an existing Placement in the same namespace so we can use the same ClusterSet ## */}}
         {{- $refPlacement := (index (lookup "cluster.open-cluster-management.io/v1beta1" "Placement" $pb.metadata.namespace "").items 0) }}
     - complianceType: musthave
       objectDefinition:

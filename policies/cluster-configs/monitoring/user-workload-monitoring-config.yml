@@ -6,7 +6,7 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
     - complianceType: musthave
       objectDefinition:
         apiVersion: v1

@@ -8,7 +8,7 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{- /* Gather all Policies from the hub cluster that propagate the sensor-tls certs */ -}}
+    {{/* ##  Gather all Policies from the hub cluster that propagate the sensor-tls certs ## */}}
     {{- range $plcy := (lookup "policy.open-cluster-management.io/v1" "Policy" "" "" "!policy.open-cluster-management.io/root-policy").items }}
       {{- if not (eq $plcy.metadata.name "acs-sensor") }}
         {{- continue }}

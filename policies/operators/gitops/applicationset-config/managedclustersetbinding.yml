@@ -10,7 +10,7 @@ spec:
     {{- range $mcs := (lookup "cluster.open-cluster-management.io/v1beta2" "ManagedClusterSet" "" "").items }}
     - complianceType: musthave
       objectDefinition:
-        apiVersion: cluster.open-cluster-management.io/v1beta1
+        apiVersion: cluster.open-cluster-management.io/v1beta2
         kind: ManagedClusterSetBinding
         metadata:
           name: {{ $mcs.metadata.name }}

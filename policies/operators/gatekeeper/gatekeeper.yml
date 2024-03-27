@@ -8,7 +8,7 @@ spec:
   object-templates-raw: |
     - complianceType: musthave
       objectDefinition:
-        {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra").items) }}
+        {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
 
         apiVersion: operator.gatekeeper.sh/v1alpha1
         kind: Gatekeeper
