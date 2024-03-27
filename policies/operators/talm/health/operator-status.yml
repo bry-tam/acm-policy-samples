@@ -23,13 +23,13 @@ spec:
         status:
           state: AtLatestKnown
 
-    {{- /* ## Ensure the ClusterServiceVersion is at latest known release status */ -}}
+    {{- /* ## Ensure the ClusterServiceVersion is correct version */ }}
     - complianceType: musthave
       objectDefinition:
         apiVersion: operators.coreos.com/v1alpha1
         kind: ClusterServiceVersion
         metadata:
-          name: '{{ $sub.status.currentCSV }}'
+          name: {{ $sub.status.currentCSV }}
           namespace: {{ $op_namespace }}
         status:
           phase: Succeeded
