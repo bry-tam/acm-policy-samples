@@ -4,7 +4,7 @@ kind: ConfigurationPolicy
 metadata:
   name: gatekeeper-operator-status
 spec:
-  remediationAction: inform
+  remediationAction: InformOnly
   severity: high
   object-templates-raw: |
     {{/* ##  Get the subscription we are checking health for ## */}}
