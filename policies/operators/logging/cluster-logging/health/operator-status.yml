@@ -51,10 +51,10 @@ spec:
           labels:
             olm.owner: '{{ $sub.status.currentCSV }}'
         status:
-          replicas: {{ $dep.spec.replicas }}
-          updatedReplicas: {{ $dep.spec.replicas }}
-          readyReplicas: {{ $dep.spec.replicas }}
-          availableReplicas: {{ $dep.spec.replicas }}
+          replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
           conditions:
             - type: Available
               status: 'True'
