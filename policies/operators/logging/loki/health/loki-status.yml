@@ -7,7 +7,7 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* Create a list of all expected deployments in openshift-logging for loki */ -}}
+    {{/* ##  Create a list of all expected deployments in openshift-logging for loki ## */}}
     {{- $depList := list "logging-loki-distributor"
                           "logging-loki-gateway"
                           "logging-loki-querier"
@@ -50,7 +50,7 @@ spec:
       {{- end }}
     {{- end }}
 
-    {{- /* Create a list of all expected statefulesets in openshift-logging for loki */ -}}
+    {{/* ##  Create a list of all expected statefulesets in openshift-logging for loki ## */}}
     {{- $ssDepList := list "logging-loki-compactor"
                           "logging-loki-index-gateway"
                           "logging-loki-ingester"

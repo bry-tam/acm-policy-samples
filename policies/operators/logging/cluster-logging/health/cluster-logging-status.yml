@@ -7,7 +7,7 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* Create a list of all expected deployments in openshift-logging for loki */ -}}
+    {{/* ##  Create a list of all expected deployments in openshift-logging for loki ## */}}
     {{- $depList := list "logging-view-plugin" }}
 
     ## Create a CompilianceType objectDefinition for each deployment
@@ -46,7 +46,7 @@ spec:
       {{- end }}
     {{- end }}
 
-    {{- /* Ensure the collector is deployed to all nodes */ -}}
+    {{/* ##  Ensure the collector is deployed to all nodes ## */}}
     {{- $nodeCount := (len (lookup "v1" "Node" "" "").items) }}
     - complianceType: musthave
       objectDefinition:

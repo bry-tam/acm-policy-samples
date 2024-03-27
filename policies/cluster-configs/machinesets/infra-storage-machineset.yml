@@ -6,7 +6,7 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{- /* Specify the parameters needed to create the MachineSet  */ -}}
+    {{/* ##  Specify the parameters needed to create the MachineSet  ## */}}
     {{- $machineset_role := "storage" }}
     {{- $infrastructure := (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status }}
     {{- $region := $infrastructure.platformStatus.aws.region }}
@@ -16,7 +16,7 @@ spec:
     {{- $infrastructure_id := $infrastructure.infrastructureName }}
     {{- $worker_ms := (index (lookup "machine.openshift.io/v1beta1" "MachineSet" "openshift-machine-api" "").items 0) }}
 
-    {{- /* Generate the MachineSet for each zone as specified  */ -}}
+    {{/* ##  Generate the MachineSet for each zone as specified  ## */}}
     {{- range $zone := $zones }}
     - complianceType: musthave
       objectDefinition:

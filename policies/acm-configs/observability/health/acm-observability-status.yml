@@ -7,7 +7,7 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{- /* Create a list of all expected deployments in open-cluster-management-observability */ -}}
+    {{/* ##  Create a list of all expected deployments in open-cluster-management-observability ## */}}
     {{- $depList := list "observability-grafana"
                           "observability-observatorium-api"
                           "observability-observatorium-operator"

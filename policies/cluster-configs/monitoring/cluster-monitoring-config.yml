@@ -6,11 +6,11 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{- /* check if managed cluster is self-hosted or ARO/ROSA */ -}}
+    {{/* ##  check if managed cluster is self-hosted or ARO/ROSA ## */}}
     {{- $isSelfHosted := (not (eq (fromClusterClaim "product.open-cluster-management.io") "ARO" "ROSA")) }}
     - complianceType: musthave
       objectDefinition:
-    {{- /* ensure we have infra nodes to run the component on  */ -}}
+    {{/* ##  ensure we have infra nodes to run the component on  ## */}}
     {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
         apiVersion: v1
         kind: ConfigMap
@@ -82,7 +82,7 @@ spec:
                 key: node-role.kubernetes.io/infra
     {{- end }}
              
-    {{- /* group all remaining components together since the only config is for infra nodes  */ -}}
+    {{/* ##  group all remaining components together since the only config is for infra nodes  ## */}}
     {{- if ne $infraCount 0 }}
             prometheusOperator:
               nodeSelector:
