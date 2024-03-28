@@ -4,7 +4,7 @@ kind: ConfigurationPolicy
 metadata:
   name: cluster-operator-status
 spec:
-  remediationAction: InformOnly
+  remediationAction: inform
   severity: high
   object-templates-raw: |
     {{/* ##  Get the current or desired version of the cluster ## */}}
