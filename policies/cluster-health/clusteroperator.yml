@@ -9,7 +9,7 @@ spec:
   object-templates-raw: |
     {{/* ##  Get the current or desired version of the cluster ## */}}
     {{- $cVer := (lookup "config.openshift.io/v1" "ClusterVersion" "" "version") }}
-    {{- $desiredVersion := $cVer.status.desired.version }}
+    {{- $desiredVersion := (dig "desiredUpdate" "version" ($cVer.status.desired.version) $cVer.spec) }}
 
     {{/* ## Loop through the ClusterOperators to ensure they are healthy ## */}}
     {{- range $cOp := (lookup "config.openshift.io/v1" "ClusterOperator" "" "").items }}
