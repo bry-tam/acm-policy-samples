@@ -21,6 +21,7 @@ policies:
     manifests:
       - path: clusterversion.yml
       - path: clusteroperator.yml
+      - path: machineconfigpool.yml
 
 policySets:
   - name: cluster-health
