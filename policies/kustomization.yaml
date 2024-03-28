@@ -20,6 +20,7 @@ resources:
   - ./application-defaults/
   - ./cluster-version/
   - ./gatekeeper/
+  - ./cluster-health
 
 # commonAnnotations:
 #   argocd.argoproj.io/compare-options: IgnoreExtraneous

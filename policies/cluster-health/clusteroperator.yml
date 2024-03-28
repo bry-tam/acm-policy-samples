@@ -1,0 +1,30 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: cluster-operator-status
+spec:
+  remediationAction: InformOnly
+  severity: high
+  object-templates-raw: |
+    {{/* ##  Get the current or desired version of the cluster ## */}}
+    {{- $cVer := (lookup "config.openshift.io/v1" "ClusterVersion" "" "version") }}
+    {{- $desiredVersion := $cVer.status.desired.version }}
+
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: config.openshift.io/v1
+        kind: ClusterVersion
+        metadata:
+          name: version
+        status:
+          history:
+            - version: {{ $desiredVersion }}
+              state: "Completed"
+          conditions:
+            - status: 'True'
+              type: Available
+            - status: 'False'
+              type: Failing
+            - status: 'False'
+              type: Progressing
