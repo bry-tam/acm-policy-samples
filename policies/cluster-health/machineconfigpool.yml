@@ -8,7 +8,7 @@ spec:
   severity: high
   object-templates-raw: |
     {{/* ##  Get the list of MachineConfigPools ## */}}
-    {{- $mcpList := (lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "") }}
+    {{- $mcpList := (lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "").items }}
 
     {{- range $mcp := $mcpList }}
     - complianceType: musthave
