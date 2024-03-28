@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: cluster-operator-status
+  name: cluster-version-status
 spec:
   remediationAction: inform
   severity: high
@@ -11,26 +11,20 @@ spec:
     {{- $cVer := (lookup "config.openshift.io/v1" "ClusterVersion" "" "version") }}
     {{- $desiredVersion := $cVer.status.desired.version }}
 
-    {{/* ## Loop through the ClusterOperators to ensure they are healthy ## */}}
-    {{- range $cOp := (lookup "config.openshift.io/v1" "ClusterOperator" "" "").items }}
-
     - complianceType: musthave
       objectDefinition:
         apiVersion: config.openshift.io/v1
-        kind: ClusterOperator
+        kind: ClusterVersion
         metadata:
-          name: {{ $cOp.metadata.name }}
+          name: version
         status:
+          history:
+            - version: {{ $desiredVersion }}
+              state: "Completed"
           conditions:
-            - status: 'False'
-              type: Progressing
-            - status: 'False'
-              type: Degraded
             - status: 'True'
               type: Available
             - status: 'False'
-              type: Disabled
-          versions:
-            - name: operator
-              version: {{ $desiredVersion }}
-    {{- end }}
+              type: Failing
+            - status: 'False'
+              type: Progressing

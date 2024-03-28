@@ -19,6 +19,7 @@ policies:
   - name: cluster-health-eval
     remediationAction: enforce
     manifests:
+      - path: clusterversion.yml
       - path: clusteroperator.yml
 
 policySets:
