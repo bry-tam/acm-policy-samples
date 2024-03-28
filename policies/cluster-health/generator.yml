@@ -22,6 +22,7 @@ policies:
       - path: clusterversion.yml
       - path: clusteroperator.yml
       - path: machineconfigpool.yml
+      - path: node.yml
 
 policySets:
   - name: cluster-health

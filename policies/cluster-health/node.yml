@@ -1,0 +1,93 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: node-status
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates-raw: |
+    {{/* ##  Get the list of MachineConfigPools so we can get the rendered config name ## */}}
+    {{- $mcpList := (lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "").items }}
+    {{- $nodeList := (lookup "v1" "Node" "" "") }}
+    {{- $evaluatedNodes := list "" }}
+    {{- $workerMCP := "" }}
+ 
+    {{/* ##  Loop through all the MCP except worker.  Worker will be evaluated last against any nodes not already found. ## */}}
+    {{- range $mcp := $mcpList }}
+      {{- if eq $mcp.metadata.name "worker" }}
+        {{- $workerMCP = $mcp }}
+        {{- continue }}
+      {{- end }}
+
+      {{- $nodeSelector := list "" }}
+      {{- if not (empty $mcp.spec.nodeSelector.matchLabels) }}
+        {{- range $k,$v := $mcp.spec.nodeSelector.matchLabels }}
+          $nodeSelector = append $nodeSelector (printf "%s=%s" $k ($v | quote))
+        {{- end }}
+      {{- else }}
+        {{- range $e := $mcp.spec.nodeSelector.matchExpressions }}
+          {{- if eq $e.operator "Exists" }}
+            $nodeSelector = append $nodeSelector $e.key
+          {{- else }}
+            $nodeSelector = append $nodeSelector (printf "%s %s (%s)" $e.key $e.operator ($e.values | join ","))
+          {{- end }}
+        {{- end }}
+      {{- end }}
+
+      {{- $mcpNodeList := (lookup "v1" "Node" "" "" $nodeSelector).items }}
+      {{- range $node := $mcpNodeList }}
+        {{/* ##  record the node name so we can exclude it when checking the worker MCP. ## */}}
+        {{- $evaluatedNodes = append $evaluatedNodes $node.metadata.name }}
+
+    - complianceType: musthave
+      objectDefinition:
+        kind: Node
+        apiVersion: v1
+        metadata:
+          name: {{ $node.metadata.name }}
+          annotations:
+            machineconfiguration.openshift.io/currentConfig: {{ $mcp.spec.configuration.name }}
+            machineconfiguration.openshift.io/desiredConfig: {{ $mcp.spec.configuration.name }}
+            machineconfiguration.openshift.io/state: Done
+        status:
+          conditions:
+            - type: MemoryPressure
+              status: 'False'
+            - type: DiskPressure
+              status: 'False'
+            - type: PIDPressure
+              status: 'False'
+            - type: Ready
+              status: 'True'
+      {{- end }}
+    {{- end }}
+
+    {{/* ##  Loop through all the nodes excluding those that have been evaluated - remaining should have worker MCP config. ## */}}
+    {{/* ##  This should catch any nodes that are not selected by an MCP, which would prevent them from being updated. ## */}}
+    {{- range $node := $nodeList }}
+      {{- if (has $node.metadata.name $evaluatedNodes) }}
+        {{- continue }}
+      {{- end }}
+
+    - complianceType: musthave
+      objectDefinition:
+        kind: Node
+        apiVersion: v1
+        metadata:
+          name: {{ $node.metadata.name }}
+          annotations:
+            machineconfiguration.openshift.io/currentConfig: {{ $workerMCP.spec.configuration.name }}
+            machineconfiguration.openshift.io/desiredConfig: {{ $workerMCP.spec.configuration.name }}
+            machineconfiguration.openshift.io/state: Done
+        status:
+          conditions:
+            - type: MemoryPressure
+              status: 'False'
+            - type: DiskPressure
+              status: 'False'
+            - type: PIDPressure
+              status: 'False'
+            - type: Ready
+              status: 'True'
+    {{- end }}
