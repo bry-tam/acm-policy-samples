@@ -28,8 +28,6 @@ spec:
               type: Degraded
             - status: 'True'
               type: Available
-            - status: 'False'
-              type: Disabled
           versions:
             - name: operator
               version: {{ $desiredVersion }}
