@@ -1,0 +1,121 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: node-status
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates-raw: |
+    {{/* ##  Get the list of MachineConfigPools so we can get the rendered config name ## */}}
+    {{- $mcpList := (lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "").items }}
+    {{- $nodeList := (lookup "v1" "Node" "" "").items }}
+    {{- $evaluatedNodes := list "" }}
+    {{- $workerMCP := "" }}
+
+    {{/* ##  Loop through all the MCP except worker.  Worker will be evaluated last against any nodes not already found. ## */}}
+    {{- range $mcp := $mcpList }}
+      {{- if eq $mcp.metadata.name "worker" }}
+        {{- $workerMCP = $mcp }}
+        {{- continue }}
+      {{- end }}
+      
+      {{- range $node := $nodeList }}
+        {{- $nodeMatches := true }}
+
+        {{/* ##  determine how the nodeSelector is specified.   ## */}}
+        {{/* ##  There isn't a direct way to get the nodes from the MCP, so we are going to be creative ## */}}
+        {{- if not (empty $mcp.spec.nodeSelector.matchLabels) }}
+          {{- range $k,$v := $mcp.spec.nodeSelector.matchLabels }}
+            {{/* ##  does the node have the label listed ## */}}
+            {{- if ne (dig "labels" $k "NOTFOUND" $node.metadata) $v }}
+              {{- $nodeMatches = false }}
+              {{- break }}
+            {{- end }}
+          {{- end }}
+        {{- else }}  
+          {{- range $e := $mcp.spec.nodeSelector.matchExpressions }}
+            {{/* ##  When the operator is Exists it does not matter the value, the label must be there ## */}}
+            {{/* ##  If it is not there we can exit quickly as this node is not a match ## */}}
+            {{- if and (eq $e.operator "Exists") (eq (dig "labels" $e.key "NOTFOUND" $node.metadata) "NOTFOUND") }}
+              {{- $nodeMatches = false }}
+              {{- break }}
+            {{- else if ne $e.operator "Exists" }}
+              {{/* ##  For all other operators we need to see if the value matches what is specified ## */}}
+              {{- $labelFound := false }}
+              {{- range $val := $e.values }}
+                {{/* ##  find any positive matches, fun use of dig to find the label on the node and get the value ## */}}
+                {{- if eq (dig "labels" $e.key "NOTFOUND" $node.metadata) $val }}
+                  {{- $labelFound = true }}
+                {{- end }}
+              {{- end }}
+              
+              {{/* ##  check if we found the label within the $e.values ## */}}
+              {{/* ##  If the operator is "IN" any value found will satisfy the requirement ## */}}
+              {{/* ##  If the operator is "NOTIN" none of the values can be found ## */}}
+              {{- if or (and (eq $e.operator "In") (not $labelFound))  (and (eq $e.operator "NotIn") ($labelFound)) }}
+                {{- $nodeMatches = false }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+
+        {{/* ##  If we didn't find a match for the node in the selector exit this iteration ## */}}
+        {{- if not $nodeMatches }}
+          {{- continue }} 
+        {{- end }}
+
+        {{/* ##  record the node name so we can exclude it when checking the worker MCP. ## */}}
+        {{- $evaluatedNodes = append $evaluatedNodes $node.metadata.name }}
+
+    - complianceType: musthave
+      objectDefinition:
+        kind: Node
+        apiVersion: v1
+        metadata:
+          name: {{ $node.metadata.name }}
+          annotations:
+            machineconfiguration.openshift.io/currentConfig: {{ $mcp.spec.configuration.name }}
+            machineconfiguration.openshift.io/desiredConfig: {{ $mcp.spec.configuration.name }}
+            machineconfiguration.openshift.io/state: Done
+        status:
+          conditions:
+            - type: MemoryPressure
+              status: 'False'
+            - type: DiskPressure
+              status: 'False'
+            - type: PIDPressure
+              status: 'False'
+            - type: Ready
+              status: 'True'
+      {{- end }}
+    {{- end }}
+
+    {{/* ##  Loop through all the nodes excluding those that have been evaluated - remaining should have worker MCP config. ## */}}
+    {{/* ##  This should catch any nodes that are not selected by an MCP, which would prevent them from being updated. ## */}}
+    {{- range $node := $nodeList }}
+      {{- if (has $node.metadata.name $evaluatedNodes) }}
+        {{- continue }}
+      {{- end }}
+
+    - complianceType: musthave
+      objectDefinition:
+        kind: Node
+        apiVersion: v1
+        metadata:
+          name: {{ $node.metadata.name }}
+          annotations:
+            machineconfiguration.openshift.io/currentConfig: {{ $workerMCP.spec.configuration.name }}
+            machineconfiguration.openshift.io/desiredConfig: {{ $workerMCP.spec.configuration.name }}
+            machineconfiguration.openshift.io/state: Done
+        status:
+          conditions:
+            - type: MemoryPressure
+              status: 'False'
+            - type: DiskPressure
+              status: 'False'
+            - type: PIDPressure
+              status: 'False'
+            - type: Ready
+              status: 'True'
+    {{- end }}

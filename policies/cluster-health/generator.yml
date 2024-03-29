@@ -1,0 +1,30 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-clusterhealth
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: inform
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - cluster-health
+placementBindingDefaults:
+  name: "cluster-helath-binding"
+
+policies:
+  - name: cluster-health-eval
+    remediationAction: enforce
+    manifests:
+      - path: clusterversion.yml
+      - path: clusteroperator.yml
+      - path: machineconfigpool.yml
+      - path: node.yml
+
+policySets:
+  - name: cluster-health
+    placement:
+      placementName: "env-bound-placement"
