@@ -30,7 +30,9 @@ spec:
       {{- $currentRenderedConfig := $mcp.status.configuration.name }}
       {{- if or (eq $mcp.metadata.name "master")
                 (not (hasPrefix "eus" $cVer.spec.channel))
-                (and (hasPrefix "eus" $cVer.spec.channel) $isEvenRelease (not $mcp.spec.paused)) }}
+                (and (hasPrefix "eus" $cVer.spec.channel) 
+                  (or $isEvenRelease (and (not $isEvenRelease) (not $mcp.spec.paused)))
+                ) }}
         {{- $currentRenderedConfig = $mcp.spec.configuration.name }}
       {{- end }}
 

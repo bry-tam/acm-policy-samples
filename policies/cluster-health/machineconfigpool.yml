@@ -26,7 +26,9 @@ spec:
       {{- $eusMcpPaused := true }}
       {{- if or (eq $mcp.metadata.name "master")
                 (not (hasPrefix "eus" $cVer.spec.channel))
-                (and (hasPrefix "eus" $cVer.spec.channel) $isEvenRelease (not $mcp.spec.paused)) }}
+                (and (hasPrefix "eus" $cVer.spec.channel) 
+                  (or $isEvenRelease (and (not $isEvenRelease) (not $mcp.spec.paused)))
+                ) }}
         {{- $eusMcpPaused = false }}
       {{- end }}
 
