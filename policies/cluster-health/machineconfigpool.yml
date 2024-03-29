@@ -48,9 +48,18 @@ spec:
             - status: 'False'
               type: Updating
           degradedMachineCount: 0
-          readyMachineCount: '{{ $mcp.status.machineCount | toInt }}'
           unavailableMachineCount: 0
+
+      {{/* ##  In the case where we are allowed to be paused and the MCP is paused likely because of an upgrade ## */}}
+      {{/* ##  we want to prevent the policy from being out of compliance as this would be expected ## */}}
+      {{/* ##  1. master MCP must not be paused ## */}}
+      {{/* ##  2. If the ClusterVersion.spec.channel does not start with eus ## */}}
+      {{/* ##  3. The ClusterVersion.spec.channel starts with eus and the cluster minor version is an even release ## */}}
+      {{- if or (eq $mcp.metadata.name "master")
+                (not (hasPrefix "eus" $cVer.spec.channel))
+                (and (hasPrefix "eus" $cVer.spec.channel) $isEvenRelease (not $mcp.spec.paused)) }}
+          readyMachineCount: '{{ $mcp.status.machineCount | toInt }}'
           updatedMachineCount: '{{ $mcp.status.machineCount | toInt }}'
           observedGeneration: '{{ $mcp.metadata.generation | toInt }}'
-
+      {{- end }}
     {{- end }}
