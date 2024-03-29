@@ -7,6 +7,13 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
+    {{/* ##  Get the current or desired version of the cluster ## */}}
+    {{- $cVer := (lookup "config.openshift.io/v1" "ClusterVersion" "" "version") }}
+    {{- $desiredVersion := semver (dig "desiredUpdate" "version" ($cVer.status.desired.version) $cVer.spec) }}
+
+    {{/* ##  Determine if an even numbered release by divide by two, and compare  if the result rounds up ## */}}
+    {{- $isEvenRelease := (eq (div $desiredVersion.Minor 2 | toInt)  (div (add $desiredVersion.Minor 1) 2 | toInt)) }}
+
     {{/* ##  Get the list of MachineConfigPools ## */}}
     {{- $mcpList := (lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "").items }}
 
@@ -17,8 +24,17 @@ spec:
         kind: MachineConfigPool
         metadata:
           name: {{ $mcp.metadata.name }}
+
+      {{/* ##  Ensure the MCP is not paused based on the following rules ## */}}
+      {{/* ##  1. master MCP must not be paused ## */}}
+      {{/* ##  2. If the ClusterVersion.spec.channel does not start with eus ## */}}
+      {{/* ##  3. The ClusterVersion.spec.channel starts with eus and the cluster minor version is an even release ## */}}
+      {{- if or (eq $mcp.metadata.name "master")
+                (not (hasPrefix "eus" $cVer.spec.channel))
+                (and (hasPrefix "eus" $cVer.spec.channel) $isEvenRelease) }}
         spec:
           paused: false
+      {{- end }}
         status:
           conditions:
             - status: 'False'
