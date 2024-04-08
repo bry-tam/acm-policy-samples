@@ -7,19 +7,42 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
+    {{/* ##  Get the current or desired version of the cluster ## */}}
+    {{- $cVer := (lookup "config.openshift.io/v1" "ClusterVersion" "" "version") }}
+    {{- $desiredVersion := semver (dig "desiredUpdate" "version" ($cVer.status.desired.version) $cVer.spec) }}
+
+    {{/* ##  Determine if an even numbered release by divide by two, and compare  if the result rounds up ## */}}
+    {{- $isEvenRelease := (eq (div $desiredVersion.Minor 2 | toInt)  (div (add $desiredVersion.Minor 1) 2 | toInt)) }}
+    
     {{/* ##  Get the list of MachineConfigPools so we can get the rendered config name ## */}}
     {{- $mcpList := (lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "").items }}
     {{- $nodeList := (lookup "v1" "Node" "" "").items }}
     {{- $evaluatedNodes := list "" }}
-    {{- $workerMCP := "" }}
+    {{- $workerRenderedConfig := "" }}
 
     {{/* ##  Loop through all the MCP except worker.  Worker will be evaluated last against any nodes not already found. ## */}}
     {{- range $mcp := $mcpList }}
+      {{/* ##  In the case where we are allowed to be paused and the MCP is paused likely because of an upgrade ## */}}
+      {{/* ##  we want to prevent the policy from being out of compliance as this would be expected ## */}}
+      {{/* ##  1. master MCP must not be paused ## */}}
+      {{/* ##  2. If the ClusterVersion.spec.channel does not start with eus ## */}}
+      {{/* ##  3. The ClusterVersion.spec.channel starts with eus and the cluster minor version is an even release ## */}}
+      {{- $currentRenderedConfig := $mcp.status.configuration.name }}
+      {{- if or (eq $mcp.metadata.name "master")
+                (not (hasPrefix "eus" $cVer.spec.channel))
+                (and (hasPrefix "eus" $cVer.spec.channel) 
+                  (or $isEvenRelease (and (not $isEvenRelease) (not $mcp.spec.paused)))
+                ) }}
+        {{- $currentRenderedConfig = $mcp.spec.configuration.name }}
+      {{- end }}
+
+
       {{- if eq $mcp.metadata.name "worker" }}
-        {{- $workerMCP = $mcp }}
+        {{- $workerRenderedConfig = $currentRenderedConfig }}
         {{- continue }}
       {{- end }}
       
+
       {{- range $node := $nodeList }}
         {{- $nodeMatches := true }}
 
@@ -75,8 +98,8 @@ spec:
         metadata:
           name: {{ $node.metadata.name }}
           annotations:
-            machineconfiguration.openshift.io/currentConfig: {{ $mcp.spec.configuration.name }}
-            machineconfiguration.openshift.io/desiredConfig: {{ $mcp.spec.configuration.name }}
+            machineconfiguration.openshift.io/currentConfig: {{ $currentRenderedConfig }}
+            machineconfiguration.openshift.io/desiredConfig: {{ $currentRenderedConfig }}
             machineconfiguration.openshift.io/state: Done
         status:
           conditions:
@@ -105,8 +128,8 @@ spec:
         metadata:
           name: {{ $node.metadata.name }}
           annotations:
-            machineconfiguration.openshift.io/currentConfig: {{ $workerMCP.spec.configuration.name }}
-            machineconfiguration.openshift.io/desiredConfig: {{ $workerMCP.spec.configuration.name }}
+            machineconfiguration.openshift.io/currentConfig: {{ $workerRenderedConfig }}
+            machineconfiguration.openshift.io/desiredConfig: {{ $workerRenderedConfig }}
             machineconfiguration.openshift.io/state: Done
         status:
           conditions:
