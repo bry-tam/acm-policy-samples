@@ -1,0 +1,71 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: infra-selector-tolerations
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    {{/* ##  Set Infra identifiers ## */}}
+    {{- $infraNodeSelector := "\"node-role.kubernetes.io/infra\": \"\"" }}
+    {{- $infraTolerationKey := "node-role.kubernetes.io/infra" }}
+
+    {{/* ##  Create the AddOnDeploymentConfig   ## */}}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: addon.open-cluster-management.io/v1alpha1
+        kind: AddOnDeploymentConfig
+        metadata:
+          name: infra-deploy-config
+          namespace: open-cluster-management-hub
+        spec:
+          nodePlacement:
+            nodeSelector:
+              {{ $infraNodeSelector }}
+            tolerations:
+              - key: {{ $infraTolerationKey }}
+                operator: Exists
+
+
+    {{/* ##  Gather all ManagedClusters using the ManagedClusterInfo object since this has node info ## */}}
+    {{- range $mc := (lookup "internal.open-cluster-management.io/v1beta1" "ManagedClusterInfo" "" "").items }}
+
+      {{/* ##  check if has infra nodes   ## */}}
+      {{- $hasInfra := false }}
+      {{- range $nd := $mc.status.nodeList }}
+        {{- if eq "" (dig "node-role.kubernetes.io/infra" "notinfra" $nd.labels) }}
+          {{- $hasInfra = true }}
+          {{- break }}
+        {{- end }}
+      {{- end }}
+
+      {{- if $hasInfra }}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: cluster.open-cluster-management.io/v1
+        kind: ManagedCluster
+        metadata:
+          annotations:
+            open-cluster-management/nodeSelector: '{{ printf "{%s}" $infraNodeSelector }}'
+            open-cluster-management/tolerations: '[{"key":"{{ $infraTolerationKey }}","operator":"Exists"}]'
+          name: {{ $mc.metadata.name }}
+
+        {{/* ##  Gather all ClusterManagementAddOn ## */}}
+        {{- range $mca := (lookup "addon.open-cluster-management.io/v1alpha1" "ManagedClusterAddOn" $mc.metadata.name "").items }}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: addon.open-cluster-management.io/v1alpha1
+        kind: ManagedClusterAddOn
+        metadata:
+          name: {{ $mca.metadata.name }}
+          namespace: {{ $mc.metadata.name }}
+        spec:
+          configs:
+            - group: addon.open-cluster-management.io
+              name: infra-deploy-config
+              namespace: open-cluster-management-hub
+              resource: addondeploymentconfigs
+        {{- end }}
+      {{- end }}
+    {{- end }}
