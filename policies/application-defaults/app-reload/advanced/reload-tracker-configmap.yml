@@ -1,0 +1,33 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: app-reload-tracker
+spec:
+  remediationAction: inform
+  severity: low
+  object-templates-raw: |
+    - complianceType: mustonlyhave
+      objectDefinition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: acm-reload-tracker
+          namespace: default
+        data:
+    {{/* ##  Gather all Deployments that have enabled reloading ## */}}
+    {{- range $dp := (lookup "apps/v1" "Deployment" "" "" "acm.reloader.enabled").items }}
+
+      {{/* Check if the annotation for what item to watch exists */}}
+      {{- $watchAnnotation := (dig "acm.reloader.watchlist" "emtpy" $dp.metadata.annotations) }}
+      {{- if eq $watchAnnotation "empty" }}
+        {{- continue }}
+      {{- end }}
+
+      {{/* Add each watch item and it's metadata.resourceVersion to the configmap */}}
+      {{- range $wi := (fromJson $watchAnnotation) }}
+          {{ (list $dp.metadata.name ($wi.apiVersion | replace "/" "__") $wi.kind $dp.metadata.namespace $wi.name) | join "--" }}: '{{ (default "0000" (lookup $wi.apiVersion $wi.kind $dp.metadata.namespace $wi.name).metadata.resourceVersion) }}'
+      {{- end }}
+    {{- end }}
+
+
