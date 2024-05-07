@@ -1,0 +1,31 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-app-reload
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - app-reload
+placementBindingDefaults:
+  name: "app-reload-binding"
+
+policies:
+
+  - name: app-resource-tracker
+    ignorePending: true
+    manifests:
+      - path: reload-tracker-configmap.yml
+      - path: reload-tracker-deployment.yml
+        extraDependencies: 
+          - name: app-reload-tracker
+            kind: ConfigurationPolicy
+            compliance: "NonCompliant"
+
+
+policySets:
+  - name: app-reload
+    placement:  
+      placementName: "ft-app--reload"

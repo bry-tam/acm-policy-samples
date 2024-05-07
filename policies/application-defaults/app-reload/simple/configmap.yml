@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    acm-reload-tracker: '{{ (lookup "v1" "ConfigMap" "test-app-namespace" "blogsecret").metadata.resourceVersion }}'
+  name: acm-reload-tracker
+  namespace: test-app-namespace

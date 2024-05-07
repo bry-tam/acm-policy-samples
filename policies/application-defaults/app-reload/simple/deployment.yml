@@ -1,0 +1,24 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: blog-example
+  namespace: test-app-namespace
+spec:
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt : '{{ now | date "2006-01-02T15:04:05+00:00" }}'
+
+
+         | ternary "0000" (dig $resourceKey "" $currentTracker.data)
+
+
+{{- if (ne $trackedResourceVersion $curResourceVersion) and not $depChanged }}
+                {{- $depChanged = true }}
+                  spec:
+                    template:
+                      metadata:
+                        annotations:
+                          kubectl.kubernetes.io/restartedAt : '{{ now | date "2006-01-02T15:04:05+00:00" }}'
+              {{- end }}
