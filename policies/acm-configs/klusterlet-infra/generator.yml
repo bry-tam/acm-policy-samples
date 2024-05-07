@@ -1,0 +1,28 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: klusterlet-infra-policy-generator
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  pruneObjectBehavior: DeleteIfCreated
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - acm-klusterlet-infra
+placementBindingDefaults:
+  name: "acm-klusterlet-infra-binding"
+
+policies:
+  - name: klusterlet-selector-tolerations
+    remediationAction: enforce
+    manifests:
+      - path: infra-selector-tolerations.yml
+
+policySets:
+  - name: acm-klusterlet-infra
+    placement:
+      placementName: "env-bound-hub-placement"
