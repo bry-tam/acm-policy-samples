@@ -37,7 +37,7 @@ spec:
                 key: node-role.kubernetes.io/infra
     {{- end }}
               externalLabels:
-                custom-alert-label: "on"
+                customalertlabel: "on"
                 instance: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
                 product: {{ fromClusterClaim "product.open-cluster-management.io" }}
                 managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
