@@ -63,6 +63,9 @@ spec:
             {{- if and (eq $e.operator "Exists") (eq (dig "labels" $e.key "NOTFOUND" $node.metadata) "NOTFOUND") }}
               {{- $nodeMatches = false }}
               {{- break }}
+            {{- else if and (eq $e.operator "DoesNotExist") (ne (dig "labels" $e.key "NOTFOUND" $node.metadata) "NOTFOUND") }}
+              {{- $nodeMatches = false }}
+              {{- break }}
             {{- else if ne $e.operator "Exists" }}
               {{/* ##  For all other operators we need to see if the value matches what is specified ## */}}
               {{- $labelFound := false }}
