@@ -6,6 +6,11 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
+    {{- $obsNamespace := "open-cluster-management-addon-observability" }}
+    {{- if eq (fromClusterClaim "name") "local-cluster" }}
+      {{- $obsNamespace = "open-cluster-management-observability" }}
+    {{- end }}
+
     {{/* ##  check if managed cluster is self-hosted or ARO/ROSA ## */}}
     {{- $isSelfHosted := (not (eq (fromClusterClaim "product.open-cluster-management.io") "ARO" "ROSA")) }}
     - complianceType: musthave
@@ -45,7 +50,7 @@ spec:
     {{- $isObservabilityEnabled := (lookup "cluster.open-cluster-management.io/v1alpha1" "ClusterClaim" "" "acm-observability") }}
     {{- if and (not (empty $isObservabilityEnabled ))
                 (eq $isObservabilityEnabled.spec.value "enabled")  }}
-      {{- $hubInfo := (fromSecret "open-cluster-management-addon-observability" "hub-info-secret" "hub-info.yaml") | base64dec }}
+      {{- $hubInfo := (fromSecret $obsNamespace "hub-info-secret" "hub-info.yaml") | base64dec }}
       {{- $amURL := "" }}
       {{- range $v := (split "\n" $hubInfo)}}
         {{- if (contains "alertmanager-endpoint" $v) }}
