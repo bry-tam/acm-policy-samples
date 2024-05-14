@@ -6,6 +6,11 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
+    {{- $obsNamespace := "open-cluster-management-addon-observability" }}
+    {{- if eq (fromClusterClaim "name") "local-cluster" }}
+      {{- $obsNamespace = "open-cluster-management-observability" }}
+    {{- end }}
+
     {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
     - complianceType: musthave
       objectDefinition:
@@ -36,10 +41,9 @@ spec:
                 product: {{ fromClusterClaim "product.open-cluster-management.io" }}
                 managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
 
-    {{- $isObservabilityEnabled := (lookup "cluster.open-cluster-management.io/v1alpha1" "ClusterClaim" "" "acm-observability") }}
-    {{- if and (not (empty $isObservabilityEnabled ))
-                (eq $isObservabilityEnabled.spec.value "enabled")  }}
-      {{- $hubInfo := (fromSecret "open-cluster-management-addon-observability" "hub-info-secret" "hub-info.yaml") | base64dec }}
+    {{- $obsHubInfoSecret := (lookup "v1" "Secret" $obsNamespace "hub-info-secret") }}
+    {{- if not (empty $obsHubInfoSecret ) }}
+      {{- $hubInfo := (index $obsHubInfoSecret.data "hub-info.yaml") | base64dec }}
       {{- $amURL := "" }}
       {{- range $v := (split "\n" $hubInfo)}}
         {{- if (contains "alertmanager-endpoint" $v) }}
