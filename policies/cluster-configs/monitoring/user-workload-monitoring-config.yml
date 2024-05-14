@@ -6,6 +6,11 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
+    {{- $obsNamespace := "open-cluster-management-addon-observability" }}
+    {{- if eq (fromClusterClaim "name") "local-cluster" }}
+      {{- $obsNamespace = "open-cluster-management-observability" }}
+    {{- end }}
+
     {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
     - complianceType: musthave
       objectDefinition:
@@ -31,18 +36,14 @@ spec:
     {{- end }}
 
               externalLabels:
-                adpalert: "on"
-                env: {{ fromClusterClaim "env" }}
-                instance: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
+                customalertlabel: "on"
+                instance_name: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
                 product: {{ fromClusterClaim "product.open-cluster-management.io" }}
-                region: {{ fromClusterClaim "region" }}
-                site: {{ fromClusterClaim "site" }}
                 managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
 
-    {{- $isObservabilityEnabled := (lookup "cluster.open-cluster-management.io/v1alpha1" "ClusterClaim" "" "acm-observability") }}
-    {{- if and (not (empty $isObservabilityEnabled ))
-                (eq $isObservabilityEnabled.spec.value "enabled")  }}
-      {{- $hubInfo := (fromSecret "open-cluster-management-addon-observability" "hub-info-secret" "hub-info.yaml") | base64dec }}
+    {{- $obsHubInfoSecret := (lookup "v1" "Secret" $obsNamespace "hub-info-secret") }}
+    {{- if not (empty $obsHubInfoSecret ) }}
+      {{- $hubInfo := (index $obsHubInfoSecret.data "hub-info.yaml") | base64dec }}
       {{- $amURL := "" }}
       {{- range $v := (split "\n" $hubInfo)}}
         {{- if (contains "alertmanager-endpoint" $v) }}
@@ -75,8 +76,7 @@ spec:
                 key: node-role.kubernetes.io/infra
     {{- end }}
 
-    {{- if and (not (empty $isObservabilityEnabled ))
-                (eq $isObservabilityEnabled.spec.value "enabled")  }}
+    {{- if not (empty $obsHubInfoSecret ) }}
     - complianceType: mustonlyhave
       objectDefinition:
         apiVersion: v1
