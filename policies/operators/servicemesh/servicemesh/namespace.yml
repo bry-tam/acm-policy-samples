@@ -4,4 +4,4 @@ kind: Namespace
 metadata:
   labels:
     openshift.io/cluster-monitoring: "true"
-  name: openshift-servicemesh-operators
+  name: openshift-operators
