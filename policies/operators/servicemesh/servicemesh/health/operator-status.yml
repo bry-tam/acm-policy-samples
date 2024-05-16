@@ -17,6 +17,7 @@ spec:
         kind: Subscription
         metadata:
           namespace: openshift-operators
+          name: servicemeshoperator
           labels:
             acm-policy: servicemesh-operator
 
