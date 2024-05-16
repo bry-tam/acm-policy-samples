@@ -19,8 +19,7 @@ spec:
           namespace: openshift-operators
           labels:
             acm-policy: servicemesh-operator
-        status:
-          state: AtLatestKnown
+
 
     ## Ensure the operator deployment exists and has reached full pod health
     {{- $opDepList := list "istio-operator" }}
