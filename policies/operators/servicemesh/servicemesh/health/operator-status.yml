@@ -22,35 +22,3 @@ spec:
             acm-policy: servicemesh-operator
 
 
-    ## Ensure the operator deployment exists and has reached full pod health
-    {{- $opDepList := list "istio-operator" }}
-
-    {{- range $depName := $opDepList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" $sub.metadata.namespace $depName) }}
-    - complianceType: musthave
-      objectDefinition:
-        kind: Deployment
-        apiVersion: apps/v1
-        metadata:
-          namespace: openshift-operators
-      {{- if not $dep }}
-          name: {{ $depName }}
-      {{- else }}
-          labels:
-            olm.owner: '{{ $sub.status.currentCSV }}'
-        spec:
-          selector:
-            matchLabels:
-        {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-        {{- end }}
-        status:
-          replicas: {{ $dep.spec.replicas }}
-          updatedReplicas: {{ $dep.spec.replicas }}
-          readyReplicas: {{ $dep.spec.replicas }}
-          availableReplicas: {{ $dep.spec.replicas }}
-          conditions:
-            - type: Available
-              status: 'True'
-      {{- end }}
-    {{- end }}
