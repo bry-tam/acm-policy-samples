@@ -34,7 +34,7 @@ spec:
       {{/* ##  check if has infra nodes   ## */}}
       {{- $hasInfra := false }}
       {{- range $nd := $mc.status.nodeList }}
-        {{- if and (eq "" (dig "node-role.kubernetes.io/infra" "notinfra" $nd.labels)) (not eq "" (dig "node-role.kubernetes.io/storage" "notstorage" $nd.labels)) }}
+        {{- if and (eq "" (dig "node-role.kubernetes.io/infra" "notinfra" $nd.labels)) (ne "" (dig "node-role.kubernetes.io/storage" "notstorage" $nd.labels)) }}
           {{- $hasInfra = true }}
           {{- break }}
         {{- end }}
