@@ -1,0 +1,31 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: imageregistry-config
+spec:
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    {{/* ##  read the bucket data ## */}}
+    {{- $objBucket := (lookup "objectbucket.io/v1alpha1" "ObjectBucket" "" "obc-openshift-config-obc-imageregistry") }}
+
+    {{/* ##  create the imageregisty config ## */}}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: imageregistry.operator.openshift.io/v1
+        kind: Config
+        metadata:
+          name: cluster
+        spec:
+          managementState: Managed
+          replicas: 2
+          storage:
+            managementState: Unmanaged
+            s3:
+              bucket: {{ $objBucket.spec.endpoint.bucketName }}
+              encrypt: false
+              region: us-east-1
+              regionEndpoint: https://{{ $objBucket.spec.endpoint.bucketHost }}:{{ $objBucket.spec.endpoint.bucketPort }}
+              trustedCA:
+                name: image-registry-s3-bundle

@@ -1,0 +1,45 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-image-registry
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - image-registry
+placementBindingDefaults:
+  name: "image-registry-binding"
+
+policies:
+  - name: image-registry-config
+    remediationAction: enforce
+    manifests:
+      - path: objectbucketclaim.yml
+        extraDependencies: 
+          - name: odf-operator-status
+            kind: Policy
+            compliance: "Compliant"
+      - path: registry-s3-access-secret.yml
+        extraDependencies: 
+          - name: image-registry-config
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: image-registry-s3-bundle-configmap.yml
+        extraDependencies: 
+          - name: image-registry-config
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: imageregistry-config.yml
+        extraDependencies: 
+          - name: registry-s3-access-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+policySets:
+  - name: image-registry-config
+    placement:
+      placementName: "ft-storage--odf"
+
