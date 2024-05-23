@@ -39,7 +39,7 @@ policies:
 
 
 policySets:
-  - name: image-registry-config
+  - name: image-registry
     placement:
       placementName: "ft-storage--odf"
 
