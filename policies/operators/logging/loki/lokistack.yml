@@ -43,7 +43,7 @@ spec:
                 retention:
                   days: 1
           managementState: Managed
-          size: 1x.extra-small
+          size: 1x.demo
           storage:
             schemas:
             - version: v12
