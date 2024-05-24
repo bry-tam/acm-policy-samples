@@ -25,6 +25,8 @@ policies:
     manifests:
       - path: gatekeeper.yml
       - path: sync-configmap.yml
+      - path: metrics-service.yml
+      - path: servicemonitor.yml
       - path: health/gatekeeper-status.yml
         remediationAction: inform
 
