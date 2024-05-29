@@ -8,7 +8,7 @@ policyDefaults:
   remediationAction: enforce
   consolidateManifests: false
   policySets:
-    - loki-logging-operator
+    - loki-operator
 placementBindingDefaults:
   name: "loki-binding"
 
@@ -27,11 +27,6 @@ policies:
           - name: loki-operator
             kind: ConfigurationPolicy
             compliance: "Compliant"
-      - path: noobaa-s3-serving-cert.yml
-        extraDependencies:
-          - name: loki-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
       - path: health/operator-status.yml
         remediationAction: InformOnly
         extraDependencies:
@@ -39,42 +34,9 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
-  - name: loki-configure
-    remediationAction: enforce
-    dependencies:
-      - name: "loki-operator"
-        compliance: "Compliant"
-    manifests:
-      - path: objectbucketclaim.yml
-        extraDependencies: 
-          - name: odf-operator-status
-            kind: Policy
-            compliance: "Compliant"
-      - path: openshift-logging-ns.yml
-      - path: loki-secret.yml
-        extraDependencies: 
-          - name: loki-configure
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-          - name: loki-configure2
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: lokistack.yml
-        extraDependencies: 
-          - name: loki-secret
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-
-  - name: loki-operator-status
-    remediationAction: InformOnly
-    dependencies:
-      - name: "loki-configure"
-        compliance: "Compliant"
-    manifests:
-      - path: health/loki-status.yml
 
 policySets:
-  - name: loki-logging-operator
+  - name: loki-operator
     placement:
-      placementName: "ft-logging--loki"
+      placementName: "ft-loki--enabled"
 

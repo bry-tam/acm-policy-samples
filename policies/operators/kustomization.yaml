@@ -6,8 +6,9 @@ resources:
   - ./gitops/
   - ./talm/
   - ./gatekeeper/
-  - ./logging/
+  - ./loki/
+  - ./cluster-logging/
   - ./data-foundation/
   - ./acs/
   - ./acm/
-  - ./servicemesh/
+
