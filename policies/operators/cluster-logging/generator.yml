@@ -43,7 +43,6 @@ policies:
       - name: "loki-operator"
         compliance: "Compliant"
     manifests:
-      - path: loki/
       - path: loki/noobaa-s3-serving-cert.yml
       - path: loki/objectbucketclaim.yml
       - path: loki/loki-secret.yml
