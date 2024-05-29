@@ -26,10 +26,10 @@ spec:
 
 
     {{/* ##  Create a list of all expected deployments in openshift-logging for loki ## */}}
-    {{- $depList := list "{{ $lokiInstance }}-distributor"
-                          "{{ $lokiInstance }}-gateway"
-                          "{{ $lokiInstance }}-querier"
-                          "{{ $lokiInstance }}-query-frontend"
+    {{- $depList := list (printf  %s-distributor" $lokiInstance)
+                          (printf  %s-gateway" $lokiInstance)
+                          (printf  %s-querier" $lokiInstance)
+                          (printf  %s-query-frontend" $lokiInstance)
     }}
 
     ## Create a CompilianceType objectDefinition for each deployment
@@ -66,9 +66,9 @@ spec:
     {{- end }}
 
     {{/* ##  Create a list of all expected statefulesets in openshift-logging for loki ## */}}
-    {{- $ssDepList := list "{{ $lokiInstance }}-compactor"
-                          "{{ $lokiInstance }}-index-gateway"
-                          "{{ $lokiInstance }}-ingester"
+    {{- $ssDepList := list (printf  %s-compactor" $lokiInstance)
+                          (printf  %s-index-gateway" $lokiInstance)
+                          (printf  %s-ingester" $lokiInstance)
     }}
 
     ## Create a CompilianceType objectDefinition for each statefulset
