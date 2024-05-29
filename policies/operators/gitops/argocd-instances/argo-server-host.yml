@@ -21,3 +21,4 @@ spec:
         spec:
           server:
             host: {{ (lookup "route.openshift.io/v1" "Route" $argo.metadata.namespace (printf "%s-server" $argo.metadata.name)).spec.host }}
+    {{- end }}
