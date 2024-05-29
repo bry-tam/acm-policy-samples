@@ -1,0 +1,23 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: argocd-instance-host
+spec:
+  remediationAction: inform
+  severity: high
+  object-templates-raw: |
+    {{/* ##  Get all the argoCD instances ## */}} 
+    {{- range $argo := (lookup "argoproj.io/v1beta1" "ArgoCD" "" "").items }}
+    
+      {{/* ##  set the server host to match the route ## */}}
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: argoproj.io/v1beta1
+        kind: ArgoCD
+        metadata:
+          name: {{ $argo.metadata.name }}
+          namespace: {{ $argo.metadata.namespace }}
+        spec:
+          server:
+            host: {{ (lookup "route.openshift.io/v1" "Route" $argo.metadata.namespace (printf "%s-server" $argo.metadata.name)).spec.host }}
