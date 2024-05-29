@@ -48,6 +48,8 @@ spec:
             schemas:
             - version: v12
               effectiveDate: '2022-06-01'
+            - version: v13
+              effectiveDate: '2024-05-30'
             secret:
               name: logging-loki-odf
               type: s3 
