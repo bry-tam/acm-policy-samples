@@ -34,13 +34,39 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
+
   - name: cluster-logging-configure
     remediationAction: enforce
     dependencies:
       - name: "cluster-logging-operator"
         compliance: "Compliant"
+      - name: "loki-operator"
+        compliance: "Compliant"
     manifests:
+      - path: loki/
+      - path: loki/noobaa-s3-serving-cert.yml
+      - path: loki/objectbucketclaim.yml
+      - path: loki/loki-secret.yml
+        extraDependencies: 
+          - name: cluster-logging-configure
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: loki/lokistack.yml
+        extraDependencies: 
+          - name: loki-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: loki/health/loki-status.yml
+        remediationAction: InformOnly
+        extraDependencies: 
+          - name: lokistack-logging
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: clusterlogging.yml
+        extraDependencies: 
+          - name: loki-logging-status
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: console.yml
       - path: logfilemetricexporter.yml
 

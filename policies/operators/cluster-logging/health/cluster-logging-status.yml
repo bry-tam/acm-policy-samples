@@ -19,12 +19,7 @@ spec:
         apiVersion: apps/v1
         metadata:
           namespace: openshift-logging
-      ## If the deployment does not exist we need to specify the name
-      {{- if not $dep }}
           name: {{ $depName }}
-      {{- else }}
-      ## when the deployment exists the compliance will be determined by
-      ## the labels, spec.selector.matchLabels and the expected healthy status
           labels:
         {{- range $k, $v := $dep.metadata.labels }}
             {{ $k }}: {{ (empty $v) | ternary "''" $v }}
@@ -36,14 +31,13 @@ spec:
               {{ $k }}: {{ (empty $v) | ternary "''" $v }}
             {{- end }}
         status:
-          replicas: {{ $dep.spec.replicas }}
-          updatedReplicas: {{ $dep.spec.replicas }}
-          readyReplicas: {{ $dep.spec.replicas }}
-          availableReplicas: {{ $dep.spec.replicas }}
+          replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
           conditions:
             - type: Available
               status: 'True'
-      {{- end }}
     {{- end }}
 
     {{/* ##  Ensure the collector is deployed to all nodes ## */}}

@@ -2,31 +2,47 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: loki-status
+  name: loki-logging-status
 spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
+    {{- $lokiNamespace := "openshift-logging" }}
+    {{- $lokiInstance := "logging-loki" }}
+
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: loki.grafana.com/v1
+        kind: LokiStack
+        metadata:
+          name: {{ $lokiInstance }}
+          namespace: {{ $lokiNamespace }}
+        status:
+          conditions:
+            - message: All components ready
+              reason: ReadyComponents
+              status: 'True'
+              type: Ready
+
+
     {{/* ##  Create a list of all expected deployments in openshift-logging for loki ## */}}
-    {{- $depList := list "logging-loki-distributor"
-                          "logging-loki-gateway"
-                          "logging-loki-querier"
-                          "logging-loki-query-frontend"
+    {{- $depList := list "{{ $lokiInstance }}-distributor"
+                          "{{ $lokiInstance }}-gateway"
+                          "{{ $lokiInstance }}-querier"
+                          "{{ $lokiInstance }}-query-frontend"
     }}
 
     ## Create a CompilianceType objectDefinition for each deployment
     {{- range $depName := $depList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-logging" $depName) }}
+      {{- $dep := (lookup "apps/v1" "Deployment" $lokiNamespace $depName) }}
     - complianceType: musthave
       objectDefinition:
         kind: Deployment
         apiVersion: apps/v1
         metadata:
-          namespace: openshift-logging
-      ## If the deployment does not exist we need to specify the name
-      {{- if not $dep }}
+          namespace: {{ $lokiNamespace }}
           name: {{ $depName }}
-      {{- else }}
+
       ## when the deployment exists the compliance will be determined by
       ## the labels, spec.selector.matchLabels and the expected healthy status
           labels:
@@ -40,54 +56,39 @@ spec:
               {{ $k }}: {{ (empty $v) | ternary "''" $v }}
             {{- end }}
         status:
-          replicas: {{ $dep.spec.replicas }}
-          updatedReplicas: {{ $dep.spec.replicas }}
-          readyReplicas: {{ $dep.spec.replicas }}
-          availableReplicas: {{ $dep.spec.replicas }}
+          replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
           conditions:
             - type: Available
               status: 'True'
-      {{- end }}
     {{- end }}
 
     {{/* ##  Create a list of all expected statefulesets in openshift-logging for loki ## */}}
-    {{- $ssDepList := list "logging-loki-compactor"
-                          "logging-loki-index-gateway"
-                          "logging-loki-ingester"
+    {{- $ssDepList := list "{{ $lokiInstance }}-compactor"
+                          "{{ $lokiInstance }}-index-gateway"
+                          "{{ $lokiInstance }}-ingester"
     }}
 
     ## Create a CompilianceType objectDefinition for each statefulset
     {{- range $depName := $ssDepList }}
-      {{- $dep := (lookup "apps/v1" "StatefulSet" "openshift-logging" $depName) }}
+      {{- $dep := (lookup "apps/v1" "StatefulSet" $lokiNamespace $depName) }}
     - complianceType: musthave
       objectDefinition:
         kind: StatefulSet
         apiVersion: apps/v1
         metadata:
-          namespace: openshift-logging
+          namespace: {{ $lokiNamespace }}
           name: {{ $depName }}
       ## If the statefulset does not exist we don't need to worry about the status
       {{- if $dep }}
         status:
-          availableReplicas: {{ $dep.spec.replicas }}
-          currentReplicas: {{ $dep.spec.replicas }}
-          updatedReplicas: {{ $dep.spec.replicas }}
-          replicas: {{ $dep.spec.replicas }}
+          availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          currentReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+          replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
           collisionCount: 0
-          readyReplicas: {{ $dep.spec.replicas }}
+          readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
       {{- end }}
     {{- end }}
-
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: loki.grafana.com/v1
-        kind: LokiStack
-        metadata:
-          name: logging-loki
-          namespace: openshift-logging
-        status:
-          conditions:
-            - message: All components ready
-              reason: ReadyComponents
-              status: 'True'
-              type: Ready

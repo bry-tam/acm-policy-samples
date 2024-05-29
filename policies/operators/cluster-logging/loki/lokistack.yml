@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
-  name: lokistack
+  name: lokistack-logging
 spec:
   remediationAction: enforce
   severity: high
