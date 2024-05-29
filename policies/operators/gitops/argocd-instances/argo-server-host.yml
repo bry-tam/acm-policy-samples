@@ -4,7 +4,7 @@ kind: ConfigurationPolicy
 metadata:
   name: argocd-instance-host
 spec:
-  remediationAction: inform
+  remediationAction: enforce
   severity: high
   object-templates-raw: |
     {{/* ##  Get all the argoCD instances ## */}} 
