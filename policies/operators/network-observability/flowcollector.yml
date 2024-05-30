@@ -67,8 +67,8 @@ spec:
     # url: 'http://loki.openshift-netobserv-operator.svc:3100/'
     # Uncomment lines below for typical installation with loki-operator (5.6+ needed)
     # and ensure tls and statusTls are enabled
-    url: 'https://loki-gateway-http.openshift-netobserv-operator.svc:8080/api/logs/v1/network/'
-    statusUrl: 'https://loki-query-frontend-http.openshift-netobserv-operator.svc:3100/'
+    url: 'https://netobserv-loki-gateway-http.openshift-netobserv-operator.svc:8080/api/logs/v1/network/'
+    statusUrl: 'https://netobserv-loki-query-frontend-http.openshift-netobserv-operator.svc:3100/'
     authToken: FORWARD
     tls:
       enable: true
