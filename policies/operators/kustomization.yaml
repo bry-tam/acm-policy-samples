@@ -11,4 +11,5 @@ resources:
   - ./data-foundation/
   - ./acs/
   - ./acm/
+  - ./network-observability/
 
