@@ -9,7 +9,7 @@ spec:
   object-templates-raw: |
     {{/* ##  Create a list of all expected deployments in openshift-netobserv-operator for loki ## */}}
     {{- $op_namespace := "openshift-netobserv-operator" }}
-    {{- $depList := list "logging-view-plugin" }}
+    {{- $depList := list "netobserv-plugin" }}
 
     ## Create a CompilianceType objectDefinition for each deployment
     {{- range $depName := $depList }}
@@ -41,15 +41,15 @@ spec:
               status: 'True'
     {{- end }}
 
-    {{/* ##  Ensure the collector is deployed to all nodes ## */}}
+    {{/* ##  Ensure the netobserv-ebpf-agent is deployed to all nodes ## */}}
     {{- $nodeCount := (len (lookup "v1" "Node" "" "").items) }}
     - complianceType: musthave
       objectDefinition:
         kind: DaemonSet
         apiVersion: apps/v1
         metadata:
-          name: collector
-          namespace: {{ $op_namespace }}
+          name: netobserv-ebpf-agent
+          namespace: {{ $op_namespace }}-priviledged
         status:
           currentNumberScheduled: {{ $nodeCount }}
           numberMisscheduled: 0
@@ -58,6 +58,21 @@ spec:
           updatedNumberScheduled: {{ $nodeCount }}
           numberAvailable: {{ $nodeCount }}
 
+    {{/* ##  Ensure the flowlogs-pipeline is deployed to all nodes ## */}}
+    - complianceType: musthave
+      objectDefinition:
+        kind: DaemonSet
+        apiVersion: apps/v1
+        metadata:
+          name: flowlogs-pipeline
+          namespace: {{ $op_namespace }}
+        status:
+          currentNumberScheduled: {{ $nodeCount }}
+          numberMisscheduled: 0
+          desiredNumberScheduled: {{ $nodeCount }}
+          numberReady: {{ $nodeCount }}
+          updatedNumberScheduled: {{ $nodeCount }}
+          numberAvailable: {{ $nodeCount }}
 
 
     - complianceType: musthave
