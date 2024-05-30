@@ -59,6 +59,9 @@ spec:
           storageClassName: gp3-csi
           tenants:
             mode: openshift-network
+            openshift:
+            adminGroups: 
+            - bry-tam
     {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
     {{- if ne $infraCount 0 }}
           template:
