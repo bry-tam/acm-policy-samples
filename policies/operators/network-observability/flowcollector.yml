@@ -27,6 +27,7 @@ spec:
         limits:
           memory: 800Mi
   processor:
+    addZone: true
     port: 2055
     imagePullPolicy: IfNotPresent
     logLevel: info
