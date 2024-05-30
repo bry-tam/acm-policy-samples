@@ -7,9 +7,6 @@ spec:
   remediationAction: InformOnly
   severity: high
   object-templates-raw: |
-    ## Get the subscription we are checking health for
-    {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-logging" "cluster-logging") }}
-
     {{/* ##  Get the subscription we are checking health for ## */}}
     {{- $op_namespace := "openshift-logging" }}
     {{- $op_subName := "cluster-logging"}}
