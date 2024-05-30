@@ -36,27 +36,34 @@ spec:
   loki:
     mode: LokiStack
   consolePlugin:
-    register: true
     logLevel: info
+    advanced:
+      port: 9001
+      register: true
+    enable: true
+    resources:
+      limits:
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
     portNaming:
       enable: true
       portNames:
-        "3100": loki
+        '3100': loki
     quickFilters:
-    - name: Applications
-      filter:
-        src_namespace!: 'openshift-,netobserv'
-        dst_namespace!: 'openshift-,netobserv'
-      default: true
-    - name: Infrastructure
-      filter:
-        src_namespace: 'openshift-,netobserv'
-        dst_namespace: 'openshift-,netobserv'
-    - name: Pods network
-      filter:
-        src_kind: 'Pod'
-        dst_kind: 'Pod'
-      default: true
-    - name: Services network
-      filter:
-        dst_kind: 'Service'
+      - default: true
+        filter:
+          flow_layer: app
+        name: Applications
+      - filter:
+          flow_layer: infra
+        name: Infrastructure
+      - default: true
+        filter:
+          dst_kind: Pod
+          src_kind: Pod
+        name: Pods network
+      - filter:
+          dst_kind: Service
+        name: Services network
