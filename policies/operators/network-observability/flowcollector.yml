@@ -4,22 +4,17 @@ metadata:
   name: cluster
 spec:
   namespace: openshift-netobserv-operator
-  deploymentModel: DIRECT
+  deploymentModel: Direct
   agent:
-    type: EBPF
+    type: eBPF
     ebpf:
-      imagePullPolicy: IfNotPresent
+      features:
+        - PacketDrop
+        - DNSTracking
+        - FlowRTT
       sampling: 50
-      cacheActiveTimeout: 5s
-      cacheMaxFlows: 100000
-      privileged: true
-      features: 
-      - "PacketDrop"
-      - "DNSTracking"
-      # - "FlowRTT"
-      interfaces: [ ]
-      excludeInterfaces: [ "lo" ]
       logLevel: info
+      privileged: true
       resources:
         requests:
           memory: 50Mi
@@ -27,90 +22,22 @@ spec:
         limits:
           memory: 800Mi
   processor:
-    addZone: true
-    port: 2055
-    imagePullPolicy: IfNotPresent
     logLevel: info
-    profilePort: 6060
-    metrics:
-      server:
-        port: 9102
-      ignoreTags:
-        - egress
-        - packets
-        - nodes-flows
-        - namespaces-flows
-        - workloads-flows
-        # Ignoring eihter "namespaces" or "workloads", as namespaces metrics are included in workload metrics
-        # This helps reduce total cardinality
-        - namespaces
-      disableAlerts: []
-    dropUnusedFields: true
     resources:
       requests:
         memory: 100Mi
         cpu: 100m
       limits:
         memory: 800Mi
-    kafkaConsumerReplicas: 3
-    kafkaConsumerAutoscaler: null
-    kafkaConsumerQueueCapacity: 1000
-    kafkaConsumerBatchSize: 10485760
-    logTypes: FLOWS
-    conversationTerminatingTimeout: 5s
-    conversationHeartbeatInterval: 30s
-    conversationEndTimeout: 10s
-    # Append a unique cluster name to each record
-    # clusterName: <CLUSTER NAME>
+    logTypes: All
+    advanced:
+      conversationEndTimeout: 10s
+      conversationHeartbeatInterval: 30s
   loki:
-    enable: true
-    # url: 'http://loki.openshift-netobserv-operator.svc:3100/'
-    # Uncomment lines below for typical installation with loki-operator (5.6+ needed)
-    # and ensure tls and statusTls are enabled
-    url: 'https://netobserv-loki-gateway-http.openshift-netobserv-operator.svc:8080/api/logs/v1/network/'
-    statusUrl: 'https://netobserv-loki-query-frontend-http.openshift-netobserv-operator.svc:3100/'
-    authToken: FORWARD
-    tls:
-      enable: true
-      caCert:
-        type: configmap
-        name: netobserv-loki-gateway-ca-bundle
-        certFile: service-ca.crt
-      insecureSkipVerify: false
-    statusTls:
-      enable: true
-      caCert:
-        certFile: service-ca.crt
-        name: netobserv-loki-ca-bundle
-        type: configmap
-      insecureSkipVerify: false
-      userCert:
-        certFile: tls.crt
-        certKey: tls.key
-        name: netobserv-loki-query-frontend-http
-        type: secret
-    batchWait: 1s
-    batchSize: 10485760
-    minBackoff: 1s
-    maxBackoff: 5s
-    maxRetries: 2
+    mode: LokiStack
   consolePlugin:
-    enable: true
     register: true
-    imagePullPolicy: IfNotPresent
-    port: 9001
     logLevel: info
-    autoscaler:
-      status: DISABLED
-      minReplicas: 1
-      maxReplicas: 3
-      metrics:
-      - type: Resource
-        resource:
-          name: cpu
-          target:
-            type: Utilization
-            averageUtilization: 50
     portNaming:
       enable: true
       portNames:
@@ -118,13 +45,13 @@ spec:
     quickFilters:
     - name: Applications
       filter:
-        src_namespace!: 'openshift-'
-        dst_namespace!: 'openshift-'
+        src_namespace!: 'openshift-,netobserv'
+        dst_namespace!: 'openshift-,netobserv'
       default: true
     - name: Infrastructure
       filter:
-        src_namespace: 'openshift-'
-        dst_namespace: 'openshift-'
+        src_namespace: 'openshift-,netobserv'
+        dst_namespace: 'openshift-,netobserv'
     - name: Pods network
       filter:
         src_kind: 'Pod'

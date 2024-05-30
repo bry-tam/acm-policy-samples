@@ -8,7 +8,7 @@ spec:
   severity: high
   object-templates-raw: |
     {{- $lokiNamespace := "openshift-netobserv-operator" }}
-    {{- $lokiInstance := "netobserv-loki" }}
+    {{- $lokiInstance := "loki" }}
 
     - complianceType: musthave
       objectDefinition:
