@@ -42,6 +42,7 @@ policies:
     manifests:
       - path: argocd-instances/default
       - path: argocd-instances/dev
+      - path: argocd-instances/argo-server-host.yml
 
   - name: gitops-acm-policygenerator
     remediationAction: enforce

@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: gatekeeper-metric-service
+  namespace: openshift-gatekeeper-system
+  labels:
+    gatekeeper.sh/operation: metrics
+spec:
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: http-metrics
+      protocol: TCP
+      port: 8888
+      targetPort: metrics
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+  selector:
+    gatekeeper.sh/system: 'yes'

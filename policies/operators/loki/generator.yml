@@ -1,0 +1,42 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-loki
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - loki-operator
+placementBindingDefaults:
+  name: "loki-binding"
+
+policies:
+  - name: loki-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorgroup.yml
+        extraDependencies:
+          - name: loki-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: subscription.yml
+        extraDependencies:
+          - name: loki-operator
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: health/operator-status.yml
+        remediationAction: InformOnly
+        extraDependencies:
+          - name: loki-operator3
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+policySets:
+  - name: loki-operator
+    placement:
+      placementName: "ft-loki--enabled"
+

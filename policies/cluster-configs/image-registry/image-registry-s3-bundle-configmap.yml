@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: image-registry-s3-bundle
+  namespace: openshift-config
+data:
+  ca-bundle.crt: '{{ (fromSecret "openshift-storage" "noobaa-s3-serving-cert" "tls.crt") | base64dec | toRawJson | toLiteral  }}'

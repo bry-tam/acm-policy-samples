@@ -80,11 +80,7 @@ policies:
     remediationAction: enforce
     manifests:
       - path: servicemesh/namespace.yml
-      - path: servicemesh/operatorgroup.yml
-        extraDependencies:
-          - name: servicemesh-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+
       - path: servicemesh/subscription.yml
         extraDependencies:
           - name: kiali-operator
@@ -93,7 +89,7 @@ policies:
       - path: servicemesh/health/operator-status.yml
         remediationAction: InformOnly
         extraDependencies:
-          - name: servicemesh-operator3
+          - name: servicemesh-operator2
             kind: ConfigurationPolicy
             compliance: "Compliant"
 

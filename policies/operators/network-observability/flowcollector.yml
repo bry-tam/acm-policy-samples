@@ -1,0 +1,69 @@
+apiVersion: flows.netobserv.io/v1beta2
+kind: FlowCollector
+metadata:
+  name: cluster
+spec:
+  namespace: openshift-netobserv-operator
+  deploymentModel: Direct
+  agent:
+    type: eBPF
+    ebpf:
+      features:
+        - PacketDrop
+        - DNSTracking
+        - FlowRTT
+      sampling: 50
+      logLevel: info
+      privileged: true
+      resources:
+        requests:
+          memory: 50Mi
+          cpu: 100m
+        limits:
+          memory: 800Mi
+  processor:
+    logLevel: info
+    resources:
+      requests:
+        memory: 100Mi
+        cpu: 100m
+      limits:
+        memory: 800Mi
+    logTypes: All
+    advanced:
+      conversationEndTimeout: 10s
+      conversationHeartbeatInterval: 30s
+  loki:
+    mode: LokiStack
+  consolePlugin:
+    logLevel: info
+    advanced:
+      port: 9001
+      register: true
+    enable: true
+    resources:
+      limits:
+        memory: 100Mi
+      requests:
+        cpu: 100m
+        memory: 50Mi
+    portNaming:
+      enable: true
+      portNames:
+        '3100': loki
+    quickFilters:
+      - default: true
+        filter:
+          flow_layer: app
+        name: Applications
+      - filter:
+          flow_layer: infra
+        name: Infrastructure
+      - default: true
+        filter:
+          dst_kind: Pod
+          src_kind: Pod
+        name: Pods network
+      - filter:
+          dst_kind: Service
+        name: Services network

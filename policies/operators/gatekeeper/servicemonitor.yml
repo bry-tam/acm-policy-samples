@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gatekeeper-operator-metrics
+  namespace: openshift-gatekeeper-system
+spec:
+  endpoints:
+    - interval: 60s
+      port: http-metrics
+      scheme: http
+      scrapeTimeout: 10s
+      tlsConfig:
+        insecureSkipVerify: true
+  jobLabel: gatekeeper-metrics
+  namespaceSelector:
+    matchNames:
+      - openshift-gatekeeper-system
+  selector:
+    matchLabels:
+      gatekeeper.sh/operation: metrics
+   
