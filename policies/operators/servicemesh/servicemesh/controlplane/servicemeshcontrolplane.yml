@@ -4,8 +4,7 @@ metadata:
   name: basic
   namespace: istio-system
 spec:
-  version: v2.4
-  mode: ClusterWide
+  version: v2.3
   tracing:
     type: Jaeger
     sampling: 100

@@ -1,9 +1,0 @@
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: noobaa-s3-serving-cert
-  namespace: openshift-logging
-data: 
-  ca.crt: |
-    {{ fromSecret "openshift-storage" "noobaa-s3-serving-cert" "tls.crt" | base64dec | autoindent }}

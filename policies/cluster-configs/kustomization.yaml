@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - aro/merge-rh-pull-secret
+  - image-registry/
 
 generators:
   - generator.yml
