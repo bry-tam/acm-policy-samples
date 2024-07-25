@@ -53,7 +53,7 @@ spec:
       {{- $amURL := "" }}
       {{- range $v := (split "\n" $hubInfo)}}
         {{- if (contains "alertmanager-endpoint" $v) }}
-          {{- $amURL = (split " " $v)._1  }}
+          {{- $amURL = (split " " $v)._1 }}
           {{- break }}
         {{- end }}
       {{- end }}
@@ -65,7 +65,7 @@ spec:
                 pathPrefix: /
                 scheme: https
                 staticConfigs:
-                - {{ $amURL }}
+                - {{ trimPrefix "https://" $amURL }}
                 tlsConfig:
                   ca:
                     key: service-ca.crt
