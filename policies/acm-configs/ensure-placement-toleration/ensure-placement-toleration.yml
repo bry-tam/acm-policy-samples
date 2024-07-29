@@ -33,11 +33,11 @@ spec:
         {{- end }}
             - key: {{ $t.key }}
               operator: {{ $t.operator }}
-        {{- if not (empty $t.values) }}
-              values:
-          {{- range $v := $t.values }}
-                - {{ $v }}
-          {{- end }}
+        {{- if not (empty $t.value) }}
+              value: {{ $t.value }}
+        {{- end }}
+        {{- if not (empty $t.tolerationSeconds) }}
+              tolerationSeconds: {{ $t.tolerationSeconds }}
         {{- end }}
       {{- end }}
 
