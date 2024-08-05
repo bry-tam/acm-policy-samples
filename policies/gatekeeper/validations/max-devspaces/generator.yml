@@ -1,0 +1,35 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gk-policy-generator-maxiamclusterbindings
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  informGatekeeperPolicies: false
+  policySets:
+    - gp-valid-max-iamclusterbindings
+placementBindingDefaults:
+  name: "gp-valid-max-iamclusterbindings-binding"
+
+policies:
+  - name: gp-valid-max-iamclusterbindings
+    remediationAction: enforce
+    dependencies:
+      - name: "gatekeeper-instance"
+        compliance: "Compliant"
+    manifests:
+      - path: max-iamclusterbindings/constrainttemplate.yml
+      - path: max-iamclusterbindings/maxiamclusterbindings.yml
+        # extraDependencies: 
+        #   - name: maxclusteradmins
+        #     apiVersion: templates.gatekeeper.sh/v1beta1
+        #     kind: ConstraintTemplate
+        #     compliance: "Compliant"
+
+policySets:
+  - name: gp-valid-max-iamclusterbindings
+    placement:
+      placementName: "env-bound-placement"
+
