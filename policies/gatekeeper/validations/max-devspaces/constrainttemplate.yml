@@ -1,0 +1,64 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: maxdevworkspaces
+  annotations:
+    metadata.gatekeeper.sh/title: "Prevent number of total active dev workspaces from exceeding the specified number"
+    metadata.gatekeeper.sh/version: 1.0.0
+    metadata.gatekeeper.sh/requires-sync-data: |
+      "[
+        [
+          {
+            "groups": ["workspace.devfile.io"],
+            "versions": ["v1alpha2"],
+            "kinds": ["DevWorkspace"]
+          }
+        ]
+      ]"
+    description: |
+      validates the number of active dev workspaces currently running is below the specified number
+spec:
+  crd:
+    spec:
+      names:
+        kind: MaxDevWorkspaces
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            maxActiveWorkspaces:
+              type: number
+              description: Maximum number of active Dev Workspaces
+              example: 5
+
+
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package maxdevworkspaces
+
+        # Types of subjects to count
+        workspace_status := {"Running", "Starting"}
+
+        max_workspaces := input.parameters.maxActiveWorkspaces
+        violation[{"msg": msg}] {
+          is_number(max_workspaces)
+          max_workspaces < 1
+          msg = sprintf("maxActiveWorkspaces parameter must be greater than 0(zero) maxActiveWorkspaces: %v", [max_workspaces] )
+        }
+
+        violation[{"msg": msg}] {
+
+          # check if the requested workspace is running
+          input.review.operation == "CREATE"
+
+          # Get all DevWorkspaces that are running
+          devworkspace_list := {dw | data.inventory.namespace[_]["workspace.devfile.io/v1alpha2"].DevWorkspace[i].status.phase == workspace_status[_];
+                                dw := data.inventory.namespace[_]["workspace.devfile.io/v1alpha2"].DevWorkspace[i]}
+          
+
+          total_workspaces := count(devworkspace_list)
+          total_workspaces > max_workspaces
+
+          msg := sprintf("Total number of active workspaces exceeded the cluster limit allowed. Max Dev Workspaces allowed: %v - current total: %v", [max_workspaces, total_workspaces] )
+        }
