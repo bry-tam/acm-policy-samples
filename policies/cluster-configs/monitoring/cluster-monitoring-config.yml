@@ -65,7 +65,7 @@ spec:
                 pathPrefix: /
                 scheme: https
                 staticConfigs:
-                - {{ trimPrefix "https://" $amURL }}
+                - {{ trimAll "https://" $amURL }}
                 tlsConfig:
                   ca:
                     key: service-ca.crt
