@@ -18,7 +18,7 @@ spec:
           labels:
             acm-policy: rhacm-operator
         spec:
-          channel: release-2.10
+          channel: release-2.11
           installPlanApproval: Automatic
           name: advanced-cluster-management
           source: redhat-operators
