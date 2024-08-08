@@ -37,7 +37,7 @@ spec:
         minReplicas: 2
         replicas: 3
   scannerV4:
-    scannerComponent: enabled
+    scannerComponent: Enabled
     matcher:
       scaling:
         autoScaling: Enabled
