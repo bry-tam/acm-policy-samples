@@ -35,12 +35,6 @@ spec:
     scannerComponent: AutoSense
   scannerV4:
     scannerComponent: Enabled
-    matcher:
-      scaling:
-        autoScaling: Enabled
-        maxReplicas: 5
-        minReplicas: 1
-        replicas: 3
     indexer:
       scaling:
         autoScaling: Enabled
