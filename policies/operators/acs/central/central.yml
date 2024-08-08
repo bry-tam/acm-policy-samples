@@ -36,3 +36,17 @@ spec:
         maxReplicas: 5
         minReplicas: 2
         replicas: 3
+  scannerV4:
+    scannerComponent: enabled
+    matcher:
+      scaling:
+        autoScaling: Enabled
+        maxReplicas: 5
+        minReplicas: 1
+        replicas: 3
+    indexer:
+      scaling:
+        autoScaling: Enabled
+        maxReplicas: 5
+        minReplicas: 1
+        replicas: 3
