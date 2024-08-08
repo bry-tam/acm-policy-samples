@@ -34,7 +34,7 @@ spec:
         replicas: 3
     scannerComponent: AutoSense
   scannerV4:
-    scannerComponent: Enabled
+    scannerComponent: AutoSense
     indexer:
       scaling:
         autoScaling: Enabled
