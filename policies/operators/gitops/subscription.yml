@@ -14,7 +14,7 @@ spec:
       - name: DISABLE_DEFAULT_ARGOCD_INSTANCE
         value: "true"
       - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
-        value: open-cluster-management-gitops
+        value: openshift-gitops
       - name: DISABLE_DEFAULT_ARGOCD_CONSOLELINK
         value: "true"
   installPlanApproval: Automatic

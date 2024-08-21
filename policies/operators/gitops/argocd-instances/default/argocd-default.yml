@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
 metadata:
   name: openshift-gitops
-  namespace: open-cluster-management-gitops
+  namespace: openshift-gitops
 spec:
   # Start default openshift-gitops ArgoCD
   disableAdmin: true

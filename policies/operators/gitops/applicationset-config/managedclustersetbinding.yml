@@ -14,7 +14,7 @@ spec:
         kind: ManagedClusterSetBinding
         metadata:
           name: {{ $mcs.metadata.name }}
-          namespace: open-cluster-management-gitops
+          namespace: openshift-gitops
         spec:
           clusterSet: {{ $mcs.metadata.name }}
 
@@ -24,7 +24,7 @@ spec:
         kind: Placement
         metadata:
           name: {{ $mcs.metadata.name }}-placement
-          namespace: open-cluster-management-gitops
+          namespace: openshift-gitops
         spec:
           clusterSets:
             - {{ $mcs.metadata.name }}
@@ -40,11 +40,11 @@ spec:
         kind: GitOpsCluster
         metadata:
           name: gitops-cluster-{{ $mcs.metadata.name }}
-          namespace: open-cluster-management-gitops
+          namespace: openshift-gitops
         spec:
           argoServer:
             cluster: local-cluster
-            argoNamespace: open-cluster-management-gitops
+            argoNamespace: openshift-gitops
           placementRef:
             kind: Placement
             apiVersion: cluster.open-cluster-management.io/v1beta1
