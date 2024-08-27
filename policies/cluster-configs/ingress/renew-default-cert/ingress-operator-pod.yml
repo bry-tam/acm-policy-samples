@@ -1,0 +1,12 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ingress-operator
+  namespace: openshift-ingress-operator
+spec:
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt : '{{ now | date "2006-01-02T15:04:05+00:00" }}'
+
