@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1beta1
 kind: OperatorPolicy
 metadata:
-  name: tempo-operator
+  name: tempo-operator-install
 spec:
   complianceType: musthave
   complianceConfig:
