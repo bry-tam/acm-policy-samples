@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
   - aro/merge-rh-pull-secret
   - image-registry/
-  - ingress/renew-default-cert
+  # - ingress/renew-default-cert
 
 generators:
   - generator.yml
