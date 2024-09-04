@@ -12,4 +12,8 @@ resources:
   - ./acs/
   - ./acm/
   - ./network-observability/
+  - ./kiali/
+  - ./servicemesh/
+  - ./opentelemetry/
+  - ./tempo/
 

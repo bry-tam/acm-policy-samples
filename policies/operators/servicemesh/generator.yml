@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-generator-sm
+  name: gen-policy-sm
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
@@ -13,94 +13,56 @@ placementBindingDefaults:
   name: "servicemesh-binding"
 
 policies:
-  - name: elasticsearch-operator
-    remediationAction: enforce
-    manifests:
-      - path: elasticsearch/namespace.yml
-      - path: elasticsearch/operatorgroup.yml
-        extraDependencies:
-          - name: elasticsearch-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: elasticsearch/subscription.yml
-        extraDependencies:
-          - name: elasticsearch-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: elasticsearch/health/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies:
-          - name: elasticsearch-operator3
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-
-  - name: jaeger-operator
-    remediationAction: enforce
-    manifests:
-      - path: jaeger/namespace.yml
-      - path: jaeger/operatorgroup.yml
-        extraDependencies:
-          - name: jaeger-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: jaeger/subscription.yml
-        extraDependencies:
-          - name: jaeger-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: jaeger/health/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies:
-          - name: jaeger-operator3
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-
-  - name: kiali-operator
-    remediationAction: enforce
-    manifests:
-      - path: kiali/namespace.yml
-      - path: kiali/operatorgroup.yml
-        extraDependencies:
-          - name: kiali-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: kiali/subscription.yml
-        extraDependencies:
-          - name: kiali-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: kiali/health/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies:
-          - name: kiali-operator3
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-
   - name: servicemesh-operator
     remediationAction: enforce
     manifests:
-      - path: servicemesh/namespace.yml
+      - path: namespace.yml
+      - path: operatorpolicy.yml
 
-      - path: servicemesh/subscription.yml
-        extraDependencies:
-          - name: kiali-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: servicemesh/health/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies:
-          - name: servicemesh-operator2
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
 
   - name: servicemesh-controlplane
     remediationAction: enforce
     dependencies:
       - name: "servicemesh-operator"
         compliance: "Compliant"
+      - name: "kiali-operator"
+        compliance: "Compliant"
+      - name: "opentelemetry-operator"
+        compliance: "Compliant"
+      - name: "tempo-operator"
+        compliance: "Compliant"
     manifests:
-      - path: servicemesh/controlplane/namespace.yml
-      - path: servicemesh/controlplane/servicemeshcontrolplane.yml
+      - path: controlplane/namespace.yml
+      - path: controlplane/opentelemetrycollector.yml
+      - path: controlplane/objectbucketclaim.yml
+      - path: controlplane/tempo-s3-access-secret.yml
+      - path: controlplane/tempo-s3-bundle-configmap.yml
+      - path: controlplane/tempostack.yml
+      - path: controlplane/kiali-clusterrolebinding.yml
+      - path: controlplane/kiali.yml
+      - path: controlplane/ossmconsole.yml
+      - path: controlplane/podmonitor.yml
+      - path: controlplane/servicemonitor.yml
+      - path: controlplane/telemetry.yml
+      - path: controlplane/user-workload-access-networkpolicy.yml
+      - path: controlplane/servicemeshcontrolplane.yml
+
+
+  - name: servicemesh-ingress
+    remediationAction: enforce
+    dependencies:
+      - name: "servicemesh-controlplane"
+        compliance: "Compliant"
+    manifests:
+      - path: ingress/namespace.yml
+      - path: ingress/deployment.yml
+      - path: ingress/service.yml
+      - path: ingress/horizontalpodautoscaler.yml
+      - path: ingress/networkpolicy.yml
+      - path: ingress/poddisruptionbudget.yml
+      - path: ingress/role.yml
+      - path: ingress/rolebinding.yml
+
 
   # - name: servicemesh-status
   #   remediationAction: InformOnly

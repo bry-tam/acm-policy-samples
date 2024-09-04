@@ -1,0 +1,25 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-kikali
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets: 
+    - kiali-operator
+placementBindingDefaults:
+  name: "kiali-binding"
+
+policies:
+  - name: kiali-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorpolicy.yml
+
+policySets:
+  - name: kiali-operator
+    placement:
+      placementName: "ft-kiali--enabled"
