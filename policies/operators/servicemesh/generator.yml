@@ -31,6 +31,8 @@ policies:
         compliance: "Compliant"
       - name: "tempo-operator"
         compliance: "Compliant"
+      - name: odf-operator-status
+        compliance: "Compliant"
     manifests:
       - path: controlplane/namespace.yml
       - path: controlplane/opentelemetrycollector.yml
