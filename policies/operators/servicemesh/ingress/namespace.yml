@@ -3,3 +3,7 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: istio-ingress
+  labels:
+    istio-discovery: enabled
+    istio-injection: enabled
+    

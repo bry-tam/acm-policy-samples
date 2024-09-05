@@ -23,8 +23,12 @@ spec:
         opentelemetry:
           port: 4317
           service: otel-collector.istio-system.svc.cluster.local
+    discoverySelectors:
+    - matchLabels:
+        istio-discovery: enabled
   policy:
     type: Istiod
   telemetry:
     type: Istiod
   version: v2.6
+  mode: ClusterWide
