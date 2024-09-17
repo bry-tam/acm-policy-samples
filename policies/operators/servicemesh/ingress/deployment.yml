@@ -18,4 +18,9 @@ spec:
     spec:
       containers:
       - name: istio-proxy
-        image: auto 
+        image: auto
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 250m
