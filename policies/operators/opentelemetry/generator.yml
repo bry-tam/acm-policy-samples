@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-opentelemetry
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets: 
+    - opentelemetry-operator
+placementBindingDefaults:
+  name: "opentelemetry-binding"
+
+policies:
+  - name: opentelemetry-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorpolicy.yml
+      - path: clusterrole.yml
+      - path: clusterrolebinding.yml
+
+policySets:
+  - name: opentelemetry-operator
+    placement:
+      placementName: "ft-opentelemetry--enabled"

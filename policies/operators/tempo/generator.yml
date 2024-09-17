@@ -1,0 +1,25 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-tempo
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets: 
+    - tempo-operator
+placementBindingDefaults:
+  name: "tempo-binding"
+
+policies:
+  - name: tempo-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorpolicy.yml
+
+policySets:
+  - name: tempo-operator
+    placement:
+      placementName: "ft-tempo--enabled"

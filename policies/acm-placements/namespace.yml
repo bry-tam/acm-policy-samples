@@ -4,4 +4,4 @@ kind: Namespace
 metadata:
   name: bry-tam-policies
   labels:
-    argocd.argoproj.io/managed-by: open-cluster-management-gitops
+    argocd.argoproj.io/managed-by: openshift-gitops

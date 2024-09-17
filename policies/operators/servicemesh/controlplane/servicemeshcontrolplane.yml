@@ -1,0 +1,34 @@
+---
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: basic
+  namespace: istio-system
+spec:
+  addons:
+    grafana:
+      enabled: false
+    kiali:
+      name: kiali-user-workload-monitoring
+    prometheus:
+      enabled: false
+  gateways:
+    ingress:
+      enabled: false
+  meshConfig:
+    extensionProviders:
+      - name: prometheus
+        prometheus: {}
+      - name: otel
+        opentelemetry:
+          port: 4317
+          service: otel-collector.istio-system.svc.cluster.local
+    discoverySelectors:
+    - matchLabels:
+        istio-discovery: enabled
+  policy:
+    type: Istiod
+  telemetry:
+    type: Istiod
+  version: v2.6
+  mode: ClusterWide

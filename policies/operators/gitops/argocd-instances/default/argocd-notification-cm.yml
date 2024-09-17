@@ -2,7 +2,7 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: argocd-notifications-cm
-  namespace: open-cluster-management-gitops
+  namespace: openshift-gitops
   labels:
     app.kubernetes.io/part-of: argocd
 data:
