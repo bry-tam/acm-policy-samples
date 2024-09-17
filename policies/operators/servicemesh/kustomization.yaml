@@ -3,3 +3,21 @@ kind: Kustomization
 
 generators:
   - ./generator.yml
+
+
+patchesJson6902:
+- target:
+    kind: PolicySet
+    name: servicemesh-operator
+  patch: |
+    - op: add
+      path: /spec/policies/-
+      value: 'kiali-operator'
+
+    - op: add
+      path: /spec/policies/-
+      value: 'opentelemetry-operator'
+
+    - op: add
+      path: /spec/policies/-
+      value: 'tempo-operator'

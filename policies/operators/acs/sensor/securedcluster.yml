@@ -33,3 +33,11 @@ spec:
         minReplicas: 2
         replicas: 3
     scannerComponent: AutoSense
+  scannerV4:
+    scannerComponent: AutoSense
+    indexer:
+      scaling:
+        autoScaling: Enabled
+        maxReplicas: 5
+        minReplicas: 1
+        replicas: 3

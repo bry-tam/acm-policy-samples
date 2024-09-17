@@ -1,0 +1,28 @@
+---
+apiVersion: tempo.grafana.com/v1alpha1
+kind: TempoStack
+metadata:
+  name: ossm-tempostack
+  namespace: istio-system
+spec:
+  storageSize: 1Gi
+  storage: 
+    secret:
+      name: tempo-s3-access-secret
+      type: s3
+    tls: 
+      enabled: true
+      caName: ossm-tempo-s3-bundle
+  resources:
+    total:
+      limits:
+        memory: 2Gi
+        cpu: 2000m
+  template:
+    queryFrontend:
+      jaegerQuery: 
+        enabled: true
+        ingress:
+          route:
+            termination: edge
+          type: route

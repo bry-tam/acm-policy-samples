@@ -1,0 +1,6 @@
+---
+apiVersion: kiali.io/v1alpha1
+kind: OSSMConsole
+metadata:
+  namespace: openshift-servicemesh-operator
+  name: ossmconsole
