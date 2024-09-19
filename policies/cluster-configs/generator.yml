@@ -18,6 +18,8 @@ placementBindingDefaults:
 
 policies:
   - name: etcd-encryption
+    policySets:
+      - etcd-encryption
     manifests:
       - path: etcd-encryption/apiserver.yml
       - path: etcd-encryption/health/
@@ -38,9 +40,9 @@ policies:
   - name: etcd-backup
     configurationPolicyAnnotations:  
       policy.open-cluster-management.io/disable-templates: "true"
-    dependencies:
-      - name: etcd-encryption
-        compliance: "Compliant"
+    # dependencies:
+    #   - name: etcd-encryption
+    #     compliance: "Compliant"
     manifests:
       - path: etcd-backup/
 
@@ -53,9 +55,9 @@ policies:
       - path: kubeletconfig/
 
   - name: infra-nodes
-    dependencies:
-      - name: etcd-encryption
-        compliance: "Compliant"
+    # dependencies:
+    #   - name: etcd-encryption
+    #     compliance: "Compliant"
     policySets: 
       - cluster-configs-infra
     manifests:
@@ -63,9 +65,9 @@ policies:
       - path: machineconfigpools/infra.yml
 
   - name: storage-nodes
-    dependencies:
-      - name: etcd-encryption
-        compliance: "Compliant"
+    # dependencies:
+    #   - name: etcd-encryption
+    #     compliance: "Compliant"
     policySets: 
       - cluster-configs-storage
     manifests:
@@ -94,6 +96,10 @@ policySets:
   - name: cluster-configs
     placement:
       placementName: "env-bound-placement"
+
+  - name: etcd-encryption
+    placement: 
+      placementName: "ft-etcd-encryption--encrypt"
       
   - name: cluster-configs-infra
     placement:
