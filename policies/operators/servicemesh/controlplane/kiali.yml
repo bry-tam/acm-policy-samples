@@ -20,5 +20,5 @@ spec:
       query_timeout: 30
       enabled: true
       in_cluster_url: 'http://tempo-ossm-tempostack-query-frontend.istio-system.svc.cluster.local:16685'
-      url: '{{ dig "spec" "host" "" (lookup "route.openshift.io/v1" "Route" "istio-system" "tempo-ossm-tempostack-query-frontend") }}'
+      url: 'https://{{ dig "spec" "host" "" (lookup "route.openshift.io/v1" "Route" "istio-system" "tempo-ossm-tempostack-query-frontend") }}'
       use_grpc: true
