@@ -13,6 +13,7 @@ spec:
     tls: 
       enabled: true
       caName: ossm-tempo-s3-bundle
+      certName: ossm-tempo-s3-bundle
   resources:
     total:
       limits:

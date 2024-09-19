@@ -39,6 +39,7 @@ policies:
       - path: controlplane/objectbucketclaim.yml
       - path: controlplane/tempo-s3-access-secret.yml
       - path: controlplane/tempo-s3-bundle-configmap.yml
+      - path: controlplane/tempo-s3-bundle-secret.yml
       - path: controlplane/tempostack.yml
       - path: controlplane/kiali-clusterrolebinding.yml
       - path: controlplane/kiali.yml
