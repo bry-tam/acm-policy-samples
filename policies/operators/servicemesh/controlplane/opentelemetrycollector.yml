@@ -8,6 +8,9 @@ metadata:
     sidecar.istio.io/inject: 'true'
 spec:
   mode: deployment
+  observability:
+    metrics:
+      enableMetrics: true 
   config: |
     receivers:
       otlp:
@@ -15,6 +18,11 @@ spec:
           grpc:
             endpoint: 0.0.0.0:4317
     exporters:
+      prometheus: 
+        endpoint: 0.0.0.0:8889
+        add_metric_suffixes: false
+        resource_to_telemetry_conversion:
+          enabled: true
       otlp:
         endpoint: "tempo-ossm-tempostack-distributor.istio-system.svc.cluster.local:4317"
         tls:
@@ -23,5 +31,7 @@ spec:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: []
-          exporters: [otlp]
+          exporters: [otlp, spanmetrics] 
+        metrics:
+          receivers: [spanmetrics] 
+          exporters: [prometheus]

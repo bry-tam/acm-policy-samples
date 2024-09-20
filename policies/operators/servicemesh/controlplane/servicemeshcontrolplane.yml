@@ -26,6 +26,8 @@ spec:
     discoverySelectors:
     - matchLabels:
         istio-discovery: enabled
+  tracing:
+    type: Jaeger
   policy:
     type: Istiod
   telemetry:
