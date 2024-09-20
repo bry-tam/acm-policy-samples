@@ -35,6 +35,7 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: controlplane/namespace.yml
+      - path: controlplane/namespace-collector.yml
       - path: controlplane/opentelemetrycollector.yml
       - path: controlplane/objectbucketclaim.yml
       - path: controlplane/tempo-s3-access-secret.yml
