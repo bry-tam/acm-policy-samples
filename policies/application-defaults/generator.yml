@@ -25,7 +25,7 @@ policies:
         - "*-operator"
       include:
         - "*"
-    remediationAction: enforce
+    remediationAction: inform
     manifests:
       - path: network/block-all-networkpolicy.yml
         complianceType: musthave
