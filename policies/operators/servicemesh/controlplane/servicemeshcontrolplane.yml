@@ -27,7 +27,7 @@ spec:
     - matchLabels:
         istio-discovery: enabled
   tracing:
-    type: Jaeger
+    type: None
   policy:
     type: Istiod
   telemetry:
