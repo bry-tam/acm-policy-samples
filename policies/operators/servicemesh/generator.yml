@@ -37,12 +37,12 @@ policies:
       - path: controlplane/namespace.yml
       - path: controlplane/namespace-collector.yml
       - path: controlplane/opentelemetrycollector.yml
-      - path: tracing-system/namespace.yml
-      - path: tracing-system/objectbucketclaim.yml
-      - path: tracing-system/tempo-s3-access-secret.yml
-      - path: tracing-system/tempo-s3-bundle-configmap.yml
-      - path: tracing-system/tempo-s3-tls-secret.yml
-      - path: tracing-system/tempostack.yml
+      - path: tracing/namespace.yml
+      - path: tracing/objectbucketclaim.yml
+      - path: tracing/tempo-s3-access-secret.yml
+      - path: tracing/tempo-s3-bundle-configmap.yml
+      - path: tracing/tempo-s3-tls-secret.yml
+      - path: tracing/tempostack.yml
       - path: controlplane/kiali-clusterrolebinding.yml
       - path: controlplane/kiali.yml
       - path: controlplane/ossmconsole.yml
