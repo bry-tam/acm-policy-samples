@@ -3,7 +3,7 @@ apiVersion: tempo.grafana.com/v1alpha1
 kind: TempoStack
 metadata:
   name: ossm-tempostack
-  namespace: istio-system
+  namespace: tracing-system
 spec:
   storageSize: 1Gi
   storage: 

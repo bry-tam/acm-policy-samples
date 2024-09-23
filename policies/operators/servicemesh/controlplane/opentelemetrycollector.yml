@@ -24,7 +24,7 @@ spec:
         resource_to_telemetry_conversion:
           enabled: true
       otlp:
-        endpoint: "tempo-ossm-tempostack-distributor.istio-system.svc.cluster.local:4317"
+        endpoint: "tempo-ossm-tempostack-distributor.tracing-system.svc.cluster.local:4317"
         tls:
           insecure: true
     service:
