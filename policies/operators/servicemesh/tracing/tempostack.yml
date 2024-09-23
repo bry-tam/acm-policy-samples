@@ -30,7 +30,6 @@ spec:
           route:
             termination: edge
           type: route
-  tenants:
-    mode: openshift
+
   managementState: Managed
   replicationFactor: 1
