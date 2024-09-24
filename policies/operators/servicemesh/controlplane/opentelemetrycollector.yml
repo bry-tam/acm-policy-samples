@@ -12,6 +12,9 @@ spec:
     metrics:
       enableMetrics: true 
   config: |
+    connectors:
+      spanmetrics: 
+        metrics_flush_interval: 15s
     receivers:
       otlp:
         protocols:
