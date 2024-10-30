@@ -5,6 +5,10 @@ metadata:
   name: ossm-tempostack
   namespace: tracing-system
 spec:
+  observability:
+    metrics:
+      createServiceMonitors: true
+      createPrometheusRules: true
   storageSize: 1Gi
   storage: 
     secret:
