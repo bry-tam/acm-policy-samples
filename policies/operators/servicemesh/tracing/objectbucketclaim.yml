@@ -3,7 +3,7 @@ apiVersion: objectbucket.io/v1alpha1
 kind: ObjectBucketClaim
 metadata:
   name: obc-ossm-tempo
-  namespace: istio-system
+  namespace: tracing-system
 spec:
   generateBucketName: obc-ossm-tempo-bucket
   storageClassName: openshift-storage.noobaa.io

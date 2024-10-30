@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ossm-tempo-s3-bundle
-  namespace: istio-system
-data:
-  ca-bundle.crt: '{{ (fromSecret "openshift-storage" "noobaa-s3-serving-cert" "tls.crt") | base64dec | toRawJson | toLiteral  }}'
