@@ -35,14 +35,29 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: controlplane/namespace.yml
+      - path: controlplane/namespace-collector.yml
       - path: controlplane/opentelemetrycollector.yml
-      - path: controlplane/objectbucketclaim.yml
-      - path: controlplane/tempo-s3-access-secret.yml
-      - path: controlplane/tempo-s3-bundle-configmap.yml
-      - path: controlplane/tempostack.yml
+      - path: tracing/namespace.yml
+      - path: tracing/objectbucketclaim.yml
+      - path: tracing/tempo-s3-access-secret.yml
+      - path: tracing/tempo-s3-bundle-configmap.yml
+      - path: tracing/tempo-s3-tls-secret.yml
+      - path: tracing/tempostack.yml
+        extraDependencies: 
+          - name: servicemesh-controlplane17
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: controlplane/kiali-clusterrolebinding.yml
       - path: controlplane/kiali.yml
+        extraDependencies: 
+          - name: servicemesh-controlplane17
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: controlplane/ossmconsole.yml
+        extraDependencies: 
+          - name: servicemesh-controlplane17
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: controlplane/podmonitor.yml
       - path: controlplane/servicemonitor.yml
       - path: controlplane/telemetry.yml

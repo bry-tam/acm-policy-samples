@@ -22,10 +22,12 @@ spec:
       - name: otel
         opentelemetry:
           port: 4317
-          service: otel-collector.istio-system.svc.cluster.local
+          service: otel-collector.istio-collector.svc.cluster.local
     discoverySelectors:
     - matchLabels:
         istio-discovery: enabled
+  tracing:
+    type: None
   policy:
     type: Istiod
   telemetry:

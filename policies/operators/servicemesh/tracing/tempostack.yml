@@ -3,8 +3,12 @@ apiVersion: tempo.grafana.com/v1alpha1
 kind: TempoStack
 metadata:
   name: ossm-tempostack
-  namespace: istio-system
+  namespace: tracing-system
 spec:
+  observability:
+    metrics:
+      createServiceMonitors: true
+      createPrometheusRules: true
   storageSize: 1Gi
   storage: 
     secret:
@@ -13,6 +17,7 @@ spec:
     tls: 
       enabled: true
       caName: ossm-tempo-s3-bundle
+      certName: ossm-tempo-s3-tls
   resources:
     total:
       limits:
@@ -22,7 +27,13 @@ spec:
     queryFrontend:
       jaegerQuery: 
         enabled: true
+        monitorTab:
+          enabled: true 
+          prometheusEndpoint: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091 
         ingress:
           route:
             termination: edge
           type: route
+
+  managementState: Managed
+  replicationFactor: 1

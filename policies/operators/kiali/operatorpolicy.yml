@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1beta1
 kind: OperatorPolicy
 metadata:
-  name: install-kiali-operator
+  name: kiali-operator-install
 spec:
   complianceType: musthave
   complianceConfig:
