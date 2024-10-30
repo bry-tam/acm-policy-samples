@@ -49,6 +49,7 @@ spec:
               taints: 
                 - key: node.ocs.openshift.io/storage
                   effect: NoSchedule
+                  value: true
               providerSpec:
                 value:
                   ami:
