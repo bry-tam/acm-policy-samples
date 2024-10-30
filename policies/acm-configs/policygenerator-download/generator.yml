@@ -32,4 +32,4 @@ policies:
 policySets:
   - name: acm-pg-downloader
     placement:
-      placementName: "ft-acm-hub--active"
+      placementName: "ft-acm-policygen-download--active"
