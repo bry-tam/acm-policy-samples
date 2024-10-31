@@ -8,6 +8,7 @@ resources:
   - ./gatekeeper/
   - ./loki/
   - ./cluster-logging/
+  - ./cluster-observability/
   - ./data-foundation/
   - ./acs/
   - ./acm/

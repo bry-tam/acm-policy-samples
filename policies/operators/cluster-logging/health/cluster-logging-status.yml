@@ -61,15 +61,41 @@ spec:
 
     - complianceType: musthave
       objectDefinition:
-        apiVersion: logging.openshift.io/v1
-        kind: ClusterLogging
+        apiVersion: observability.openshift.io/v1
+        kind: ClusterLogForwarder
         metadata:
-          name: instance
+          name: collector
           namespace: openshift-logging
         status:
           conditions:
-            - status: 'True'
-              type: Ready
+          - reason: ClusterRolesExist
+            status: "True"
+            type: observability.openshift.io/Authorized
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/Valid
+          - reason: ReconciliationComplete
+            status: "True"
+            type: Ready
+          filterConditions:
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidFilter-detectexception
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidFilter-parse-json
+          inputConditions:
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidInput-application1
+          outputConditions:
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidOutput-default-lokistack-application1
+          pipelineConditions:
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidPipeline-default-before
 
 
 

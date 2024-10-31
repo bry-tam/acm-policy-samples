@@ -3,3 +3,12 @@ kind: Kustomization
 
 generators:
   - ./generator.yml
+
+patchesJson6902:
+- target:
+    kind: PolicySet
+    name: cluster-logging-operator
+  patch: |
+    - op: add
+      path: /spec/policies/-
+      value: 'cluster-observability-operator'
