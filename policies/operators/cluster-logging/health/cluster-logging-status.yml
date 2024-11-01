@@ -58,7 +58,7 @@ spec:
           numberAvailable: {{ $nodeCount }}
 
 
-
+    {{- $clf := (lookup "observability.openshift.io/v1" "ClusterLogForwarder" "openshift-logging" "collector") }}
     - complianceType: musthave
       objectDefinition:
         apiVersion: observability.openshift.io/v1
@@ -85,17 +85,22 @@ spec:
             status: "True"
             type: observability.openshift.io/ValidFilter-parse-json
           inputConditions:
+          {{- range $ic := $slf.spec.inputs }}
           - reason: ValidationSuccess
             status: "True"
-            type: observability.openshift.io/ValidInput-application1
+            type: observability.openshift.io/ValidInput-{{ $ic.name }}
+          {{- end }}
           outputConditions:
           - reason: ValidationSuccess
             status: "True"
-            type: observability.openshift.io/ValidOutput-default-lokistack-application1
+            type: observability.openshift.io/ValidOutput-default-lokistack-application
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidOutput-default-lokistack-infrastructure
           pipelineConditions:
           - reason: ValidationSuccess
             status: "True"
-            type: observability.openshift.io/ValidPipeline-default-before
+            type: observability.openshift.io/ValidPipeline-default-logstore
 
 
 
