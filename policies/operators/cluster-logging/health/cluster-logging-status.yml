@@ -85,7 +85,7 @@ spec:
             status: "True"
             type: observability.openshift.io/ValidFilter-parse-json
           inputConditions:
-          {{- range $ic := $slf.spec.inputs }}
+          {{- range $ic := $clf.spec.inputs }}
           - reason: ValidationSuccess
             status: "True"
             type: observability.openshift.io/ValidInput-{{ $ic.name }}
