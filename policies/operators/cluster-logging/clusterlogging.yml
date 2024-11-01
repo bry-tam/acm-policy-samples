@@ -7,27 +7,6 @@ spec:
   remediationAction: enforce
   severity: high
   object-templates-raw: |
-    - complianceType: mustnothave
-      objectDefinition:
-        apiVersion: logging.openshift.io/v1
-        kind: ClusterLogging
-        metadata:
-          name: instance
-          namespace: openshift-logging
-        spec:
-          managementState: "Managed"
-          collection:
-            type: "vector"
-            tolerations:
-            - operator: Exists
-
-          logStore:
-            type: lokistack
-            lokistack:
-              name: logging-loki
-          visualization:
-            type: ocp-console
-
     - complianceType: musthave
       objectDefinition:
         apiVersion: "observability.openshift.io/v1"
