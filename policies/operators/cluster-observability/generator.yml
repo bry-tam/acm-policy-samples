@@ -18,6 +18,8 @@ policies:
     manifests:
       - path: namespace.yml
       - path: operatorpolicy.yml
+      - path: health/cluster-observability-status.yml
+        remediationAction: InformOnly
 
 policySets:
   - name: cluster-observability-operator
