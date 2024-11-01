@@ -18,7 +18,7 @@ spec:
           serviceAccount:
             name: collector
           managementState: Managed
-          collection:
+          collector:
             tolerations:
               - operator: Exists
           outputs:
