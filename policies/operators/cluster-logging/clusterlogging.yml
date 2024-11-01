@@ -19,26 +19,6 @@ spec:
             name: collector
           managementState: Managed
 
-          inputs:
-            - name: app-logs
-              type: application
-              application:
-                tuning:
-                  rateLimitPerContainer:
-                    - maxRecordsPerSecond: 500
-            - name: infra-logs
-              type: infrastructure
-              infrastructure:
-                sources:
-                  - node
-                  - container
-            - name: audit-logs
-              type: audit
-              audit:
-                sources:
-                  - kubeAPI
-                  - openshiftAPI
-
           outputs:
           - name: default-lokistack
             type: lokiStack
