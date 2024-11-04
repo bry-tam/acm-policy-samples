@@ -24,18 +24,8 @@ spec:
           updatedNumberScheduled: {{ $nodeCount }}
           numberAvailable: {{ $nodeCount }}
 
-    - complianceType: musthave
-      objectDefinition:
-        kind: ConfigMap
-        apiVersion: v1
-        metadata:
-          name: collector
-          namespace: default
-        data:
-
     {{- $clf := (lookup "observability.openshift.io/v1" "ClusterLogForwarder" "openshift-logging" "collector") }}
-          clf: |
-            {{ $clf }}
+
     {{- $pNames := list "" }}
     {{- $iRefs := list "" }}
     {{- $oRefs := list "" }}
@@ -43,6 +33,7 @@ spec:
       {{- range $or := $pl.outputRefs }}
         {{- range $ir := $pl.inputRefs }}
 
+          {{- $pNames = append $pNames (printf "%s%s" $pl.name ((eq (len $pNames) 1) | ternary "" (printf "-%v" (sub (len $pNames) 1)))) }}
 
           {{- if not (has $ir $iRefs) }}
             {{- $iRefs = append $iRefs $ir }}
