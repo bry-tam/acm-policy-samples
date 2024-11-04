@@ -11,9 +11,4 @@ spec:
       cpu: 200m
       memory: 128Mi
   tolerations:
-  - key: node-role.kubernetes.io/master
-    operator: Exists
-  - key: node-role.kubernetes.io/infra
-    operator: Exists
-  - key: node-role.kubernetes.io/storage
-    operator: Exists
+  - operator: Exists

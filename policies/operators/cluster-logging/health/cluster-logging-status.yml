@@ -26,6 +26,25 @@ spec:
 
 
     {{- $clf := (lookup "observability.openshift.io/v1" "ClusterLogForwarder" "openshift-logging" "collector") }}
+    {{- $pNames := list "" }}
+    {{- $iRefs := list "" }}
+    {{- $oRefs := list "" }}
+    {{- range $pl := $clf.pipelines }}
+      {{- range $or := $pl.outputRefs }}
+        {{- range $ir := $pl.inputRefs }}
+          {{- $pNames = append $pNames (printf "%s%s" $pl.name (eq (len $pNames) 1) | ternary '' (printf "-%s" (sub (len $pNames) 1))) }}
+
+          {{- if not (has $ir $iRefs) }}
+            {{- $iRefs := append $iRefs $ir }}
+          {{- end }}
+          
+          {{- $oRefName := printf "%s-%s" $or $ir }}
+          {{- if not (has $oRefName $oRefs) }}
+            {{- $oRefs := append $oRefs $oRefName }}
+          {{- end }}
+      {{- $end }}
+    {{- end }}
+
     - complianceType: musthave
       objectDefinition:
         apiVersion: observability.openshift.io/v1
@@ -51,23 +70,26 @@ spec:
           - reason: ValidationSuccess
             status: "True"
             type: observability.openshift.io/ValidFilter-parse-json
+
+
           inputConditions:
-          {{- range $ic := $clf.spec.inputs }}
+          {{- range $ic := $iRefs }}
           - reason: ValidationSuccess
             status: "True"
-            type: observability.openshift.io/ValidInput-{{ $ic.name }}
+            type: observability.openshift.io/ValidInput-{{ $ic }}
           {{- end }}
+
           outputConditions:
+          {{- range $oc := $oRefs }}
           - reason: ValidationSuccess
             status: "True"
-            type: observability.openshift.io/ValidOutput-default-lokistack-application
-          - reason: ValidationSuccess
-            status: "True"
-            type: observability.openshift.io/ValidOutput-default-lokistack-infrastructure
+            type: observability.openshift.io/ValidOutput-{{ $oc }}
+          {{- end }}
+
           pipelineConditions:
+          {{- range $pc := $pNames }}
           - reason: ValidationSuccess
             status: "True"
-            type: observability.openshift.io/ValidPipeline-default-logstore
-
-
+            type: observability.openshift.io/ValidPipeline-{{ $pc }}
+          {{- end }}
 
