@@ -61,7 +61,8 @@ spec:
             - application
             - infrastructure
             - audit
-            filterRefs: kubeapi-filter
+            filterRefs: 
+              - kubeapi-filter
 
           filters:
             - name: kubeapi-filter
