@@ -29,10 +29,18 @@ spec:
     {{- $pNames := list "" }}
     {{- $iRefs := list "" }}
     {{- $oRefs := list "" }}
+    {{- $fRefs := list "" }}
     {{- range $pl := $clf.spec.pipelines }}
+      {{- $pNames = append $pNames (printf "%s%s" $pl.name ((eq (len $pNames) 1) | ternary "" (printf "-%v" (sub (len $pNames) 1)))) }}
+
+      {{- range $fr := $pl.filterRefs }}
+        {{- if not (has $fr $fRefs) }}
+          {{- $fRefs = append $fRefs $fr }}
+        {{- end }}
+      {{- end }}
+
       {{- range $or := $pl.outputRefs }}
         {{- range $ir := $pl.inputRefs }}
-          {{- $pNames = append $pNames (printf "%s%s" $pl.name ((eq (len $pNames) 1) | ternary "" (printf "-%v" (sub (len $pNames) 1)))) }}
 
           {{- if not (has $ir $iRefs) }}
             {{- $iRefs = append $iRefs $ir }}
@@ -86,4 +94,13 @@ spec:
             status: "True"
             type: observability.openshift.io/ValidPipeline-{{ $pc }}
           {{- end }}
+
+        {{- if gt (len $fRefs) 1 }}
+          filterConditions:
+          {{- range $fc := (slice $fRefs 1) }}
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidFilter-{{ $fc }}
+          {{- end }}
+        {{- end }}
 
