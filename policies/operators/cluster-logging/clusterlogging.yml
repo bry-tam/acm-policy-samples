@@ -7,7 +7,7 @@ spec:
   remediationAction: enforce
   severity: high
   object-templates-raw: |
-    - complianceType: musthave
+    - complianceType: mustonlyhave
       objectDefinition:
         apiVersion: "observability.openshift.io/v1"
         kind: ClusterLogForwarder
@@ -92,13 +92,12 @@ spec:
                       resources: ["configmaps"]
                       resourceNames: ["controller-leader"]
 
-                  # Don't log watch requests by the "system:kube-proxy" on endpoints or services
+                  # Don't log watch, list, get requests 
                   - level: None
-                    users: ["system:kube-proxy"]
-                    verbs: ["watch"]
-                    resources:
-                    - group: "" # core API group
-                      resources: ["endpoints", "services"]
+                    verbs: 
+                      - watch
+                      - list
+                      - get
 
                   # Don't log authenticated requests to certain non-resource URL paths.
                   - level: None
@@ -115,18 +114,3 @@ spec:
                     # This rule only applies to resources in the "kube-system" namespace.
                     # The empty string "" can be used to select non-namespaced resources.
                     namespaces: ["kube-system"]
-
-                  # Log configmap and secret changes in all other namespaces at the Metadata level.
-                  - level: Metadata
-                    resources:
-                    - group: "" # core API group
-                      resources: ["secrets", "configmaps"]
-
-                  # Log all other resources in core and extensions at the Request level.
-                  - level: Request
-                    resources:
-                    - group: "" # core API group
-                    - group: "extensions" # Version of group should NOT be included.
-
-                  # A catch-all rule to log all other requests at the Metadata level.
-                  - level: Metadata
