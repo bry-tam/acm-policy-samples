@@ -32,7 +32,6 @@ spec:
     {{- range $pl := $clf.spec.pipelines }}
       {{- range $or := $pl.outputRefs }}
         {{- range $ir := $pl.inputRefs }}
-
           {{- $pNames = append $pNames (printf "%s%s" $pl.name ((eq (len $pNames) 1) | ternary "" (printf "-%v" (sub (len $pNames) 1)))) }}
 
           {{- if not (has $ir $iRefs) }}
@@ -65,13 +64,6 @@ spec:
           - reason: ReconciliationComplete
             status: "True"
             type: Ready
-          filterConditions:
-          - reason: ValidationSuccess
-            status: "True"
-            type: observability.openshift.io/ValidFilter-detectexception
-          - reason: ValidationSuccess
-            status: "True"
-            type: observability.openshift.io/ValidFilter-parse-json
 
 
           inputConditions:
