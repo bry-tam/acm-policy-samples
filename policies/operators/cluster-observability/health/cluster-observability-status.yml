@@ -18,7 +18,7 @@ spec:
         kind: Deployment
         apiVersion: apps/v1
         metadata:
-          namespace: $dep.metadata.namespace
+          namespace: {{ $dep.metadata.namespace }}
           name: {{ $dep.metadata.name }}
         status:
           replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
