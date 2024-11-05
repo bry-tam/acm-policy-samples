@@ -7,39 +7,6 @@ spec:
   remediationAction: inform
   severity: high
   object-templates-raw: |
-    {{/* ##  Create a list of all expected deployments in openshift-logging for loki ## */}}
-    {{- $depList := list "logging-view-plugin" }}
-
-    ## Create a CompilianceType objectDefinition for each deployment
-    {{- range $depName := $depList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-logging" $depName) }}
-    - complianceType: musthave
-      objectDefinition:
-        kind: Deployment
-        apiVersion: apps/v1
-        metadata:
-          namespace: openshift-logging
-          name: {{ $depName }}
-          labels:
-        {{- range $k, $v := $dep.metadata.labels }}
-            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-        {{- end }}
-        spec:
-          selector:
-            matchLabels:
-            {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-            {{- end }}
-        status:
-          replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          conditions:
-            - type: Available
-              status: 'True'
-    {{- end }}
-
     {{/* ##  Ensure the collector is deployed to all nodes ## */}}
     {{- $nodeCount := (len (lookup "v1" "Node" "" "").items) }}
     - complianceType: musthave
@@ -57,19 +24,83 @@ spec:
           updatedNumberScheduled: {{ $nodeCount }}
           numberAvailable: {{ $nodeCount }}
 
+    {{- $clf := (lookup "observability.openshift.io/v1" "ClusterLogForwarder" "openshift-logging" "collector") }}
 
+    {{- $pNames := list "" }}
+    {{- $iRefs := list "" }}
+    {{- $oRefs := list "" }}
+    {{- $fRefs := list "" }}
+    {{- range $pl := $clf.spec.pipelines }}
+      {{- $pNames = append $pNames (printf "%s%s" $pl.name ((eq (len $pNames) 1) | ternary "" (printf "-%v" (sub (len $pNames) 1)))) }}
+
+      {{- range $fr := $pl.filterRefs }}
+        {{- if not (has $fr $fRefs) }}
+          {{- $fRefs = append $fRefs $fr }}
+        {{- end }}
+      {{- end }}
+
+      {{- range $or := $pl.outputRefs }}
+        {{- range $ir := $pl.inputRefs }}
+
+          {{- if not (has $ir $iRefs) }}
+            {{- $iRefs = append $iRefs $ir }}
+          {{- end }}
+          
+          {{- $oRefName := printf "%s-%s" $or $ir }}
+          {{- if not (has $oRefName $oRefs) }}
+            {{- $oRefs = append $oRefs $oRefName }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
 
     - complianceType: musthave
       objectDefinition:
-        apiVersion: logging.openshift.io/v1
-        kind: ClusterLogging
+        apiVersion: observability.openshift.io/v1
+        kind: ClusterLogForwarder
         metadata:
-          name: instance
+          name: collector
           namespace: openshift-logging
         status:
           conditions:
-            - status: 'True'
-              type: Ready
+          - reason: ClusterRolesExist
+            status: "True"
+            type: observability.openshift.io/Authorized
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/Valid
+          - reason: ReconciliationComplete
+            status: "True"
+            type: Ready
 
 
+          inputConditions:
+          {{- range $ic := (slice $iRefs 1) }}
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidInput-{{ $ic }}
+          {{- end }}
+
+          outputConditions:
+          {{- range $oc := (slice $oRefs 1) }}
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidOutput-{{ $oc }}
+          {{- end }}
+
+          pipelineConditions:
+          {{- range $pc := (slice $pNames 1) }}
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidPipeline-{{ $pc }}
+          {{- end }}
+
+        {{- if gt (len $fRefs) 1 }}
+          filterConditions:
+          {{- range $fc := (slice $fRefs 1) }}
+          - reason: ValidationSuccess
+            status: "True"
+            type: observability.openshift.io/ValidFilter-{{ $fc }}
+          {{- end }}
+        {{- end }}
 
