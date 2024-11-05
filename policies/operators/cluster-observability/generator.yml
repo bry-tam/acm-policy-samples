@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-clusterobservability
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets: 
+    - cluster-observability-operator
+placementBindingDefaults:
+  name: "cluster-observability-binding"
+
+policies:
+  - name: cluster-observability-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorpolicy.yml
+      - path: health/cluster-observability-status.yml
+        remediationAction: InformOnly
+
+policySets:
+  - name: cluster-observability-operator
+    placement:
+      placementName: "ft-clusterobservability--enabled"

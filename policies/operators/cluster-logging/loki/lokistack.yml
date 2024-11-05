@@ -12,7 +12,7 @@ spec:
         apiVersion: loki.grafana.com/v1
         kind: LokiStack
         metadata:
-          name: logging-loki 
+          name: logging-loki
           namespace: openshift-logging
         spec:
           limits:

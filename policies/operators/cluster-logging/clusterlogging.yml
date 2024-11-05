@@ -7,23 +7,67 @@ spec:
   remediationAction: enforce
   severity: high
   object-templates-raw: |
-    - complianceType: musthave
+    - complianceType: mustonlyhave
       objectDefinition:
-        apiVersion: logging.openshift.io/v1
-        kind: ClusterLogging
+        apiVersion: "observability.openshift.io/v1"
+        kind: ClusterLogForwarder
         metadata:
-          name: instance
+          name: collector
           namespace: openshift-logging
         spec:
-          managementState: "Managed"
-          collection:
-            type: "vector"
+          serviceAccount:
+            name: collector
+          managementState: Managed
+          collector:
             tolerations:
-            - operator: Exists
+              - operator: Exists
 
-          logStore:
-            type: lokistack
-            lokistack:
-              name: logging-loki
-          visualization:
-            type: ocp-console
+          inputs:
+            - name: infrastructure
+              type: infrastructure
+              infrastructure:
+                sources: 
+                  - node
+                  - container
+            - name: audit
+              type: audit
+              audit:
+                sources: 
+                  - kubeAPI
+                  - openshiftAPI
+                  - ovn
+                  - auditd
+
+          outputs:
+          - name: default-lokistack
+            type: lokiStack
+            lokiStack:
+              target:
+                name: logging-loki
+                namespace: openshift-logging
+              authentication:
+                token:
+                  from: serviceAccount
+            tls:
+              ca:
+                key: service-ca.crt
+                configMapName: openshift-service-ca.crt
+
+          pipelines:
+          - name: default-logstore
+            outputRefs:
+            - default-lokistack
+            inputRefs:
+            - application
+            - infrastructure
+            - audit
+            filterRefs: 
+              - kubeapi-filter
+
+          filters:
+            - name: kubeapi-filter
+              type: kubeAPIAudit
+              kubeAPIAudit:
+                # Don't generate audit events for all requests in RequestReceived stage.
+                omitStages:
+                  - "RequestReceived"

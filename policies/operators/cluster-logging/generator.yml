@@ -17,22 +17,10 @@ policies:
     remediationAction: enforce
     manifests:
       - path: namespace.yml
-      - path: operatorgroup.yml
-        extraDependencies:
-          - name: cluster-logging-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: subscription.yml
-        extraDependencies:
-          - name: cluster-logging-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: health/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies:
-          - name: cluster-logging-operator3
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+      - path: operatorpolicy.yml
+      - path: clusterrole.yml
+      - path: clusterrolebinding.yml
+      - path: serviceaccount.yml
 
 
   - name: cluster-logging-configure
@@ -61,12 +49,18 @@ policies:
           - name: lokistack-logging
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
+      - path: uiplugin.yml
+        extraDependencies: 
+          - name: loki-logging-status
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
       - path: clusterlogging.yml
         extraDependencies: 
           - name: loki-logging-status
             kind: ConfigurationPolicy
             compliance: "Compliant"
-      - path: console.yml
+
       - path: logfilemetricexporter.yml
 
   - name: logging-operator-status
