@@ -27,7 +27,9 @@ policies:
       - path: gatekeeper.yml
       - path: sync-configmap.yml
       - path: metrics-service.yml
+        name: gatekeeper-metrics-service
       - path: servicemonitor.yml
+        name: gatekeeper-metrics-servicemon
       - path: health/gatekeeper-status.yml
         remediationAction: inform
 
