@@ -34,6 +34,13 @@ configMapGenerator:
   - evaluationInterval-noncompliant=30s
   - copyPolicyMetadata=false
 
+patches:
+  - target:
+      kind: Policy
+    patch: |
+      - op: add
+        path: /spec/remediationAction
+        value: null
 # patches:
   ## Add the ClusterSet that should be managed as part of this environment.  This patch will update the placments and ManagedClusterSetbinding
   # - target:

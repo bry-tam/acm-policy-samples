@@ -4,7 +4,7 @@ kind: ConfigurationPolicy
 metadata:
   name: cluster-logging-status
 spec:
-  remediationAction: inform
+  remediationAction: InformOnly
   severity: high
   object-templates-raw: |
     {{/* ##  Ensure the collector is deployed to all nodes ## */}}
@@ -37,28 +37,24 @@ spec:
           conditions:
           {{- range $c := $clf.status.conditions }}
             {{- $_ := set $c "status" "True" }}
-            {{- $_ := unset $c "lastTransitionTime" }}
           - {{ $c | toRawJson | toLiteral }}
           {{- end }}
 
           inputConditions:
           {{- range $c := $clf.status.inputConditions }}
             {{- $_ := set $c "status" "True" }}
-            {{- $_ := unset $c "lastTransitionTime" }}
           - {{ $c | toRawJson | toLiteral }}
           {{- end }}
 
           outputConditions:
           {{- range $c := $clf.status.outputConditions }}
             {{- $_ := set $c "status" "True" }}
-            {{- $_ := unset $c "lastTransitionTime" }}
           - {{ $c | toRawJson | toLiteral }}
           {{- end }}
 
           pipelineConditions:
           {{- range $c := $clf.status.pipelineConditions }}
             {{- $_ := set $c "status" "True" }}
-            {{- $_ := unset $c "lastTransitionTime" }}
           - {{ $c | toRawJson | toLiteral }}
           {{- end }}
 
@@ -66,7 +62,6 @@ spec:
           filterConditions:
           {{- range $c := $clf.status.filterConditions }}
             {{- $_ := set $c "status" "True" }}
-            {{- $_ := unset $c "lastTransitionTime" }}
           - {{ $c | toRawJson | toLiteral }}
           {{- end }}
         {{- end }}
