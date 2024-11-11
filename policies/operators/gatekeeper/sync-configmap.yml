@@ -22,14 +22,12 @@ spec:
     {{/* ##  Build the sync data config ## */}}
     - complianceType: mustonlyhave
       objectDefinition:
-        apiVersion: config.gatekeeper.sh/v1alpha1
-        kind: Config
+        apiVersion: syncset.gatekeeper.sh/v1alpha1
+        kind: SyncSet
         metadata:
-          name: config
-          namespace: "openshift-gatekeeper-system"
+          name: syncset-1
         spec:
-          sync:
-            syncOnly:
+          gvks:
     {{- range $syncAnn := (slice $syncAnnotations 1) }}{{/* ##  loop through all the annotations except the first ## */}}
       {{- $annLen := ((sub (len $syncAnn) 3) | toInt) }}
       {{- $annData := (fromJson (substr 2 $annLen $syncAnn)) }}{{/* ##  trim off leading trailing quotes and extra array wrapper ## */}}
