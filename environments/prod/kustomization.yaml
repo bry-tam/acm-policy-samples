@@ -22,18 +22,7 @@ resources:
   ## include all policies
   - ../../policies/
 
-## Set policy defaults for evaluation interval and prune behavior
-## The transformer above includes these values in the final policy
-generatorOptions:
- disableNameSuffixHash: true
-
-configMapGenerator:
-- name: policy-defaults
-  literals:
-  - evaluationInterval-compliant=30s
-  - evaluationInterval-noncompliant=30s
-  - copyPolicyMetadata=false
-
+## ensure all policies have the copyPolicyMetadata set to false, unset the toplevel remediation action.
 patches:
   - target:
       kind: Policy
@@ -41,7 +30,12 @@ patches:
       - op: add
         path: /spec/remediationAction
         value: null
-# patches:
+
+      - op: add
+        path: /spec/copyPolicyMetadata
+        value: false
+
+
   ## Add the ClusterSet that should be managed as part of this environment.  This patch will update the placments and ManagedClusterSetbinding
   # - target:
   #     kind: Placement
