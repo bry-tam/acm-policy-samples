@@ -20,7 +20,7 @@ spec:
             logLevel: DEBUG
             auditInterval: 60s
             constraintViolationLimit: 55
-            auditFromCache: Automatic
+            auditFromCache: Enabled
             auditChunkSize: 66
             emitAuditEvents: Enabled
             resources:
