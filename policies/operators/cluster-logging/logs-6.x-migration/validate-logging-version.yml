@@ -12,13 +12,13 @@ spec:
 
     {{- range $sub := $logSub }}
       {{- $channel := (trimAll "stable-" $sub.spec.channel) }} 
-      {{ if and (eq $sub.name "cluster-logging") (lt ($channel | toInt) 6) }}
+      {{ if and (eq $sub.spec.name "cluster-logging") (lt ($channel | toInt) 6) }}
     - complianceType: mustnothave
       objectDefinition:
         apiVersion: "operators.coreos.com/v1alpha1"
         kind: subscription
         metadata:
-          name: {{ $sub.metdata.name }}
+          name: {{ $sub.metadata.name }}
           namespace: openshift-logging
       {{- end }}
     {{- end }}
