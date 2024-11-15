@@ -13,11 +13,16 @@ spec:
     }}
 
     {{- range $vc := $volumeclaims }}
+    {{- if and (eq $vc.kind "PersistentVolume") (ne $vc.spec.claimRef.namespace "openshift-logging") }}
+      {{- continue }}
+    {{- end }}
     - complianceType: mustnothave
       objectDefinition:
         apiVersion: {{ $vc.apiVersion }}
         kind: {{ $vc.kind }}
         metadata:
           name: {{ $vc.metadata.name }}
+      {{- if eq $vc.kind "PersistentVolumeClaim" }}
           namespace: {{ $vc.metadata.namespace }}
+      {{- end }}
     {{- end }}

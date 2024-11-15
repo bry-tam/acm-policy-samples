@@ -15,5 +15,5 @@ spec:
         apiVersion: v1
         kind: Namespace
         metadata:
-          name: {{ $lns.metadata.name }}
+          name: {{ $lns }}
     {{- end }}
