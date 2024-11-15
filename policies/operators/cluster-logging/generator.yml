@@ -15,6 +15,9 @@ placementBindingDefaults:
 policies:
   - name: cluster-logging-operator
     remediationAction: enforce
+    dependencies:
+      - name: "prepare-logging-migration"
+        compliance: "Compliant"
     manifests:
       - path: namespace.yml
       - path: operatorpolicy.yml

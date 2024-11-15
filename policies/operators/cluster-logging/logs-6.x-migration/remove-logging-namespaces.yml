@@ -1,0 +1,19 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: remove-logging-namespaces
+spec:
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    {{- $loggers := list "openshift-operators-redhat" "openshift-logging" }}
+
+    {{- range $lns := $loggers }}
+    - complianceType: mustnothave
+      objectDefinition:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: {{ $lns.metadata.name }}
+    {{- end }}

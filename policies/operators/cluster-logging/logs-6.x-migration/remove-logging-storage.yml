@@ -1,0 +1,23 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: remove-logging-storage
+spec:
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    {{/* ##  Find the ClusterLogging forwarders and metrics exporter ## */}}
+    {{- $volumeclaims := concat  (lookup "v1" "PersistentVolumeClaim" "openshift-logging" "").items
+                                (lookup "v1" "PersistentVolume" "openshift-logging" "").items
+    }}
+
+    {{- range $vc := $volumeclaims }}
+    - complianceType: mustnothave
+      objectDefinition:
+        apiVersion: {{ $vc.apiVersion }}
+        kind: {{ $vc.kind }}
+        metadata:
+          name: {{ $vc.metadata.name }}
+          namespace: {{ $vc.metadata.namespace }}
+    {{- end }}
