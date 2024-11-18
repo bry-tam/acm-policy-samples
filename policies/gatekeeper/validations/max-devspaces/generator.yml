@@ -31,5 +31,5 @@ policies:
 policySets:
   - name: gp-valid-max-devworkspaces
     placement:
-      placementName: "env-bound-placement"
+      placementName: "ft-devspaces--enabled"
 

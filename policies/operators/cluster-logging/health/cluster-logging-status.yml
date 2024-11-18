@@ -4,7 +4,7 @@ kind: ConfigurationPolicy
 metadata:
   name: cluster-logging-status
 spec:
-  remediationAction: inform
+  remediationAction: InformOnly
   severity: high
   object-templates-raw: |
     {{/* ##  Ensure the collector is deployed to all nodes ## */}}
@@ -26,34 +26,6 @@ spec:
 
     {{- $clf := (lookup "observability.openshift.io/v1" "ClusterLogForwarder" "openshift-logging" "collector") }}
 
-    {{- $pNames := list "" }}
-    {{- $iRefs := list "" }}
-    {{- $oRefs := list "" }}
-    {{- $fRefs := list "" }}
-    {{- range $pl := $clf.spec.pipelines }}
-      {{- $pNames = append $pNames (printf "%s%s" $pl.name ((eq (len $pNames) 1) | ternary "" (printf "-%v" (sub (len $pNames) 1)))) }}
-
-      {{- range $fr := $pl.filterRefs }}
-        {{- if not (has $fr $fRefs) }}
-          {{- $fRefs = append $fRefs $fr }}
-        {{- end }}
-      {{- end }}
-
-      {{- range $or := $pl.outputRefs }}
-        {{- range $ir := $pl.inputRefs }}
-
-          {{- if not (has $ir $iRefs) }}
-            {{- $iRefs = append $iRefs $ir }}
-          {{- end }}
-          
-          {{- $oRefName := printf "%s-%s" $or $ir }}
-          {{- if not (has $oRefName $oRefs) }}
-            {{- $oRefs = append $oRefs $oRefName }}
-          {{- end }}
-        {{- end }}
-      {{- end }}
-    {{- end }}
-
     - complianceType: musthave
       objectDefinition:
         apiVersion: observability.openshift.io/v1
@@ -63,44 +35,34 @@ spec:
           namespace: openshift-logging
         status:
           conditions:
-          - reason: ClusterRolesExist
-            status: "True"
-            type: observability.openshift.io/Authorized
-          - reason: ValidationSuccess
-            status: "True"
-            type: observability.openshift.io/Valid
-          - reason: ReconciliationComplete
-            status: "True"
-            type: Ready
-
+          {{- range $c := $clf.status.conditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
+          {{- end }}
 
           inputConditions:
-          {{- range $ic := (slice $iRefs 1) }}
-          - reason: ValidationSuccess
-            status: "True"
-            type: observability.openshift.io/ValidInput-{{ $ic }}
+          {{- range $c := $clf.status.inputConditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
           {{- end }}
 
           outputConditions:
-          {{- range $oc := (slice $oRefs 1) }}
-          - reason: ValidationSuccess
-            status: "True"
-            type: observability.openshift.io/ValidOutput-{{ $oc }}
+          {{- range $c := $clf.status.outputConditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
           {{- end }}
 
           pipelineConditions:
-          {{- range $pc := (slice $pNames 1) }}
-          - reason: ValidationSuccess
-            status: "True"
-            type: observability.openshift.io/ValidPipeline-{{ $pc }}
+          {{- range $c := $clf.status.pipelineConditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
           {{- end }}
 
-        {{- if gt (len $fRefs) 1 }}
+        {{- if gt (len $clf.status.filterConditions) 0 }}
           filterConditions:
-          {{- range $fc := (slice $fRefs 1) }}
-          - reason: ValidationSuccess
-            status: "True"
-            type: observability.openshift.io/ValidFilter-{{ $fc }}
+          {{- range $c := $clf.status.filterConditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
           {{- end }}
         {{- end }}
 

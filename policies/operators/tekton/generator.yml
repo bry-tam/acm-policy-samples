@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-generator
+  name: tekton-operator
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
