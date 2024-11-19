@@ -16,7 +16,7 @@ spec:
     - complianceType: mustnothave
       objectDefinition:
         apiVersion: "operators.coreos.com/v1alpha1"
-        kind: subscription
+        kind: Subscription
         metadata:
           name: {{ $sub.metadata.name }}
           namespace: openshift-logging
