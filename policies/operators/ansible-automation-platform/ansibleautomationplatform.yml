@@ -7,6 +7,11 @@ spec:
   # Development purposes only
   no_log: false
 
+  # uncomment to set a custom password for the admin account
+  # this only functions during inital deployment
+  # https://access.redhat.com/solutions/6966668
+  # admin_password_secret: aap-admin-secret
+
   hub:
     disabled: false
 
@@ -28,6 +33,7 @@ spec:
     storage_requirements:
       requests:
         storage: 100Gi
+    # postgres_storage_class: ocs-storagecluster-cephfs
 
   # lightspeed:
   #   disabled: true
