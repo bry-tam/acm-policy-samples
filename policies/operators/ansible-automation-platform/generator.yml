@@ -27,8 +27,22 @@ policies:
       - name: "ansible-automation-operator"
         compliance: "Compliant"
     manifests:
-      - path: loki/noobaa-s3-serving-cert.yml
-
+      - path: objectbucketclaim.yml
+        name: obc-hub-odf
+      - path: noobaa-s3-serving-cert.yml
+        name: noobaa-s3-serving-cert
+      - path: hub-secret.yml
+        name: ansible-hub-odf
+        extraDependencies: 
+          - name: obc-hub-odf
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: ansibleautomationplatform.yml
+        name: ansibleautomationplatform
+        extraDependencies: 
+          - name: ansible-hub-odf
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
 
 
   - name: ansible-automation-status
