@@ -13,15 +13,51 @@ spec:
     kms: {}
   externalStorage: {}
   managedResources:
-    cephBlockPools: {}
-    cephCluster: {}
-    cephConfig: {}
-    cephDashboard: {}
-    cephFilesystems: {}
     cephObjectStoreUsers: {}
+    cephCluster: {}
+    cephBlockPools: {}
+    cephNonResilientPools:
+      count: 1
+      resources: {}
+      volumeClaimTemplate:
+        metadata: {}
+        spec:
+          resources: {}
+        status: {}
     cephObjectStores: {}
+    cephFilesystems: {}
+    cephRBDMirror:
+      daemonCount: 1
     cephToolbox: {}
+    cephDashboard: {}
+    cephConfig: {}
   mirroring: {}
   multiCloudGateway:
     dbStorageClassName: gp3-csi
     reconcileStrategy: standalone
+  storageDeviceSets:
+    - config: {}
+      resources: {}
+      placement: {}
+      name: ocs-deviceset-gp3-csi
+      dataPVCTemplate:
+        metadata: {}
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 512Gi
+          storageClassName: gp3-csi
+          volumeMode: Block
+        status: {}
+      count: 1
+      replica: 3
+      portable: true
+      preparePlacement: {}
+  network:
+    connections:
+      encryption: {}
+    multiClusterService: {}
+  nodeTopologies: {}
+  resourceProfile: lean
