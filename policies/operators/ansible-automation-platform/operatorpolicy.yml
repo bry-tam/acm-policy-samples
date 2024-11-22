@@ -24,6 +24,7 @@ spec:
     source: redhat-operators
     sourceNamespace: openshift-marketplace
   operatorGroup:
+    name: ansible-automation-platform-operator
     targetNamespaces:
       - ansible-automation-platform
 
