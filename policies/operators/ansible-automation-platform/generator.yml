@@ -1,0 +1,46 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: policy-ansible-automation
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - ansible-automation-operator
+placementBindingDefaults:
+  name: "ansible-automation-binding"
+
+policies:
+  - name: ansible-automation-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorpolicy.yml
+        name: aap-operator
+
+
+  - name: ansible-automation-configure
+    remediationAction: enforce
+    dependencies:
+      - name: "ansible-automation-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: loki/noobaa-s3-serving-cert.yml
+
+
+
+  - name: ansible-automation-status
+    remediationAction: InformOnly
+    dependencies:
+      - name: "ansible-automation-configure"
+        compliance: "Compliant"
+    manifests:
+      - path: health/ansible-automation-status.yml
+
+policySets:
+  - name: ansible-automation-operator
+    placement:
+      placementName: "ft-ansible-automation--enabled"
+

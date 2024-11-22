@@ -1,0 +1,60 @@
+﻿object-templates-raw: |
+  {{/* ##  Ensure the collector is deployed to all nodes ## */}}
+  {{- $nodeCount := (len (lookup "v1" "Node" "" "").items) }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: DaemonSet
+      apiVersion: apps/v1
+      metadata:
+        name: collector
+        namespace: openshift-logging
+      status:
+        currentNumberScheduled: {{ $nodeCount }}
+        numberMisscheduled: 0
+        desiredNumberScheduled: {{ $nodeCount }}
+        numberReady: {{ $nodeCount }}
+        updatedNumberScheduled: {{ $nodeCount }}
+        numberAvailable: {{ $nodeCount }}
+
+  {{- $clf := (lookup "observability.openshift.io/v1" "ClusterLogForwarder" "openshift-logging" "collector") }}
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: observability.openshift.io/v1
+      kind: ClusterLogForwarder
+      metadata:
+        name: collector
+        namespace: openshift-logging
+      status:
+        conditions:
+        {{- range $c := $clf.status.conditions }}
+          {{- $_ := set $c "status" "True" }}
+        - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
+
+        inputConditions:
+        {{- range $c := $clf.status.inputConditions }}
+          {{- $_ := set $c "status" "True" }}
+        - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
+
+        outputConditions:
+        {{- range $c := $clf.status.outputConditions }}
+          {{- $_ := set $c "status" "True" }}
+        - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
+
+        pipelineConditions:
+        {{- range $c := $clf.status.pipelineConditions }}
+          {{- $_ := set $c "status" "True" }}
+        - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
+
+      {{- if gt (len $clf.status.filterConditions) 0 }}
+        filterConditions:
+        {{- range $c := $clf.status.filterConditions }}
+          {{- $_ := set $c "status" "True" }}
+        - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
+      {{- end }}
+
