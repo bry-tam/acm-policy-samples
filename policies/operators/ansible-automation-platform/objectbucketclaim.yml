@@ -1,0 +1,9 @@
+---
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: obc-hub-odf
+  namespace: ansible-automation-platform
+spec:
+  generateBucketName: obc-hub-odf-bucket
+  storageClassName: openshift-storage.noobaa.io

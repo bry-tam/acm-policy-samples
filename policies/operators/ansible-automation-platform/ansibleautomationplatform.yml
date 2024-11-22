@@ -1,0 +1,40 @@
+apiVersion: aap.ansible.com/v1alpha1
+kind: AnsibleAutomationPlatform
+metadata:
+  name: aap
+  namespace: ansible-automation-platform
+spec:
+  # Development purposes only
+  no_log: false
+
+  # uncomment to set a custom password for the admin account
+  # this only functions during inital deployment
+  # https://access.redhat.com/solutions/6966668
+  # admin_password_secret: aap-admin-secret
+
+  hub:
+    disabled: false
+
+    storage_type: S3
+    object_storage_s3_secret: ansible-hub-odf
+
+
+  controller:
+    disabled: false
+
+  eda:
+    disabled: false
+
+  database:
+    resource_requirements:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+    storage_requirements:
+      requests:
+        storage: 100Gi
+    # postgres_storage_class: ocs-storagecluster-cephfs
+
+  # lightspeed:
+  #   disabled: true
+

@@ -17,4 +17,5 @@ resources:
   - ./servicemesh/
   - ./opentelemetry/
   - ./tempo/
+  - ./ansible-automation-platform/
 

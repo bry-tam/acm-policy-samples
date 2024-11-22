@@ -1,0 +1,30 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: ansible-operator-install
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: Automatic
+  subscription:
+    channel: stable-2.5
+    name: ansible-automation-platform-operator
+    namespace: ansible-automation-platform
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+  operatorGroup:
+    name: ansible-automation-platform-operator
+    targetNamespaces:
+      - ansible-automation-platform
+
