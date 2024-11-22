@@ -2,6 +2,7 @@ apiVersion: aap.ansible.com/v1alpha1
 kind: AnsibleAutomationPlatform
 metadata:
   name: aap
+  namespace: ansible-automation-platform
 spec:
   # Development purposes only
   no_log: false
