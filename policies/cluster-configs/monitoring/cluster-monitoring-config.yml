@@ -24,16 +24,25 @@ spec:
           namespace: openshift-monitoring
         data:
           config.yaml: |
+            alertmanagerMain:
+              enableUserAlertmanagerConfig: true
+
             enableUserWorkload: true
 
+            nodeExporter:
+              collectors:
+                buddyinfo: {}
+                cpufreq: {}
+                ksmd: {}
+                mountstats: {}
+                netclass: {}
+                netdev: {}
+                processes: {}
+                systemd: {}
+                tcpstat: {}
+
+
             prometheusK8s:
-            {{- if $isSelfHosted }}
-              retention: 24h
-            {{- end }}
-              resources:
-                requests:
-                  cpu: 200m
-                  memory: 2Gi
     {{- if ne $infraCount 0 }}
               nodeSelector:
                 node-role.kubernetes.io/infra: ""
@@ -41,11 +50,6 @@ spec:
               - operator: Exists
                 key: node-role.kubernetes.io/infra
     {{- end }}
-              externalLabels:
-                customalertlabel: "on"
-                instance_name: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
-                product: {{ fromClusterClaim "product.open-cluster-management.io" }}
-                managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
 
     {{- $obsHubInfoSecret := (lookup "v1" "Secret" $obsNamespace "hub-info-secret") }}
     {{- if not (empty $obsHubInfoSecret ) }}
@@ -62,7 +66,6 @@ spec:
                 bearerToken:
                   key: token
                   name: observability-alertmanager-accessor
-                pathPrefix: /
                 scheme: https
                 staticConfigs:
                 - {{ trimAll "https://" $amURL }}
@@ -72,9 +75,18 @@ spec:
                     name: hub-alertmanager-router-ca
                   insecureSkipVerify: false
     {{- end }}
-
-            alertmanagerMain:
-              enableUserAlertmanagerConfig: true
+              externalLabels:
+                customalertlabel: "on"
+                instance_name: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
+                managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
+                product: {{ fromClusterClaim "product.open-cluster-management.io" }}
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 2Gi
+            {{- if $isSelfHosted }}
+              retention: 24h
+            {{- end }}
     {{- if ne $infraCount 0 }}
               nodeSelector:
                 node-role.kubernetes.io/infra: ""
