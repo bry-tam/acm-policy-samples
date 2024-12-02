@@ -52,7 +52,7 @@ policies:
           - name: remove-logging-storage
             kind: ConfigurationPolicy
             compliance: "Compliant"
-      - path: remove-logging-customresourcedefinition
+      - path: remove-logging-customresourcedefinition.yml
         extraDependencies: 
           - name: remove-logging-storage
             kind: ConfigurationPolicy
