@@ -7,6 +7,9 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
+  evaluationInterval:
+    compliant: watch
+    noncompliant: 10s
   policySets:
     - acs-operator-hub
 placementBindingDefaults:
