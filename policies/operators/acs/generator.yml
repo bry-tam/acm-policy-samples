@@ -93,11 +93,13 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: health/central/init-bundle/sensor-tls-cert.yml
+        name: acs-bundle-certificates
       - path: central/init-bundle/expired-sensor-tls.yml
         remediationAction: InformOnly
+        name: expired-sensor-tls
       - path: sensor/securedcluster.yml
         extraDependencies: 
-          - name: acs-central-init-bundle-cert2
+          - name: expired-sensor-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
