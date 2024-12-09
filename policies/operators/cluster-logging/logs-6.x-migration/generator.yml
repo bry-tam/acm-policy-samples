@@ -52,6 +52,11 @@ policies:
           - name: remove-logging-storage
             kind: ConfigurationPolicy
             compliance: "Compliant"
+      - path: remove-logging-customresourcedefinition.yml
+        extraDependencies: 
+          - name: remove-logging-storage
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
 
 policySets:
   - name: cluster-logging-migration
