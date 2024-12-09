@@ -7,6 +7,9 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
+  evaluationInterval:
+    compliant: 30s
+    noncompliant: 10s
   policySets:
     - acs-operator-hub
 placementBindingDefaults:
@@ -93,11 +96,13 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: health/central/init-bundle/sensor-tls-cert.yml
+        name: acs-bundle-certificates
       - path: central/init-bundle/expired-sensor-tls.yml
         remediationAction: InformOnly
+        name: expired-sensor-tls
       - path: sensor/securedcluster.yml
         extraDependencies: 
-          - name: acs-central-init-bundle-cert2
+          - name: expired-sensor-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
