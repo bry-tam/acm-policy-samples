@@ -9,3 +9,4 @@ resources:
   - ./managedserviceaccount/
   - ./policygenerator-download/
   - ./klusterlet-infra/
+  - ./kubeadmin-config-trustca/
