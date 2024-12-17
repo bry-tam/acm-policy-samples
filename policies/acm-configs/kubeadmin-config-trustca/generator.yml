@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-kubeadmin-config-trustca
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  ## turn off the default compliance annotations
+  categories: []
+  controls: []
+  standards: []
+  policySets:
+    - acm-kubeadmin-trustca
+placementBindingDefaults:
+  name: "acm-kubeadmin-trustca-binding"
+
+policies:
+  - name: acm-kubeadmin-trustca
+    remediationAction: enforce
+    manifests:
+      - path: update-kubeadmin-trustca.yml
+
+policySets:
+  - name: acm-kubeadmin-trustca
+    placement:
+      placementName: "env-bound-hub-placement"

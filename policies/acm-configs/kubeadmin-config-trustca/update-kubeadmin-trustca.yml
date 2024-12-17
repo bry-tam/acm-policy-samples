@@ -1,0 +1,47 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: update-kubeadmin-trustca
+spec:
+  remediationAction: enforce
+  severity: low
+  object-templates-raw: |
+    {{- $maxAgeHours := 12.0 }}
+
+    {{/* ##  Gather hub cluster proxy, user CA bundle and all hive kubeconfig secrets ## */}}
+    {{- $clusterProxy := (lookup "config.openshift.io/v1" "Proxy" "" "cluster") }}
+    {{- $kubeConfigSecrets := (lookup "v1" "Secret" "" "" "hive.openshift.io/secret-type=kubeconfig").items }}
+
+    {{/* ##  dig is used to get the name of the user CA configmap to handle if someone removes the key ## */}}
+    {{- $trustedCA := (dig "trustedCA" "name" "" $clusterProxy.spec) }}
+
+    {{- if $trustedCA }}
+      {{/* ##  fromConfigMap fails if the CM doesn't exist, this will protect against applying an empty cert ## */}}
+      {{- $certBundle := (fromConfigMap "openshift-config" $trustedCA "ca-bundle.crt") }}
+
+      {{/* ##  for each kubeconfig replace the CA for the server. ## */}}
+      {{- range $kubeSecret := $kubeConfigSecrets }}
+      
+        {{/* ##  Validate age of kubeconfig, block updating clusters until after 24 hours ## */}}
+        {{/* ##  This allows time for the day-2 config to be applied before expecting the api cert would be replaced. ## */}}
+        {{- $secretCreated := (toDate "2006-1-2T15:04:05Z" $kubeSecret.metadata.creationTimestamp) }}
+
+        {{- if lt (now.Sub $secretCreated).Hours $maxAgeHours }}
+          {{- continue }}
+        {{- end }}
+
+        {{- $org_kubeConfig := ($kubeSecret.data.kubeconfig | base64dec) }}
+        {{- $kubeConfig := ($org_kubeConfig | replace (regexFind "certificate-authority-data:.*" $org_kubeConfig) (printf "certificate-authority-data: %s" ($certBundle | base64enc))) }}
+
+    - complianceType: musthave
+      objectDefinition:
+        apiVersion: v1
+        kind: Secret
+        metadata: '{{ $kubeSecret.metadata | toRawJson | toLiteral }}'
+        data:
+          kubeconfig: {{ $kubeConfig | base64enc }}
+          raw-kubeconfig: {{ $kubeConfig | base64enc }}
+        type: {{ $kubeSecret.type }}
+      {{- end }}
+    {{- end }}
