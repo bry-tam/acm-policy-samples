@@ -18,11 +18,6 @@ object-templates-raw: |
               providers:
                 guest:
                   dangerouslyAllowOutsideDevelopment: true
-              externalAccess:
-              - type: legacy
-                options:
-                  subject: legacy-default-config
-                  secret: "${BACKEND_SECRET}"
             baseUrl: 'https://{{ $rhdh_host }}'
             cors:
               origin: 'https://{{ $rhdh_host }}'
