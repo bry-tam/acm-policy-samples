@@ -14,6 +14,10 @@ object-templates-raw: |
             title: Red Hat Developer Hub
           backend:
             auth:
+              environment: development
+              providers:
+                guest:
+                  dangerouslyAllowOutsideDevelopment: true
               externalAccess:
               - type: legacy
                 options:
