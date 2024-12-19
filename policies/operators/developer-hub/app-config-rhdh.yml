@@ -22,3 +22,25 @@ object-templates-raw: |
             baseUrl: 'https://{{ $rhdh_host }}'
             cors:
               origin: 'https://{{ $rhdh_host }}'
+          kubernetes:
+            serviceLocatorMethod:
+              type: 'multiTenant'
+            clusterLocatorMethods:
+              - type: 'config'
+                clusters:
+
+  {{hub- range $mc := (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "" "").items hub}}
+                  - name: {{hub $mc.metadata.name hub}}
+                    authProvider: 'serviceAccount'
+                    skipTLSVerify: true
+                    skipMetricsLookup: true
+                  {{hub- range $mcs  := $mc.status.clusterClaims hub}}
+                    {{hub- if eq $mcs.name "apiserverurl.openshift.io" hub}}
+                    url: {{hub $mcs.value hub}}
+                    {{hub else if eq $mcs.name "consoleurl.cluster.open-cluster-management.io" hub}}
+                    dashboardUrl: {{hub $mcs.value hub}}
+                    {{hub- end hub}}
+                  {{hub- end hub}}
+                    dashboardApp: openshift
+                    serviceAccountToken: {{hub printf "K8S_%s_TOKEN" ($mc.metadata.namespace | upper) hub}}
+  {{hub end hub}}
