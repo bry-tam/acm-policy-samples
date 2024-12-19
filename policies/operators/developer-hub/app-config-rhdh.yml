@@ -42,5 +42,5 @@ object-templates-raw: |
                     {{hub- end hub}}
                   {{hub- end hub}}
                     dashboardApp: openshift
-                    serviceAccountToken: {{hub printf "K8S_%s_TOKEN" ($mc.metadata.namespace | upper) hub}}
+                    serviceAccountToken: {{hub printf "K8S_%s_TOKEN" ($mc.metadata.name | upper) hub}}
   {{hub end hub}}
