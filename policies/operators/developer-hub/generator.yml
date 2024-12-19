@@ -38,7 +38,20 @@ policies:
         name: devhub-namespace
       - path: backstage.yml
         name: backstage
-
+      - path: secrets-rhdh.yml
+        name: backstage-secrets
+      - path: app-config-rhdh.yml
+        name: backstage-config
+        extraDependencies: 
+          - name: backstage
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: dynamic-plugins-rhdh.yml
+        name: dynamic-plugins
+        extraDependencies: 
+          - name: backstage
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
   #     - path: noobaa-s3-serving-cert.yml
   #       name: noobaa-s3-serving-cert
   #     - path: hub-secret.yml

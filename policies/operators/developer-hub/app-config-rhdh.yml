@@ -1,0 +1,23 @@
+---
+object-templates-raw: |
+  {{- $rhdh_host := (lookup "route.openshift.io/v1" "Route" "developer-hub" "backstage-developer-hub").spec.host }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: app-config-rhdh
+      data:
+        app-config-rhdh.yaml: |
+          app:
+            title: Red Hat Developer Hub
+          backend:
+            auth:
+              externalAccess:
+                  - type: legacy
+                    options:
+                      subject: legacy-default-config
+                      secret: "${BACKEND_SECRET}"
+            baseUrl: 'https://{{ $rhdh_host }}'
+            cors:
+              origin: 'https://{{ $rhdh_host }}'
