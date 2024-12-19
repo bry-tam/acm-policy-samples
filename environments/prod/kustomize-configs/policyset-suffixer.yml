@@ -8,4 +8,9 @@ suffix: -prod
 fieldSpecs:
 - kind: PolicySet
   path: metadata/name
+- kind: ClusterRoleBinding
+  path: metadata/name
+- kind: ClusterRole
+  path: metadata/name
+
 
