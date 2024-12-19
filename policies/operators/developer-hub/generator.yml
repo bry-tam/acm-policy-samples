@@ -29,14 +29,15 @@ policies:
         name: rhdh-msa
 
 
-  # - name: developer-hub-configure
-  #   remediationAction: enforce
-  #   dependencies:
-  #     - name: "developer-hub-operator"
-  #       compliance: "Compliant"
-  #   manifests:
-  #     - path: objectbucketclaim.yml
-  #       name: obc-hub-odf
+  - name: developer-hub-configure
+    remediationAction: enforce
+    dependencies:
+      - name: "developer-hub-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: backstage.yml
+        name: backstage
+        
   #     - path: noobaa-s3-serving-cert.yml
   #       name: noobaa-s3-serving-cert
   #     - path: hub-secret.yml
