@@ -15,10 +15,10 @@ object-templates-raw: |
           backend:
             auth:
               externalAccess:
-                  - type: legacy
-                    options:
-                      subject: legacy-default-config
-                      secret: "${BACKEND_SECRET}"
+              - type: legacy
+                options:
+                  subject: legacy-default-config
+                  secret: "${BACKEND_SECRET}"
             baseUrl: 'https://{{ $rhdh_host }}'
             cors:
               origin: 'https://{{ $rhdh_host }}'
