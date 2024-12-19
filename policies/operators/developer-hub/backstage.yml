@@ -3,7 +3,7 @@ apiVersion: rhdh.redhat.com/v1alpha3
 kind: Backstage
 metadata:
   name: developer-hub
-  namespace: rhdh-operator
+  namespace: developer-hub
 spec:
   application:
     appConfig:
