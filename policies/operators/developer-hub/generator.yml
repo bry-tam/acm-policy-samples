@@ -15,7 +15,6 @@ placementBindingDefaults:
 policies:
   - name: developer-hub-operator
     manifests:
-      # - path: namespace.yml
       - path: operatorpolicy.yml
 
   - name: developer-hub-acm-msa
@@ -35,9 +34,11 @@ policies:
       - name: "developer-hub-operator"
         compliance: "Compliant"
     manifests:
+      - path: namespace.yml
+        name: devhub-namespace
       - path: backstage.yml
         name: backstage
-        
+
   #     - path: noobaa-s3-serving-cert.yml
   #       name: noobaa-s3-serving-cert
   #     - path: hub-secret.yml
