@@ -30,6 +30,8 @@ policies:
 
   - name: developer-hub-configure
     remediationAction: enforce
+    hubTemplateOptions:
+      serviceAccountName: rhdh-hub-serviceaccount
     dependencies:
       - name: "developer-hub-operator"
         compliance: "Compliant"
