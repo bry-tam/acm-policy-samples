@@ -34,6 +34,9 @@ spec:
           config.yaml: |
             alertmanagerMain:
               enableUserAlertmanagerConfig: true
+              nodeSelector:
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
             enableUserWorkload: true
 
