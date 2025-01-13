@@ -15,8 +15,16 @@ spec:
     {{- $isSelfHosted := (not (eq (fromClusterClaim "product.open-cluster-management.io") "ARO" "ROSA")) }}
     - complianceType: musthave
       objectDefinition:
-    {{/* ##  ensure we have infra nodes to run the component on  ## */}}
-    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
+    {{/* ##  set the nodeSelector and toleration if infra nodes exist.    ## */}}
+    {{/* ##  tolerations are passed to mustFromJson to validate input  ## */}}
+    {{- $nodeSelector := "node-role.kubernetes.io/worker" }}
+    {{- $nodeTolerations := mustFromJson "[]" }}
+
+    {{- if (hasNodesWithExactRoles "infra") }}
+      {{- $nodeSelector = "node-role.kubernetes.io/infra" }}
+      {{- $nodeTolerations = mustFromJson "[{\"operator\":\"Exists\",\"key\":\"node-role.kubernetes.io/infra\"}]" }}
+    {{- end }}
+
         apiVersion: v1
         kind: ConfigMap
         metadata:
@@ -43,13 +51,9 @@ spec:
 
 
             prometheusK8s:
-    {{- if ne $infraCount 0 }}
               nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-    {{- end }}
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
     {{- $obsHubInfoSecret := (lookup "v1" "Secret" $obsNamespace "hub-info-secret") }}
     {{- if not (empty $obsHubInfoSecret ) }}
@@ -87,62 +91,37 @@ spec:
             {{- if $isSelfHosted }}
               retention: 24h
             {{- end }}
-    {{- if ne $infraCount 0 }}
               nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-    {{- end }}
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
              
     {{/* ##  group all remaining components together since the only config is for infra nodes  ## */}}
-    {{- if ne $infraCount 0 }}
             prometheusOperator:
               nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
             kubeStateMetrics:
               nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
             openshiftStateMetrics:
               nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
             grafana:
               nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
             telemeterClient:
               nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-
-            k8sPrometheusAdapter:
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
             thanosQuerier:
               nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-    {{- end }}
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'

@@ -11,7 +11,15 @@ spec:
       {{- $obsNamespace = "open-cluster-management-observability" }}
     {{- end }}
 
-    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
+    {{/* ##  set the nodeSelector and toleration if infra nodes exist.    ## */}}
+    {{/* ##  tolerations are passed to mustFromJson to validate input  ## */}}
+    {{- $nodeSelector := "node-role.kubernetes.io/worker" }}
+    {{- $nodeTolerations := mustFromJson "[]" }}
+
+    {{- if (hasNodesWithExactRoles "infra") }}
+      {{- $nodeSelector = "node-role.kubernetes.io/infra" }}
+      {{- $nodeTolerations = mustFromJson "[{\"operator\":\"Exists\",\"key\":\"node-role.kubernetes.io/infra\"}]" }}
+    {{- end }}
     - complianceType: musthave
       objectDefinition:
         apiVersion: v1
@@ -27,13 +35,9 @@ spec:
                 requests:
                   cpu: 200m
                   memory: 2Gi
-    {{- if ne $infraCount 0 }}
               nodeSelector:
-                  node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-    {{- end }}
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
               externalLabels:
                 customalertlabel: "on"
@@ -67,14 +71,10 @@ spec:
                   insecureSkipVerify: false
     {{- end }}
 
-    {{- if ne $infraCount 0 }}
             prometheusOperator:
               nodeSelector:
-                  node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-    {{- end }}
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
     {{- if not (empty $obsHubInfoSecret ) }}
     - complianceType: mustonlyhave
