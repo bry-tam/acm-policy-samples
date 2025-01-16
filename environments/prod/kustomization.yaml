@@ -27,10 +27,6 @@ patches:
   - target:
       kind: Policy
     patch: |
-#      - op: add
-#        path: /spec/remediationAction
-#        value: null
-
       - op: add
         path: /spec/copyPolicyMetadata
         value: false
