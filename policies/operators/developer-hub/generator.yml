@@ -1,0 +1,88 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: policy-developer-hub
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - developer-hub-operator
+placementBindingDefaults:
+  name: "developer-hub-binding"
+
+policies:
+  - name: developer-hub-operator
+    manifests:
+      - path: operatorpolicy.yml
+
+  - name: developer-hub-acm-msa
+    policySets:
+      - developer-hub-acm
+    dependencies:
+      - name: enable-managed-serviceaccount
+        compliance: Compliant
+    manifests:
+      - path: acm/rhdh-managedservice-account.yml
+        name: rhdh-msa
+
+
+  - name: developer-hub-configure
+    remediationAction: enforce
+    hubTemplateOptions:
+      serviceAccountName: rhdh-hub-serviceaccount
+    dependencies:
+      - name: "developer-hub-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: namespace.yml
+        name: devhub-namespace
+      - path: backstage.yml
+        name: backstage
+      - path: secrets-rhdh.yml
+        name: backstage-secrets
+      - path: app-config-rhdh.yml
+        name: backstage-config
+        extraDependencies: 
+          - name: backstage
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: dynamic-plugins-rhdh.yml
+        name: dynamic-plugins
+        extraDependencies: 
+          - name: backstage
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+  #     - path: noobaa-s3-serving-cert.yml
+  #       name: noobaa-s3-serving-cert
+  #     - path: hub-secret.yml
+  #       name: ansible-hub-odf
+  #       extraDependencies: 
+  #         - name: obc-hub-odf
+  #           kind: ConfigurationPolicy
+  #           compliance: "Compliant"
+  #     - path: ansibleautomationplatform.yml
+  #       name: ansibleautomationplatform
+  #       extraDependencies: 
+  #         - name: ansible-hub-odf
+  #           kind: ConfigurationPolicy
+  #           compliance: "Compliant"
+
+
+  # - name: developer-hub-status
+  #   remediationAction: InformOnly
+  #   dependencies:
+  #     - name: "developer-hub-configure"
+  #       compliance: "Compliant"
+  #   manifests:
+  #     - path: health/developer-hub-status.yml
+
+policySets:
+  - name: developer-hub-operator
+    placement:
+      placementName: "ft-developer-hub--enabled"
+
+  - name: developer-hub-acm
+    placement:
+      placementName: "ft-acm-hub--active"

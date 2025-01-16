@@ -18,4 +18,5 @@ resources:
   - ./opentelemetry/
   - ./tempo/
   - ./ansible-automation-platform/
+  - ./developer-hub/
 

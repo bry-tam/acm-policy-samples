@@ -6,6 +6,16 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
+    {{/* ##  set the nodeSelector and toleration if infra nodes exist.    ## */}}
+    {{/* ##  tolerations are passed to mustFromJson to validate input  ## */}}
+    {{- $nodeSelector := "node-role.kubernetes.io/worker" }}
+    {{- $nodeTolerations := mustFromJson "[]" }}
+
+    {{- if (hasNodesWithExactRoles "infra") }}
+      {{- $nodeSelector = "node-role.kubernetes.io/infra" }}
+      {{- $nodeTolerations = mustFromJson "[{\"operator\":\"Exists\",\"key\":\"node-role.kubernetes.io/infra\"}]" }}
+    {{- end }}
+
     - complianceType: musthave
       objectDefinition:
         apiVersion: operator.openshift.io/v1
@@ -15,14 +25,10 @@ spec:
           namespace: openshift-ingress-operator
         spec:
           httpEmptyRequestsPolicy: Respond
-    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
-    {{- if ne $infraCount 0 }}
           nodePlacement:
             nodeSelector: 
               matchLabels:
-                node-role.kubernetes.io/infra: ""
-            tolerations:
-            - operator: Exists
-              key: node-role.kubernetes.io/infra
-    {{- end }}
-          replicas: {{ ($infraCount | default 2) | toInt }}
+                {{ $nodeSelector }}: ""
+            tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
+          replicas: {{ (len (getNodesWithExactRoles "infra").items | default 2) | toInt }}
+
