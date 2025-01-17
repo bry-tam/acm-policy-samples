@@ -9,6 +9,6 @@ spec:
       - apiGroups: ["rbac.authorization.k8s.io"]
         kinds: ["ClusterRoleBinding"]
   parameters:
-    maxClusterRoleBindingUsers: 5
+    maxClusterRoleBindingUsers: 10
     clusterRole: "cluster-admin"
     ignoreClusterRoleBindings: ["iam-max-groups"]
