@@ -1,0 +1,25 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-workload-availability
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets: 
+    - workload-availability-operator
+placementBindingDefaults:
+  name: "workload-availability-binding"
+
+policies:
+  - name: workload-availability-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorpolicy.yml
+
+policySets:
+  - name: workload-availability-operator
+    placement:
+      placementName: "ft-workload-availability--enabled"
