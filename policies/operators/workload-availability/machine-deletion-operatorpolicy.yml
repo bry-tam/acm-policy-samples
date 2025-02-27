@@ -19,7 +19,7 @@ spec:
   upgradeApproval: Automatic
   subscription:
     channel: stable
-    name: machine-deletion-remediation-operator
+    name: machine-deletion-remediation
     namespace: openshift-workload-availability
     source: redhat-operators
     sourceNamespace: openshift-marketplace
