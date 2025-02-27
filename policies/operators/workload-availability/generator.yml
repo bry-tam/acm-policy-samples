@@ -17,7 +17,10 @@ policies:
     remediationAction: enforce
     manifests:
       - path: namespace.yml
-      - path: operatorpolicy.yml
+      - path: fence-agent-operatorpolicy.yml
+      - path: self-node-operatorpolicy.yml
+      - path: node-healthcheck-operatorpolicy.yml
+      - path: machine-deletion-operatorpolicy.yml
 
 policySets:
   - name: workload-availability-operator
