@@ -21,9 +21,11 @@ policies:
       - path: self-node-operatorpolicy.yml
       - path: node-healthcheck-operatorpolicy.yml
       - path: node-remediation-console.yml
+        name: node-remediation-console
         extraDependencies: 
-          - name: node-healthcheck-operator-install
+          - apiVersion: policy.open-cluster-management.io/v1beta1
             kind: OperatorPolicy
+            name: node-healthcheck-operator-install
             compliance: "Compliant"
       - path: machine-deletion-operatorpolicy.yml
 
