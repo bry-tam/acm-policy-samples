@@ -13,7 +13,7 @@ placementBindingDefaults:
   name: "cert-manager-binding"
 
 policies:
-  - name: cert-manager
+  - name: cert-manager-operator
     remediationAction: enforce
     manifests:
       - path: namespace.yml
@@ -22,7 +22,22 @@ policies:
         name: cert-manager-status
         remediationAction: InformOnly
 
+  - name: cert-manager-clusterissuer
+    remediationAction: enforce
+    dependencies:
+      - name: cert-manager
+        compliance: Compliant
+    manifests:
+      - path: ca-clusterissuer/ca-clusterissuer-secret.yml
+        name: ca-clusterissuer-secret
+      - path: ca-clusterissuer/ca-clusterissuer.yml
+        name: ca-clusterissuer
+        extraDependencies: 
+          - name: ca-clusterissuer-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
 policySets:
-  - name: cert-manager-operator
+  - name: cert-manager
     placement:
       placementName: "env-bound-placement"
