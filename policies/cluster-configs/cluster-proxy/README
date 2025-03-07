@@ -1,0 +1,8 @@
+This example shows how to update/manage the cluster proxy and root CA.
+
+Many times this is included as part of the cluster-install but will likely need to be updated over the course of a cluster lifetime.
+
+You should replace the root-CA with your specific company requirements.
+
+When updating the CA, it is advised to keep the old so there is an overlap where both the old and new will be trusted.
+

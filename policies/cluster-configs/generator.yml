@@ -92,6 +92,10 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
+  - name: cluster-proxy
+    manifests:
+      - path: cluster-proxy/
+
 policySets:
   - name: cluster-configs
     placement:
