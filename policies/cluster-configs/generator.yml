@@ -33,6 +33,13 @@ policies:
     manifests:
       - path: clusterclaims/
 
+  - name: cluster-proxy
+    manifests:
+      - path: cluster-proxy/example-root-ca.yml
+        name: proxy-ca-configmap
+      - path: cluster-proxy/proxy.yml
+        name: cluster-proxy
+
   - name: ocp-ingress-infra
     manifests:
       - path: ingress/
@@ -92,9 +99,7 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
-  - name: cluster-proxy
-    manifests:
-      - path: cluster-proxy/
+
 
 policySets:
   - name: cluster-configs

@@ -8,7 +8,7 @@ policyDefaults:
   remediationAction: enforce
   consolidateManifests: false
   policySets: 
-    - cert-manager-operator
+    - cert-manager
 placementBindingDefaults:
   name: "cert-manager-binding"
 
