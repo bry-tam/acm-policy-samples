@@ -20,4 +20,5 @@ resources:
   - ./ansible-automation-platform/
   - ./developer-hub/
   - ./workload-availability/
+  - ./cert-manager/
 
