@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1beta1
 kind: OperatorPolicy
 metadata:
-  name: cluster-observability-operator-install
+  name: cert-manager-operator-install
 spec:
   complianceType: musthave
   complianceConfig:
