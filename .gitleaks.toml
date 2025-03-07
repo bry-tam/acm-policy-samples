@@ -1,0 +1,9 @@
+[allowlist]
+  description = "Global Allowlist"
+
+  # Ignore based on any subset of the file path
+  paths = [
+    # Ignore all example certs
+    '''\/policies\/operators\/cert-manager\/ca-clusterissuer\/ca-clusterissuer-secret.yml$''',
+
+  ]
