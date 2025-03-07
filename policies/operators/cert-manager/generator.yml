@@ -1,0 +1,28 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-certmanager
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets: 
+    - cert-manager-operator
+placementBindingDefaults:
+  name: "cert-manager-binding"
+
+policies:
+  - name: cert-manager
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorpolicy.yml
+      - path: health/cert-manager-status.yml
+        name: cert-manager-status
+        remediationAction: InformOnly
+
+policySets:
+  - name: cert-manager-operator
+    placement:
+      placementName: "env-bound-placement"
