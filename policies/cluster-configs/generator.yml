@@ -72,7 +72,7 @@ policies:
         name: ingress-cert-ready
         remediationAction: InformOnly
       - path: ingress/ingress-cert.yml
-        name: apiserver-named-certs
+        name: ingress-default-certs
         extraDependencies:
           - name: ingress-cert-ready
             kind: ConfigurationPolicy
