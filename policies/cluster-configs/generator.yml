@@ -61,6 +61,23 @@ policies:
     manifests:
       - path: ingress/
 
+  - name: ingress-certificate
+    dependencies:
+      - name: cert-manager-clusterissuer
+        compliance: "Compliant"
+    manifests:
+      - path: ingress/certificate.yml
+        name: ingress-certificate
+      - path: ingress/cert-ready.yml
+        name: ingress-cert-ready
+        remediationAction: InformOnly
+      - path: ingress/ingress-cert.yml
+        name: apiserver-named-certs
+        extraDependencies:
+          - name: ingress-cert-ready
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
   - name: etcd-backup
     configurationPolicyAnnotations:  
       policy.open-cluster-management.io/disable-templates: "true"
