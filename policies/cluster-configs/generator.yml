@@ -40,6 +40,23 @@ policies:
       - path: cluster-proxy/proxy.yml
         name: cluster-proxy
 
+  - name: apiserver-certificate
+    dependencies:
+      - name: cert-manager-clusterissuer
+        compliance: "Compliant"
+    manifests:
+      - path: apiserver-cert/certificate.yml
+        name: apiserver-certificate
+      - path: apiserver-cert/cert-ready.yml
+        name: apiserver-cert-ready
+        remediationAction: InformOnly
+      - path: apiserver-cert/apiserver.yml
+        name: apiserver-named-certs
+        extraDependencies:
+          - name: apiserver-cert-ready
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
   - name: ocp-ingress-infra
     manifests:
       - path: ingress/
