@@ -1,0 +1,15 @@
+object-templates-raw: |
+  {{- $crt := (lookup "cert-manager.io/v1" "Certificate" "openshift-config" "apiserver-cert") }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: apiserver-cert
+        namespace: openshift-config
+      status:
+        conditions:
+        {{- range $c := $crt.status.conditions }}
+          {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
