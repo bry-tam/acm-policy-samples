@@ -1,0 +1,31 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gk-policy-generator-default-nodeselector
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  informGatekeeperPolicies: false
+  policySets:
+    - gp-default-nodeselector
+placementBindingDefaults:
+  name: "gp-default-nodeselector-binding"
+
+policies:
+  - name: gp-default-nodeselector
+    remediationAction: enforce
+    dependencies:
+      - name: "gatekeeper-instance"
+        compliance: "Compliant"
+    manifests:
+      - path: default-nodeselector/assign.yml
+        name: assign-default-nodeselector
+
+
+policySets:
+  - name: gp-default-nodeselector
+    placement:
+      placementName: "ft-default-ns--enabled"
+
