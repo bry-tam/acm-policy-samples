@@ -11,6 +11,8 @@ policyDefaults:
   categories: []
   controls: []
   standards: []
+  customMessage:
+    noncompliant: "{{.DefaultMessage}} - diff: '{{ .Policy.status.relatedObjects[0].properties.diff }}'"
   policySets:
     - cluster-configs
 placementBindingDefaults:
