@@ -33,11 +33,19 @@ policies:
       - name: workload-availability-operator
         compliance: "Compliant"
     manifests:
-      - path: far-nhc-remediation/nodehealthcheck.yml
-        name: far-nodehealhcheck
-      - path: far-nhc-remediation/far-template.yml
-        name: far-outofservicetaint-remediation
-      - path: far-nhc-remediation/mdr-template.yml
+    ## Uncomment this block to use far, and comment the snr block below
+      # - path: far-nhc-remediation/nodehealthcheck.yml
+      #   name: far-nodehealhcheck
+      # - path: far-nhc-remediation/far-template.yml
+      #   name: far-outofservicetaint-remediation
+      # - path: far-nhc-remediation/mdr-template.yml
+      #   name: mdr-remediation
+
+      - path: snr-nhc-remediation/nodehealthcheck.yml
+        name: snr-nodehealhcheck
+      - path: snr-nhc-remediation/snr-template.yml
+        name: snr-outofservicetaint-remediation
+      - path: snr-nhc-remediation/mdr-template.yml
         name: mdr-remediation
 
 policySets:
