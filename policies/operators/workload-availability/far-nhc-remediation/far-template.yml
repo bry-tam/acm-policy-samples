@@ -1,0 +1,9 @@
+apiVersion: fence-agents-remediation.medik8s.io/v1alpha1
+kind: FenceAgentsRemediationTemplate
+metadata:
+  name: far-outofservicetaint-template
+  namespace: openshift-workload-availability
+spec:
+  template:
+    spec:
+      remediationStrategy: OutOfServiceTaint
