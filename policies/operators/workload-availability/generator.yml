@@ -14,7 +14,6 @@ placementBindingDefaults:
 
 policies:
   - name: workload-availability-operator
-    remediationAction: enforce
     manifests:
       - path: namespace.yml
       - path: fence-agent-operatorpolicy.yml
@@ -28,6 +27,18 @@ policies:
             name: node-healthcheck-operator-install
             compliance: "Compliant"
       - path: machine-deletion-operatorpolicy.yml
+
+  - name: workload-availability-remediation
+    dependencies:
+      - name: workload-availability-operator
+        compliance: "Compliant"
+    manifests:
+      - path: far-nhc-remediation/nodehealthcheck.yml
+        name: far-nodehealhcheck
+      - path: far-nhc-remediation/far-template.yml
+        name: far-outofservicetaint-remediation
+      - path: far-nhc-remediation/mdr-template.yml
+        name: mdr-remediation
 
 policySets:
   - name: workload-availability-operator
