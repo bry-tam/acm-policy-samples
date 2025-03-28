@@ -1,0 +1,22 @@
+﻿
+object-templates-raw: |
+  ## Create a CompilianceType objectDefinition for each deployment
+  {{- range $dep := (lookup "apps/v1" "Deployment" "cert-manager" "").items }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: Deployment
+      apiVersion: apps/v1
+      metadata:
+        namespace: {{ $dep.metadata.namespace }}
+        name: {{ $dep.metadata.name }}
+      status:
+        replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        conditions:
+          {{- range $c := $dep.status.conditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
+          {{- end }}
+  {{- end }}

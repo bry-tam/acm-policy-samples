@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1beta1
 kind: OperatorPolicy
 metadata:
-  name: cluster-observability-operator-install
+  name: self-node-remediation-operator-install
 spec:
   complianceType: musthave
   complianceConfig:
@@ -19,7 +19,7 @@ spec:
   upgradeApproval: Automatic
   subscription:
     channel: stable
-    name: cluster-observability-operator
-    namespace: openshift-clusterobservability-operator
+    name: self-node-remediation
+    namespace: openshift-workload-availability
     source: redhat-operators
     sourceNamespace: openshift-marketplace

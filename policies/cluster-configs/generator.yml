@@ -11,6 +11,8 @@ policyDefaults:
   categories: []
   controls: []
   standards: []
+  customMessage:
+    noncompliant: "{{.DefaultMessage}} - diff: '{{ .Policy.status.relatedObjects[0].properties.diff }}'"
   policySets:
     - cluster-configs
 placementBindingDefaults:
@@ -33,9 +35,50 @@ policies:
     manifests:
       - path: clusterclaims/
 
+  - name: cluster-proxy
+    manifests:
+      - path: cluster-proxy/example-root-ca.yml
+        name: proxy-ca-configmap
+      - path: cluster-proxy/proxy.yml
+        name: cluster-proxy
+
+  - name: apiserver-certificate
+    dependencies:
+      - name: cert-manager-clusterissuer
+        compliance: "Compliant"
+    manifests:
+      - path: apiserver-cert/certificate.yml
+        name: apiserver-certificate
+      - path: apiserver-cert/cert-ready.yml
+        name: apiserver-cert-ready
+        remediationAction: InformOnly
+      - path: apiserver-cert/apiserver.yml
+        name: apiserver-named-certs
+        extraDependencies:
+          - name: apiserver-cert-ready
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
   - name: ocp-ingress-infra
     manifests:
       - path: ingress/
+
+  - name: ingress-certificate
+    dependencies:
+      - name: cert-manager-clusterissuer
+        compliance: "Compliant"
+    manifests:
+      - path: ingress/certificate.yml
+        name: ingress-certificate
+      - path: ingress/cert-ready.yml
+        name: ingress-cert-ready
+        remediationAction: InformOnly
+      - path: ingress/ingress-cert.yml
+        name: ingress-default-certs
+        extraDependencies:
+          - name: ingress-cert-ready
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
 
   - name: etcd-backup
     configurationPolicyAnnotations:  
@@ -91,6 +134,8 @@ policies:
           - name: bry-tam-worker-node-label
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
+
 
 policySets:
   - name: cluster-configs

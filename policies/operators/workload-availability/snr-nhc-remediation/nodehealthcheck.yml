@@ -1,0 +1,33 @@
+apiVersion: remediation.medik8s.io/v1alpha1
+kind: NodeHealthCheck
+metadata:
+  name: nodehealthcheck-snr
+spec:
+  unhealthyConditions:
+    - duration: 90s
+      status: 'False'
+      type: Ready
+    - duration: 90s
+      status: Unknown
+      type: Ready
+  minHealthy: 51%
+  selector:
+    matchExpressions:
+      - key: node-role.kubernetes.io/worker
+        operator: Exists
+        values: []
+  escalatingRemediations:
+    - remediationTemplate:
+        apiVersion: self-node-remediation.medik8s.io/v1alpha1
+        kind: SelfNodeRemediationTemplate
+        name: snr-outofservicetaint-template
+        namespace: openshift-workload-availability
+      order: 0
+      timeout: 300s
+    - remediationTemplate:
+        apiVersion: machine-deletion-remediation.medik8s.io/v1alpha1
+        kind: MachineDeletionRemediationTemplate
+        name: mdr-remediation
+        namespace: openshift-workload-availability
+      order: 1
+      timeout: 300s

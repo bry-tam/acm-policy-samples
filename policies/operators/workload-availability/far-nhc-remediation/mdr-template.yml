@@ -1,0 +1,8 @@
+apiVersion: machine-deletion-remediation.medik8s.io/v1alpha1
+kind: MachineDeletionRemediationTemplate
+metadata:
+  name: mdr-remediation
+  namespace: openshift-workload-availability
+spec:
+  template:
+    spec: {}

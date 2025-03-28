@@ -1,0 +1,43 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-certmanager
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets: 
+    - cert-manager
+placementBindingDefaults:
+  name: "cert-manager-binding"
+
+policies:
+  - name: cert-manager-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+      - path: operatorpolicy.yml
+      - path: health/cert-manager-status.yml
+        name: cert-manager-status
+        remediationAction: InformOnly
+
+  - name: cert-manager-clusterissuer
+    remediationAction: enforce
+    dependencies:
+      - name: 	cert-manager-operator
+        compliance: Compliant
+    manifests:
+      - path: ca-clusterissuer/ca-clusterissuer-secret.yml
+        name: ca-clusterissuer-secret
+      - path: ca-clusterissuer/ca-clusterissuer.yml
+        name: ca-clusterissuer
+        extraDependencies: 
+          - name: ca-clusterissuer-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: cert-manager
+    placement:
+      placementName: "env-bound-placement"

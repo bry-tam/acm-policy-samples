@@ -43,26 +43,16 @@ spec:
           namespace: {{ $lokiNamespace }}
           name: {{ $depName }}
 
-      ## when the deployment exists the compliance will be determined by
-      ## the labels, spec.selector.matchLabels and the expected healthy status
-          labels:
-        {{- range $k, $v := $dep.metadata.labels }}
-            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-        {{- end }}
-        spec:
-          selector:
-            matchLabels:
-            {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-            {{- end }}
         status:
           replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
           updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
           readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
           availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
           conditions:
-            - type: Available
-              status: 'True'
+          {{- range $c := $dep.status.conditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
+          {{- end }}
     {{- end }}
 
     {{/* ##  Create a list of all expected statefulesets in openshift-logging for loki ## */}}

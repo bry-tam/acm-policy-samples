@@ -1,0 +1,12 @@
+apiVersion: fence-agents-remediation.medik8s.io/v1alpha1
+kind: FenceAgentsRemediationTemplate
+metadata:
+  name: far-outofservicetaint-template
+  namespace: openshift-workload-availability
+spec:
+  template:
+    spec:
+      remediationStrategy: OutOfServiceTaint
+
+    ## This template needs an agent configured. Which is going to be environment specific
+    ## https://docs.redhat.com/en/documentation/workload_availability_for_red_hat_openshift/25.1/html/remediation_fencing_and_maintenance/fence-agents-remediation-operator-remediate-nodes?extIdCarryOver=true&percmp=RHCTG0250000438148&sc_cid=7013a000002q6eLAAQ#supported-agents-fence-agents-remediation-operator_fence-agents-remediation-operator-remediate-nodes

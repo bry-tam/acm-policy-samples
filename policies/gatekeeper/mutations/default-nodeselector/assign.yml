@@ -1,0 +1,41 @@
+object-templates-raw: |
+  {{- $excludeList := list "open-*"
+                          "openshift-*"
+                          "kube-*"
+                          "default"
+  }}
+
+  {{- $regx := (printf "^(%s)$" ($excludeList | join "|" | replace "*" ".*")) }}
+
+  {{- range $ns := (lookup "v1" "Namespace" "" "").items }}
+    {{- if and (ne "noannotate" (dig "openshift.io/node-selector" "noannotate" $ns.metadata.annotations))
+              (not (regexMatch $regx $ns.metadata.name))
+    }}
+      {{- $excludeList = append $excludeList $ns.metadata.name }}
+    {{- end }}
+  {{- end }}
+
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: mutations.gatekeeper.sh/v1
+      kind: Assign
+      metadata:
+        name: assign-default-nodeselector
+      spec:
+        applyTo:
+        - groups: [""]
+          kinds: ["Pod"]
+          versions: ["v1"]
+        match:
+          scope: Namespaced
+          kinds:
+          - apiGroups: ["*"]
+            kinds: ["Pod"]
+          excludedNamespaces: '{{ $excludeList | toRawJson | toLiteral }}'
+        location: "spec.nodeSelector.my-worker"
+        parameters:
+          assign:
+            value: ''
+          pathTests:
+          - subPath: "spec.nodeSelector"
+            condition: MustNotExist

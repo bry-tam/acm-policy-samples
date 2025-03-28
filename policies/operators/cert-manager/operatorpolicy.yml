@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1beta1
 kind: OperatorPolicy
 metadata:
-  name: cluster-observability-operator-install
+  name: cert-manager-operator-install
 spec:
   complianceType: musthave
   complianceConfig:
@@ -18,8 +18,8 @@ spec:
   severity: critical
   upgradeApproval: Automatic
   subscription:
-    channel: stable
-    name: cluster-observability-operator
-    namespace: openshift-clusterobservability-operator
+    channel: stable-v1.15
+    name: openshift-cert-manager-operator
+    namespace: cert-manager-operator
     source: redhat-operators
     sourceNamespace: openshift-marketplace

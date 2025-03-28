@@ -50,42 +50,5 @@ spec:
                 - key: node.ocs.openshift.io/storage
                   effect: NoSchedule
                   value: 'true'
-              providerSpec:
-                value:
-                  ami:
-                    id: {{ $worker_ms.spec.template.spec.providerSpec.value.ami.id }}
-                  apiVersion: awsproviderconfig.openshift.io/v1beta1
-                  blockDevices:
-                    - ebs:
-                        encrypted: true
-                        iops: 2000
-                        kmsKey:
-                          arn: ''
-                        volumeSize: 500
-                        volumeType: io1
-                  credentialsSecret:
-                    name: aws-cloud-credentials
-                  deviceIndex: 0
-                  instanceType: {{ $worker_ms.spec.template.spec.providerSpec.value.instanceType }}
-                  iamInstanceProfile:
-                    id: {{ $infrastructure_id }}-worker-profile 
-                  kind: AWSMachineProviderConfig
-                  placement:
-                    availabilityZone: {{ $zone }} 
-                    region: {{ $region }}
-                  securityGroups:
-                    - filters:
-                        - name: tag:Name
-                          values:
-                            - {{ $infrastructure_id }}-worker-sg 
-                  subnet:
-                    filters:
-                      - name: tag:Name
-                        values:
-                          - {{ $infrastructure_id }}-private-{{ $zone }} 
-                  tags:
-                    - name: kubernetes.io/cluster/{{ $infrastructure_id }} 
-                      value: owned
-                  userDataSecret:
-                    name: worker-user-data
+              providerSpec: '{{ $worker_ms.spec.template.spec.providerSpec | toRawJson | toLiteral }}'
     {{- end }}
