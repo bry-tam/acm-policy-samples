@@ -43,7 +43,7 @@ policies:
 
       - path: snr-nhc-remediation/nodehealthcheck.yml
         name: snr-nodehealhcheck
-      - path: snr-nhc-remediation/snr-template.yml
+      - path: snr-nhc-remediation/snr-outofservicetaint-template.yml
         name: snr-outofservicetaint-remediation
       - path: snr-nhc-remediation/mdr-template.yml
         name: mdr-remediation
