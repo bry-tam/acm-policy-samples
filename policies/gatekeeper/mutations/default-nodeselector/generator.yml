@@ -16,6 +16,7 @@ placementBindingDefaults:
 policies:
   - name: gp-default-nodeselector
     remediationAction: enforce
+    disabled: true
     dependencies:
       - name: "gatekeeper-instance"
         compliance: "Compliant"
