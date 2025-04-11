@@ -12,6 +12,8 @@ spec:
         apiVersion: "observability.openshift.io/v1"
         kind: ClusterLogForwarder
         metadata:
+          annotations:
+            observability.openshift.io/tech-preview-otlp-output: enabled
           name: collector
           namespace: openshift-logging
         spec:
@@ -42,6 +44,7 @@ spec:
           - name: default-lokistack
             type: lokiStack
             lokiStack:
+              dataModel: Otel
               target:
                 name: logging-loki
                 namespace: openshift-logging
