@@ -56,13 +56,79 @@ spec:
                 key: service-ca.crt
                 configMapName: openshift-service-ca.crt
 
+
+          - name: otlp-loki-route-app
+            type: otlp
+            otlp:
+              tuning:
+                compression: gzip
+                deliveryMode: AtLeastOnce
+                maxRetryDuration: 20
+                maxWrite: 32M
+                minRetryDuration: 5
+              url: https://logging-loki-gateway-http.openshift-logging.svc:8080/api/logs/v1/application/otlp/v1/logs
+              authentication:
+                token:
+                  from: secret
+                  secret:
+                    key: token
+                    name: collector-token
+
+
+          - name: otlp-loki-route-infra
+            type: otlp
+            otlp:
+              tuning:
+                compression: gzip
+                deliveryMode: AtLeastOnce
+                maxRetryDuration: 20
+                maxWrite: 32M
+                minRetryDuration: 5
+              url: https://logging-loki-gateway-http.openshift-logging.svc:8080/api/logs/v1/infrastructure/otlp/v1/logs
+              authentication:
+                token:
+                  from: secret
+                  secret:
+                    key: token
+                    name: collector-token
+
+
+          - name: otlp-loki-route-audit
+            type: otlp
+            otlp:
+              tuning:
+                compression: gzip
+                deliveryMode: AtLeastOnce
+                maxRetryDuration: 20
+                maxWrite: 32M
+                minRetryDuration: 5
+              url: https://logging-loki-gateway-http.openshift-logging.svc:8080/api/logs/v1/audit/otlp/v1/logs
+              authentication:
+                token:
+                  from: secret
+                  secret:
+                    key: token
+                    name: collector-token
+
+
           pipelines:
-          - name: default-logstore
+          - name: app-logstore
             outputRefs:
-            - default-lokistack
+            - otlp-loki-route-app
             inputRefs:
             - application
+
+          - name: app-logstore
+            outputRefs:
+            - otlp-loki-route-infra
+            inputRefs:
             - infrastructure
+
+
+          - name: audit-logstore
+            outputRefs:
+            - otlp-loki-route-audit
+            inputRefs:
             - audit
             filterRefs: 
               - kubeapi-filter
