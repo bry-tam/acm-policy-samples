@@ -66,7 +66,7 @@ spec:
                 maxRetryDuration: 20
                 maxWrite: 32M
                 minRetryDuration: 5
-              url: https://logging-loki-gateway-http.openshift-logging.svc:8080/api/logs/v1/application/otlp/v1/logs
+              url: https://logging-loki-openshift-logging.apps.acm.sandbox3288.opentlc.com/api/logs/v1/application/otlp/v1/logs
               authentication:
                 token:
                   from: secret
@@ -84,7 +84,7 @@ spec:
                 maxRetryDuration: 20
                 maxWrite: 32M
                 minRetryDuration: 5
-              url: https://logging-loki-gateway-http.openshift-logging.svc:8080/api/logs/v1/infrastructure/otlp/v1/logs
+              url: https://logging-loki-openshift-logging.apps.acm.sandbox3288.opentlc.com/api/logs/v1/infrastructure/otlp/v1/logs
               authentication:
                 token:
                   from: secret
@@ -102,7 +102,7 @@ spec:
                 maxRetryDuration: 20
                 maxWrite: 32M
                 minRetryDuration: 5
-              url: https://logging-loki-gateway-http.openshift-logging.svc:8080/api/logs/v1/audit/otlp/v1/logs
+              url: https://logging-loki-openshift-logging.apps.acm.sandbox3288.opentlc.com/api/logs/v1/audit/otlp/v1/logs
               authentication:
                 token:
                   from: secret
@@ -118,7 +118,7 @@ spec:
             inputRefs:
             - application
 
-          - name: app-logstore
+          - name: infra-logstore
             outputRefs:
             - otlp-loki-route-infra
             inputRefs:
