@@ -117,12 +117,16 @@ spec:
             - otlp-loki-route-app
             inputRefs:
             - application
+            filterRefs: 
+              - ocp-multicluster-labels
 
           - name: infra-logstore
             outputRefs:
             - otlp-loki-route-infra
             inputRefs:
             - infrastructure
+            filterRefs: 
+              - ocp-multicluster-labels
 
 
           - name: audit-logstore
@@ -132,6 +136,7 @@ spec:
             - audit
             filterRefs: 
               - kubeapi-filter
+              - ocp-multicluster-labels
 
           filters:
             - name: kubeapi-filter
@@ -140,3 +145,8 @@ spec:
                 # Don't generate audit events for all requests in RequestReceived stage.
                 omitStages:
                   - "RequestReceived"
+
+            - name: ocp-multicluster-labels
+              type: openshiftLabels
+              openshiftLabels:
+                cluster_name: acm
