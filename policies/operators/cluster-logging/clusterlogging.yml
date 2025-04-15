@@ -57,83 +57,14 @@ spec:
                 configMapName: openshift-service-ca.crt
 
 
-          - name: otlp-loki-route-app
-            type: otlp
-            otlp:
-              tuning:
-                compression: gzip
-                deliveryMode: AtLeastOnce
-                maxRetryDuration: 20
-                maxWrite: 32M
-                minRetryDuration: 5
-              url: https://logging-loki-openshift-logging.apps.acm.sandbox3288.opentlc.com/api/logs/v1/application/otlp/v1/logs
-              authentication:
-                token:
-                  from: secret
-                  secret:
-                    key: token
-                    name: collector-token
-
-
-          - name: otlp-loki-route-infra
-            type: otlp
-            otlp:
-              tuning:
-                compression: gzip
-                deliveryMode: AtLeastOnce
-                maxRetryDuration: 20
-                maxWrite: 32M
-                minRetryDuration: 5
-              url: https://logging-loki-openshift-logging.apps.acm.sandbox3288.opentlc.com/api/logs/v1/infrastructure/otlp/v1/logs
-              authentication:
-                token:
-                  from: secret
-                  secret:
-                    key: token
-                    name: collector-token
-
-
-          - name: otlp-loki-route-audit
-            type: otlp
-            otlp:
-              tuning:
-                compression: gzip
-                deliveryMode: AtLeastOnce
-                maxRetryDuration: 20
-                maxWrite: 32M
-                minRetryDuration: 5
-              url: https://logging-loki-openshift-logging.apps.acm.sandbox3288.opentlc.com/api/logs/v1/audit/otlp/v1/logs
-              authentication:
-                token:
-                  from: secret
-                  secret:
-                    key: token
-                    name: collector-token
-
-
           pipelines:
-          - name: app-logstore
+          - name: default-logstore
             outputRefs:
-            - otlp-loki-route-app
+              - default-lokistack
             inputRefs:
-            - application
-            filterRefs: 
-              - ocp-multicluster-labels
-
-          - name: infra-logstore
-            outputRefs:
-            - otlp-loki-route-infra
-            inputRefs:
-            - infrastructure
-            filterRefs: 
-              - ocp-multicluster-labels
-
-
-          - name: audit-logstore
-            outputRefs:
-            - otlp-loki-route-audit
-            inputRefs:
-            - audit
+              - application
+              - infrastructure
+              - audit
             filterRefs: 
               - kubeapi-filter
               - ocp-multicluster-labels
@@ -149,4 +80,4 @@ spec:
             - name: ocp-multicluster-labels
               type: openshiftLabels
               openshiftLabels:
-                cluster_name: acm
+                cluster_name: '{{ fromClusterClaim "name" }}'
