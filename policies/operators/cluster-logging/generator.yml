@@ -73,6 +73,8 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: health/cluster-logging-status.yml
+        name: cluster-logging-status
+        severity: high
 
 policySets:
   - name: cluster-logging-operator
