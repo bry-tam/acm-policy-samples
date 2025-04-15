@@ -17,6 +17,9 @@ spec:
         spec:
           limits:
             global: 
+              ingestion:
+                ingestionBurstSize: 40
+                ingestionRate: 75
               retention: 
                 days: 2
                 streams:
