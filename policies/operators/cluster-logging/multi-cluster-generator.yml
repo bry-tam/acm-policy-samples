@@ -20,7 +20,6 @@ policies:
       - name: "cluster-logging-operator"
         compliance: "Compliant"
     manifests:
-      - path: uiplugin.yml
       - path: multi-clusterlogging.yml
       - path: logfilemetricexporter.yml
 
