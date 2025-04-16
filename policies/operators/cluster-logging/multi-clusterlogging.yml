@@ -58,8 +58,7 @@ spec:
                     from: secret
                     secret:
                       key: token
-                    name: acm-collector-token
-
+                      name: acm-collector-token
 
             - name: otlp-loki-route-infra
               type: otlp
@@ -70,14 +69,13 @@ spec:
                   maxRetryDuration: 20
                   maxWrite: 32M
                   minRetryDuration: 5
-                url: test
+                url: '{{ printf "https://%s/api/logs/v1/infrastructure/otlp/v1/logs" $lokiRoute }}'
                 authentication:
                   token:
                     from: secret
                     secret:
                       key: token
                       name: acm-collector-token
-
 
             - name: otlp-loki-route-audit
               type: otlp
@@ -88,14 +86,13 @@ spec:
                   maxRetryDuration: 20
                   maxWrite: 32M
                   minRetryDuration: 5
-                url: test
+                url: '{{ printf "https://%s/api/logs/v1/audit/otlp/v1/logs" $lokiRoute }}'
                 authentication:
                   token:
                     from: secret
                     secret:
                       key: token
                       name: acm-collector-token
-
 
           pipelines:
             - name: app-logstore
