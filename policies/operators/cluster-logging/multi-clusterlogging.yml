@@ -129,7 +129,8 @@ spec:
               kubeAPIAudit:
                 # Don't generate audit events for all requests in RequestReceived stage.
                 omitStages:
-                  - "RequestReceived"    - name: app-logstore
+                  - "RequestReceived"
+                  - name: app-logstore
               outputRefs:
               - otlp-loki-route-app
               inputRefs:
