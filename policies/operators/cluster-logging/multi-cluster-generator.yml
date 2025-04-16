@@ -22,6 +22,7 @@ policies:
       - name: "cluster-logging-operator"
         compliance: "Compliant"
     manifests:
+      - path: multi-cluster-collector-token.yml
       - path: multi-clusterlogging.yml
       - path: logfilemetricexporter.yml
 
