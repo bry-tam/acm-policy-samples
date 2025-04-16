@@ -7,7 +7,7 @@ spec:
   remediationAction: enforce
   severity: high
   object-templates-raw: |
-    {{ $lokiRoute := (lookup "route.openshift.io/v1" "Route" "openshift-logging" "logging-loki").spec.host }}
+    {{hub $lokiRoute := (lookup "route.openshift.io/v1" "Route" "openshift-logging" "logging-loki").spec.host hub}}
 
     - complianceType: mustonlyhave
       objectDefinition:
