@@ -7,7 +7,7 @@ spec:
   remediationAction: enforce
   severity: high
   object-templates-raw: |
-    {{hub $lokiRoute := (lookup "route.openshift.io/v1" "Route" "openshift-logging" "loki-gateway-api").spec.host hub}}
+    {{ $lokiRoute := (lookup "route.openshift.io/v1" "Route" "openshift-logging" "logging-loki").spec.host }}
 
     - complianceType: mustonlyhave
       objectDefinition:
@@ -30,13 +30,13 @@ spec:
             - name: infrastructure
               type: infrastructure
               infrastructure:
-                sources: 
+                sources:
                   - node
                   - container
             - name: audit
               type: audit
               audit:
-                sources: 
+                sources:
                   - kubeAPI
                   - openshiftAPI
                   - ovn
@@ -52,7 +52,7 @@ spec:
                   maxRetryDuration: 20
                   maxWrite: 32M
                   minRetryDuration: 5
-                url: '{{hub printf "https://%s/api/logs/v1/application/otlp/v1/logs" $lokiRoute hub}}'
+                url: '{{ printf "https://%s/api/logs/v1/application/otlp/v1/logs" $lokiRoute }}'
                 authentication:
                   token:
                     from: secret
@@ -70,7 +70,7 @@ spec:
                   maxRetryDuration: 20
                   maxWrite: 32M
                   minRetryDuration: 5
-                url: '{{hub printf "https://%s/api/logs/v1/infrastructure/otlp/v1/logs" $lokiRoute hub}}'
+                url: test
                 authentication:
                   token:
                     from: secret
@@ -88,7 +88,7 @@ spec:
                   maxRetryDuration: 20
                   maxWrite: 32M
                   minRetryDuration: 5
-                url: '{{hub printf "https://%s/api/logs/v1/audit/otlp/v1/logs" $lokiRoute hub}}'
+                url: test
                 authentication:
                   token:
                     from: secret
@@ -103,7 +103,7 @@ spec:
               - otlp-loki-route-app
               inputRefs:
               - application
-              filterRefs: 
+              filterRefs:
                 - ocp-multicluster-labels
 
             - name: infra-logstore
@@ -111,7 +111,7 @@ spec:
               - otlp-loki-route-infra
               inputRefs:
               - infrastructure
-              filterRefs: 
+              filterRefs:
                 - ocp-multicluster-labels
 
             - name: audit-logstore
@@ -119,7 +119,7 @@ spec:
               - otlp-loki-route-audit
               inputRefs:
               - audit
-              filterRefs: 
+              filterRefs:
                 - kubeapi-filter
                 - ocp-multicluster-labels
 

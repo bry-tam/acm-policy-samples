@@ -16,6 +16,8 @@ policies:
 
   - name: multi-cluster-logging-configure
     remediationAction: enforce
+    hubTemplateOptions:
+      serviceAccountName: hub-template-processor
     dependencies:
       - name: "cluster-logging-operator"
         compliance: "Compliant"
