@@ -52,7 +52,7 @@ spec:
                   maxRetryDuration: 20
                   maxWrite: 32M
                   minRetryDuration: 5
-                url: '{{ printf "https://%s/api/logs/v1/application/otlp/v1/logs" $lokiRoute }}'
+                url: '{{hub printf "https://%s/api/logs/v1/application/otlp/v1/logs" $lokiRoute hub}}'
                 authentication:
                   token:
                     from: secret
@@ -69,7 +69,7 @@ spec:
                   maxRetryDuration: 20
                   maxWrite: 32M
                   minRetryDuration: 5
-                url: '{{ printf "https://%s/api/logs/v1/infrastructure/otlp/v1/logs" $lokiRoute }}'
+                url: '{{hub printf "https://%s/api/logs/v1/infrastructure/otlp/v1/logs" $lokiRoute hub}}'
                 authentication:
                   token:
                     from: secret
@@ -86,7 +86,7 @@ spec:
                   maxRetryDuration: 20
                   maxWrite: 32M
                   minRetryDuration: 5
-                url: '{{ printf "https://%s/api/logs/v1/audit/otlp/v1/logs" $lokiRoute }}'
+                url: '{{hub printf "https://%s/api/logs/v1/audit/otlp/v1/logs" $lokiRoute hub}}'
                 authentication:
                   token:
                     from: secret
