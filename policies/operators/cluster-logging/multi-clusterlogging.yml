@@ -7,7 +7,8 @@ spec:
   remediationAction: enforce
   severity: high
   object-templates-raw: |
-    {{hub- $lokiRoute := (lookup "route.openshift.io/v1" "Route" "openshift-logging" "loki-gateway-api").spec.host hub}}
+    {{hub $lokiRoute := (lookup "route.openshift.io/v1" "Route" "openshift-logging" "loki-gateway-api").spec.host hub}}
+
     - complianceType: mustonlyhave
       objectDefinition:
         apiVersion: "observability.openshift.io/v1"
@@ -126,7 +127,6 @@ spec:
             - name: kubeapi-filter
               type: kubeAPIAudit
               kubeAPIAudit:
-                # Don't generate audit events for all requests in RequestReceived stage.
                 omitStages:
                   - "RequestReceived"
 
