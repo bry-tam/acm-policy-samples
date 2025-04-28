@@ -8,6 +8,7 @@ spec:
   balancingIgnoredLabels:
   - topology.kubernetes.io/zone
   logVerbosity: 4
+  ignoreDaemonsetsUtilization: true
   podPriorityThreshold: -10
   resourceLimits:
     maxNodesTotal: 12
@@ -17,3 +18,4 @@ spec:
     delayAfterFailure: 30s
     enabled: true
     unneededTime: 60s
+  skipNodesWithLocalStorage: false
