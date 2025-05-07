@@ -18,6 +18,8 @@ spec:
   severity: critical
   upgradeApproval: Automatic
   subscription:
-    channel: stable
-    name: servicemeshoperator
+    channel: stable-3.0
+    name: servicemeshoperator3
     namespace: openshift-servicemesh-operator
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace

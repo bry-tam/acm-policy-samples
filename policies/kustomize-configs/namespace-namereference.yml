@@ -8,3 +8,4 @@ nameReference:
 
   - kind: ClusterRoleBinding
     path: subjects/namespace
+

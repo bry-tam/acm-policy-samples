@@ -35,50 +35,50 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: controlplane/namespace.yml
-      - path: controlplane/namespace-collector.yml
-      - path: controlplane/opentelemetrycollector.yml
-      - path: tracing/namespace.yml
-      - path: tracing/objectbucketclaim.yml
-      - path: tracing/tempo-s3-access-secret.yml
-      - path: tracing/tempo-s3-bundle-configmap.yml
-      - path: tracing/tempo-s3-tls-secret.yml
-      - path: tracing/tempostack.yml
-        extraDependencies: 
-          - name: servicemesh-controlplane17
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: controlplane/kiali-clusterrolebinding.yml
-      - path: controlplane/kiali.yml
-        extraDependencies: 
-          - name: servicemesh-controlplane17
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: controlplane/ossmconsole.yml
-        extraDependencies: 
-          - name: servicemesh-controlplane17
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: controlplane/podmonitor.yml
-      - path: controlplane/servicemonitor.yml
-      - path: controlplane/telemetry.yml
-      - path: controlplane/user-workload-access-networkpolicy.yml
-      - path: controlplane/servicemeshcontrolplane.yml
+  #     - path: controlplane/namespace-collector.yml
+  #     - path: controlplane/opentelemetrycollector.yml
+  #     - path: tracing/namespace.yml
+  #     - path: tracing/objectbucketclaim.yml
+  #     - path: tracing/tempo-s3-access-secret.yml
+  #     - path: tracing/tempo-s3-bundle-configmap.yml
+  #     - path: tracing/tempo-s3-tls-secret.yml
+  #     - path: tracing/tempostack.yml
+  #       extraDependencies: 
+  #         - name: servicemesh-controlplane17
+  #           kind: ConfigurationPolicy
+  #           compliance: "Compliant"
+  #     - path: controlplane/kiali-clusterrolebinding.yml
+  #     - path: controlplane/kiali.yml
+  #       extraDependencies: 
+  #         - name: servicemesh-controlplane17
+  #           kind: ConfigurationPolicy
+  #           compliance: "Compliant"
+  #     - path: controlplane/ossmconsole.yml
+  #       extraDependencies: 
+  #         - name: servicemesh-controlplane17
+  #           kind: ConfigurationPolicy
+  #           compliance: "Compliant"
+  #     - path: controlplane/podmonitor.yml
+  #     - path: controlplane/servicemonitor.yml
+  #     - path: controlplane/telemetry.yml
+  #     - path: controlplane/user-workload-access-networkpolicy.yml
+  #     - path: controlplane/servicemeshcontrolplane.yml
 
 
-  - name: servicemesh-ingress
-    remediationAction: enforce
-    dependencies:
-      - name: "servicemesh-controlplane"
-        compliance: "Compliant"
-    manifests:
-      - path: ingress/namespace.yml
-      - path: ingress/deployment.yml
-      - path: ingress/service.yml
-      - path: ingress/horizontalpodautoscaler.yml
-      - path: ingress/networkpolicy.yml
-      - path: ingress/poddisruptionbudget.yml
-      - path: ingress/role.yml
-      - path: ingress/rolebinding.yml
+  # - name: servicemesh-ingress
+  #   remediationAction: enforce
+  #   dependencies:
+  #     - name: "servicemesh-controlplane"
+  #       compliance: "Compliant"
+  #   manifests:
+  #     - path: ingress/namespace.yml
+  #     - path: ingress/deployment.yml
+  #     - path: ingress/service.yml
+  #     - path: ingress/horizontalpodautoscaler.yml
+  #     - path: ingress/networkpolicy.yml
+  #     - path: ingress/poddisruptionbudget.yml
+  #     - path: ingress/role.yml
+  #     - path: ingress/rolebinding.yml
 
 
   # - name: servicemesh-status
