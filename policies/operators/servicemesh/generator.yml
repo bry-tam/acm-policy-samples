@@ -35,9 +35,13 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: controlplane/namespace.yml
+        name: istio-namespace
       - path: controlplane/namespace-cni.yml
+        name: istio-cni-namespace
       - path: controlplane/istio.yml
+        name: istio-default
       - path: controlplane/istiocni.yml
+        name: istio-cni
   #     - path: controlplane/namespace-collector.yml
   #     - path: controlplane/opentelemetrycollector.yml
   #     - path: tracing/namespace.yml
