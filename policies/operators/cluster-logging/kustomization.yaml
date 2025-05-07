@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - logs-6.x-migration
+  - hub-template-auth
 
 generators:
   - ./generator.yml
