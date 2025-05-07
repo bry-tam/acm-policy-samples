@@ -10,3 +10,8 @@ spec:
     inactiveRevisionDeletionGracePeriodSeconds: 30
     updateWorkloads: false
   version: v1.24-latest
+  values:
+    meshConfig:
+      discoverySelectors:
+        - matchLabels:
+            istio-discovery: enabled
