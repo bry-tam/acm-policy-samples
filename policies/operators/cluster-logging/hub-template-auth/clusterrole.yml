@@ -1,0 +1,16 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: logging-hub-auth
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - Secret
+    verbs:
+      - get
+      - watch
+      - list
+    resourceNames:
+      - collector-token
