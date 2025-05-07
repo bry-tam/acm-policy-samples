@@ -35,6 +35,9 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: controlplane/namespace.yml
+      - path: controlplane/namespace-cni.yml
+      - path: controlplane/istio.yml
+      - path: controlplane/istiocni.yml
   #     - path: controlplane/namespace-collector.yml
   #     - path: controlplane/opentelemetrycollector.yml
   #     - path: tracing/namespace.yml
