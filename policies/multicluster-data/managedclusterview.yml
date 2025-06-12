@@ -1,0 +1,20 @@
+object-templates-raw: |
+  {{range $mc := (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "" "" "servicemesh-federation=enabled").items }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: view.open-cluster-management.io/v1beta1
+      kind: ManagedClusterView
+      metadata:
+        labels:
+          coredns-service: ''
+        name: coredns-service
+        namespace: '{{ $mc.metadata.name }}'
+      spec:
+        scope:
+          apiGroup: ""
+          kind: Service
+          name: coredns
+          namespace: openshift-dns
+          resource: status
+          version: v1
+  {{ end }}
