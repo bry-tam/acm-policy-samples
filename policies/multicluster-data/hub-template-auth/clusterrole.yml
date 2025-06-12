@@ -7,7 +7,7 @@ rules:
   - apiGroups:
       - view.open-cluster-management.io
     resources:
-      - ManagedClusterView
+      - managedclusterviews
     verbs:
       - get
       - watch
