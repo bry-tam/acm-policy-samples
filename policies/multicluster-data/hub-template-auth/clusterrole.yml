@@ -5,7 +5,7 @@ metadata:
   name: multicluster-hub-auth
 rules:
   - apiGroups:
-      - 'view.open-cluster-management.io/'
+      - view.open-cluster-management.io
     resources:
       - ManagedClusterView
     verbs:
