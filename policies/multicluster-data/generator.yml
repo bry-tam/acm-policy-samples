@@ -16,8 +16,19 @@ policies:
     manifests:
       - path: managedclusterview.yml
 
+  - name: coredns-secret
+    hubTemplateOptions:
+      serviceAccountName: multicluster-hub-serviceaccount
+    policySets:
+      - multicluster-data-mc
+    manifests:
+      - path: coredns-secret.yml
 
 policySets:
   - name: multicluster-data-hub
     placement:
       placementName: "env-bound-hub-placement"
+
+  - name: multicluster-data-mc
+    placement:
+      placementName: "env-bound-placement"
