@@ -15,6 +15,6 @@ object-templates-raw: |
           kind: Service
           name: coredns
           namespace: openshift-dns
-          resource: status
+          resource: servicestatus
           version: v1
   {{ end }}
