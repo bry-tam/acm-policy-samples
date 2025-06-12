@@ -1,0 +1,23 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-multicluster-data
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  policySets:
+    - multicluster-data-hub
+placementBindingDefaults:
+  name: "multicluster-data-binding"
+
+policies:
+  - name: coredns-service-data
+    manifests:
+      - path: managedclusterview.yml
+
+
+policySets:
+  - name: multicluster-data-hub
+    placement:
+      placementName: "env-bound-hub-placement"
