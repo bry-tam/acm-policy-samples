@@ -42,32 +42,34 @@ policies:
         name: istio-default
       - path: controlplane/istiocni.yml
         name: istio-cni
-  #     - path: controlplane/namespace-collector.yml
-  #     - path: controlplane/opentelemetrycollector.yml
-  #     - path: tracing/namespace.yml
-  #     - path: tracing/objectbucketclaim.yml
-  #     - path: tracing/tempo-s3-access-secret.yml
-  #     - path: tracing/tempo-s3-bundle-configmap.yml
-  #     - path: tracing/tempo-s3-tls-secret.yml
-  #     - path: tracing/tempostack.yml
-  #       extraDependencies: 
-  #         - name: servicemesh-controlplane17
-  #           kind: ConfigurationPolicy
-  #           compliance: "Compliant"
-  #     - path: controlplane/kiali-clusterrolebinding.yml
-  #     - path: controlplane/kiali.yml
-  #       extraDependencies: 
-  #         - name: servicemesh-controlplane17
-  #           kind: ConfigurationPolicy
-  #           compliance: "Compliant"
-  #     - path: controlplane/ossmconsole.yml
-  #       extraDependencies: 
-  #         - name: servicemesh-controlplane17
-  #           kind: ConfigurationPolicy
-  #           compliance: "Compliant"
-  #     - path: controlplane/podmonitor.yml
-  #     - path: controlplane/servicemonitor.yml
-  #     - path: controlplane/telemetry.yml
+      - path: controlplane/opentelemetrycollector.yml
+        name: otel-collector
+      - path: tracing/namespace.yml
+        name: tracing-namespace
+      - path: tracing/objectbucketclaim.yml
+        name: tracing-objectbucket
+      - path: tracing/tempo-s3-access-secret.yml
+        name: tracing-s3access-secret
+      - path: tracing/tempo-s3-bundle-configmap.yml
+        name: tracing-s3-ca
+      - path: tracing/tempo-s3-tls-secret.yml
+        name: tracing-s3-tls-secret
+      - path: tracing/tempostack.yml
+        name: tracing-ossm-tempostack
+
+      - path: controlplane/kiali-clusterrolebinding.yml
+        name: kiali-clusterrolebinding
+      - path: controlplane/kiali.yml
+        name: kiali
+      - path: controlplane/ossmconsole.yml
+        name: ossm-console-plugin
+
+      - path: controlplane/podmonitor.yml
+        name: istio-proxy-podmonitor
+      - path: controlplane/servicemonitor.yml
+        name: istiod-monitor
+      - path: controlplane/telemetry.yml
+        name: istio-telemetry
   #     - path: controlplane/user-workload-access-networkpolicy.yml
   #     - path: controlplane/servicemeshcontrolplane.yml
 
