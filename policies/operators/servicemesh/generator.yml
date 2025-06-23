@@ -84,6 +84,8 @@ policies:
         name: ossm-namespace
       - path: ingress/deployment.yml
         name: ossm-deployment
+      - path: ingress/serviceaccount.yml
+        name: ossm-serviceaccount
       - path: ingress/service.yml
         name: ossm-service
       - path: ingress/horizontalpodautoscaler.yml
