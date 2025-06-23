@@ -74,20 +74,28 @@ policies:
   #     - path: controlplane/servicemeshcontrolplane.yml
 
 
-  # - name: servicemesh-ingress
-  #   remediationAction: enforce
-  #   dependencies:
-  #     - name: "servicemesh-controlplane"
-  #       compliance: "Compliant"
-  #   manifests:
-  #     - path: ingress/namespace.yml
-  #     - path: ingress/deployment.yml
-  #     - path: ingress/service.yml
-  #     - path: ingress/horizontalpodautoscaler.yml
-  #     - path: ingress/networkpolicy.yml
-  #     - path: ingress/poddisruptionbudget.yml
-  #     - path: ingress/role.yml
-  #     - path: ingress/rolebinding.yml
+  - name: servicemesh-ingress
+    remediationAction: enforce
+    dependencies:
+      - name: "servicemesh-controlplane"
+        compliance: "Compliant"
+    manifests:
+      - path: ingress/namespace.yml
+        name: ossm-namespace
+      - path: ingress/deployment.yml
+        name: ossm-deployment
+      - path: ingress/service.yml
+        name: ossm-service
+      - path: ingress/horizontalpodautoscaler.yml
+        name: ossm-hpa
+      - path: ingress/networkpolicy.yml
+        name: ossm-networkpolicy
+      - path: ingress/poddisruptionbudget.yml
+        name: ossm-pdb
+      - path: ingress/role.yml
+        name: ossm-role
+      - path: ingress/rolebinding.yml
+        name: ossm-rolebinding
 
 
   # - name: servicemesh-status
