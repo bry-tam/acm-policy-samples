@@ -10,4 +10,4 @@ roleRef:
   name: istio-ingressgateway-sds
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: secret-reader
