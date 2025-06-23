@@ -10,14 +10,12 @@ spec:
       auth:
         type: bearer
         use_kiali_token: true
-      query_scope:
-        mesh_id: "basic-istio-system"
       thanos_proxy:
         enabled: true
       url: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
 
-    istio:
-      ingress_gateway_namespace: "istio-ingress"
+    # istio:
+    #   ingress_gateway_namespace: "istio-ingress"
 
     tracing:
       provider: tempo

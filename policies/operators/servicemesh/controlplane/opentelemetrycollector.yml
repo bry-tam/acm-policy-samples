@@ -3,7 +3,7 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
   name: otel
-  namespace: istio-collector
+  namespace: istio-system
   annotations:
     sidecar.istio.io/inject: 'true'
 spec:

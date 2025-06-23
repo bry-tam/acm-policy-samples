@@ -15,3 +15,9 @@ spec:
       discoverySelectors:
         - matchLabels:
             istio-discovery: enabled
+      enableTracing: true
+      extensionProviders:
+      - name: otel
+        opentelemetry:
+          port: 4317
+          service: otel-collector.istio-system.svc.cluster.local

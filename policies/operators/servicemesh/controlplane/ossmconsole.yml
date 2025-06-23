@@ -1,11 +1,9 @@
-object-templates-raw: |
-  - complianceType: musthave
-    objectDefinition:
-      apiVersion: kiali.io/v1alpha1
-      kind: OSSMConsole
-      metadata:
-        namespace: openshift-servicemesh-operator
-        name: ossmconsole
-      spec:
-        version: '{{ dig "spec" "version" "default" (lookup "kiali.io/v1alpha1" "Kiali" "istio-system" "kiali-user-workload-monitoring") }}'
+---
+apiVersion: kiali.io/v1alpha1
+kind: OSSMConsole
+metadata:
+  namespace: openshift-servicemesh-operator
+  name: ossmconsole
+spec:
+  version: default
 
