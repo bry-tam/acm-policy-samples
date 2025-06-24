@@ -44,8 +44,19 @@ policies:
         name: istio-cni
       - path: controlplane/opentelemetrycollector.yml
         name: otel-collector
+      - path: controlplane/opentelemetry-rolebinding.yml
+        name: otel-collector-rolebinding
+
       - path: tracing/namespace.yml
         name: tracing-namespace
+
+      - path: tracing/tempo-tenant-readerbinding.yml
+        name: tracing-readerbinding
+      - path: tracing/tempo-tenant-readerrole.yml
+        name: tracing-readerrole
+      - path: tracing/tempo-tenant-writerrole.yml
+        name: tracing-writerrole
+
       - path: tracing/objectbucketclaim.yml
         name: tracing-objectbucket
       - path: tracing/tempo-s3-access-secret.yml
