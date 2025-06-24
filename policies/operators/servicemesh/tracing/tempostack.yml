@@ -23,7 +23,11 @@ spec:
       limits:
         memory: 2Gi
         cpu: 2000m
+  tenants:
+    mode: openshift 
   template:
+    gateway:
+      enabled: true 
     queryFrontend:
       jaegerQuery: 
         enabled: true

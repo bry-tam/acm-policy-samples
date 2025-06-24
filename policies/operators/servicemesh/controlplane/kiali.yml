@@ -18,10 +18,16 @@ spec:
     #   ingress_gateway_namespace: "istio-ingress"
 
     tracing:
-      provider: tempo
-      query_timeout: 30
-      enabled: true
-      in_cluster_url: 'http://tempo-ossm-tempostack-query-frontend.tracing-system.svc.cluster.local'
-      url: 'https://{{ dig "spec" "host" "" (lookup "route.openshift.io/v1" "Route" "tracing-system" "tempo-ossm-tempostack-query-frontend") }}'
-      use_grpc: true
-      grpc_port: 9095
+      enabled: true 
+      provider: tempo 
+      use_grpc: false
+      internal_url: https://tempo-ossm-tempostack-gateway.tracing-system.svc.cluster.local:8080/api/traces/v1/default/tempo 
+      external_url: 'https://{{ dig "spec" "host" "" (lookup "route.openshift.io/v1" "Route" "tracing-system" "tempo-ossm-tempostack-gateway") }}'
+      health_check_url: 'https://{{ dig "spec" "host" "" (lookup "route.openshift.io/v1" "Route" "tracing-system" "tempo-ossm-tempostack-gateway") }}'
+      auth: 
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
+        insecure_skip_verify: false
+        type: bearer
+        use_kiali_token: true
+      tempo_config:
+         url_format: "jaeger" 
