@@ -22,7 +22,7 @@ spec:
     total:
       limits:
         memory: 2Gi
-        cpu: 2000m
+        cpu: 2
   tenants:
     mode: openshift 
   template:
