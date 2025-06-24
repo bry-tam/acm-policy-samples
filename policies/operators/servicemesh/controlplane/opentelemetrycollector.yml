@@ -8,10 +8,14 @@ metadata:
     sidecar.istio.io/inject: 'true'
 spec:
   mode: deployment
+  serviceAccount: otel-collector
   observability:
     metrics:
       enableMetrics: true 
   config: |
+    extensions:
+      bearertokenauth:
+        filename: /var/run/secrets/kubernetes.io/serviceaccount/token
     connectors:
       spanmetrics: 
         metrics_flush_interval: 15s
@@ -26,15 +30,21 @@ spec:
         add_metric_suffixes: false
         resource_to_telemetry_conversion:
           enabled: true
-      otlp:
-        endpoint: "tempo-ossm-tempostack-distributor.tracing-system.svc.cluster.local:4317"
+      otlp/default: 
+        endpoint: tempo-ossm-tempostack-gateway.tracing-system.svc.cluster.local:8090
         tls:
-          insecure: true
+          insecure: false
+          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt" 
+        auth:
+          authenticator: bearertokenauth
+        headers:
+          X-Scope-OrgID: "default"
     service:
+      extensions: [bearertokenauth]
       pipelines:
         traces:
           receivers: [otlp]
-          exporters: [otlp, spanmetrics] 
+          exporters: [otlp/default, spanmetrics] 
         metrics:
           receivers: [spanmetrics] 
           exporters: [prometheus]
