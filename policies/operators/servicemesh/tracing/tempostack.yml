@@ -25,6 +25,9 @@ spec:
         cpu: "2"
   tenants:
     mode: openshift 
+    authentication: 
+      - tenantName: default
+        tenantId: "1610b0c3-c509-4592-a256-a1871353dbfb"
   template:
     gateway:
       enabled: true 
