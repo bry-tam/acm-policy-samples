@@ -30,4 +30,7 @@ spec:
         type: bearer
         use_kiali_token: true
       tempo_config:
-         url_format: "jaeger" 
+         url_format: "jaeger"
+
+    grafana: 
+      enabled: false
