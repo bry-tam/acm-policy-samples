@@ -28,16 +28,16 @@ spec:
   template:
     gateway:
       enabled: true 
-    queryFrontend:
-      jaegerQuery: 
-        enabled: true
-        monitorTab:
-          enabled: true 
-          prometheusEndpoint: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091 
-        ingress:
-          route:
-            termination: edge
-          type: route
+    # queryFrontend:
+    #   jaegerQuery: 
+    #     enabled: true
+    #     monitorTab:
+    #       enabled: true 
+    #       prometheusEndpoint: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091 
+    #     ingress:
+    #       route:
+    #         termination: edge
+    #       type: route
 
   managementState: Managed
   replicationFactor: 1
