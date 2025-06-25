@@ -1,0 +1,96 @@
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel
+  namespace: tracing-system
+spec:
+  mode: deployment
+  managementState: managed
+  serviceAccount: otel-collector
+  observability:
+    metrics:
+      enableMetrics: true 
+
+  config:
+    connectors:
+      spanmetrics: 
+        dimensions:
+          - name: k8s.namespace.name
+        metrics_flush_interval: 15s
+
+    exporters:
+      prometheus: 
+        endpoint: 0.0.0.0:8889
+        add_metric_suffixes: false
+        resource_to_telemetry_conversion:
+          enabled: true
+      otlp/default: 
+        auth:
+          authenticator: bearertokenauth
+        endpoint: tempo-ossm-tempostack-gateway.tracing-system.svc.cluster.local:8090
+        headers:
+          X-Scope-OrgID: "default"
+        tls:
+          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt" 
+
+    extensions:
+      bearertokenauth:
+        filename: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+    processors:
+      k8sattributes: {}
+
+    receivers:
+      jaeger:
+        protocols:
+          thrift_compact:
+            endpoint: 0.0.0.0:6831
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    service:
+      extensions:
+        - bearertokenauth
+      pipelines:
+        traces:
+          exporters:
+            - otlp/default
+            - spanmetrics
+          processors:
+            - k8sattributes
+          receivers:
+            - otlp
+            - jaeger
+        metrics:
+          exporters:
+            - prometheus
+          receivers:
+            - spanmetrics
+      telemetry:
+        metrics:
+          address: 0.0.0.0:8888
+
+  configVersions: 3
+  daemonSetUpdateStrategy: {}
+  deploymentUpdateStrategy: {}
+  ingress:
+    route: {}
+  ipFamilyPolicy: SingleStack
+
+  podDnsConfig: {}
+  replicas: 1
+  resources: {}
+  targetAllocator:
+    allocationStrategy: consistent-hashing
+    filterStrategy: relabel-config
+    observability:
+      metrics: {}
+    prometheusCR:
+      scrapeInterval: 30s
+    resources: {}
+  upgradeStrategy: automatic

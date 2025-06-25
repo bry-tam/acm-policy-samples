@@ -18,19 +18,58 @@ spec:
       enabled: true
       caName: ossm-tempo-s3-bundle
       certName: ossm-tempo-s3-tls
+  retention:
+    global:
+      traces: 48h0m0s
   resources:
     total:
       limits:
         memory: 2Gi
         cpu: "2"
+  search:
+    defaultResultLimit: 20
+    maxDuration: 0s
   tenants:
     mode: openshift 
     authentication: 
       - tenantName: default
-        tenantId: "1610b0c3-c509-4592-a256-a1871353dbfb"
+        tenantId: 1610b0c3-c509-4592-a256-a1871353dbfb
   template:
+    compactor:
+      replicas: 1
+    distributor:
+      component:
+        replicas: 1
+      tls:
+        enabled: false
     gateway:
-      enabled: true 
+      component:
+        replicas: 1
+      enabled: true
+      ingress:
+        route:
+          termination: reencrypt
+        type: route
+    ingester:
+      replicas: 1
+    querier:
+      replicas: 1
+    queryFrontend:
+      component:
+        replicas: 1
+      jaegerQuery:
+        enabled: true
+        ingress:
+          route: {}
+        monitorTab:
+          enabled: true
+          prometheusEndpoint: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+        servicesQueryDuration: 72h0m0s
+        tempoQuery: {}
+
+
+
+
     # queryFrontend:
     #   jaegerQuery: 
     #     enabled: true
