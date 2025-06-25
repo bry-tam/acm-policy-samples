@@ -8,6 +8,7 @@ rules:
       - 'tempo.grafana.com'
     resources: 
       - default
+      - user
     resourceNames:
       - traces
     verbs:
