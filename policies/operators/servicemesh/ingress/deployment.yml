@@ -14,7 +14,7 @@ spec:
         inject.istio.io/templates: gateway 
       labels:
         istio: istio-ingressgateway
-        sidecar.istio.io/inject: "true" 
+        istio.io/rev: default-v1-24-latest
     spec:
       containers:
         - name: istio-proxy
