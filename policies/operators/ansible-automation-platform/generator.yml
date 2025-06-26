@@ -9,46 +9,62 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - ansible-automation-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: aap-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "ansible-automation-binding"
 
 policies:
   - name: ansible-automation-operator
-    remediationAction: enforce
+    description: "Deploys AAP Operator"
     manifests:
       - path: namespace.yml
-      - path: operatorpolicy.yml
-        name: aap-operator
+        name: aap-namespace
 
+      - path: operatorpolicy.yml
 
   - name: ansible-automation-configure
-    remediationAction: enforce
+    description: "Configures s3 storage and AAP components"
     dependencies:
       - name: "ansible-automation-operator"
         compliance: "Compliant"
     manifests:
       - path: objectbucketclaim.yml
         name: obc-hub-odf
+
       - path: noobaa-s3-serving-cert.yml
         name: noobaa-s3-serving-cert
+
       - path: hub-secret.yml
         name: ansible-hub-odf
-        extraDependencies: 
+        extraDependencies:
           - name: obc-hub-odf
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: ansibleautomationplatform.yml
         name: ansibleautomationplatform
-        extraDependencies: 
+        extraDependencies:
           - name: ansible-hub-odf
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
-
   - name: ansible-automation-status
+    description: "Validates the health of the AAP instance"
     remediationAction: InformOnly
     dependencies:
-      - name: "ansible-automation-configure"
+      - name: ansible-automation-configure
         compliance: "Compliant"
     manifests:
       - path: health/ansible-automation-status.yml
@@ -57,4 +73,3 @@ policySets:
   - name: ansible-automation-operator
     placement:
       placementName: "ft-ansible-automation--enabled"
-

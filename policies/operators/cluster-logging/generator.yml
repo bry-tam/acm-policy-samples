@@ -9,24 +9,47 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - cluster-logging-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: cluster-logging-operator
+
+  severity: medium
+
+
 placementBindingDefaults:
   name: "logging-binding"
 
 policies:
   - name: cluster-logging-operator
+    description: "Installs Cluster Logging Operator"
     remediationAction: enforce
     dependencies:
       - name: "prepare-logging-migration"
         compliance: "Compliant"
     manifests:
       - path: namespace.yml
-      - path: operatorpolicy.yml
-      - path: clusterrole.yml
-      - path: clusterrolebinding.yml
-      - path: serviceaccount.yml
+        name: log-op-namespace
 
+      - path: operatorpolicy.yml
+
+      - path: clusterrole.yml
+        name: log-collector-writer-clusterrole
+
+      - path: clusterrolebinding.yml
+        name: log-collector-writer-clusterrolebinding
+
+      - path: serviceaccount.yml
+        name: log-collector-serviceaccount
 
   - name: cluster-logging-configure
+    description: "Configures Loki storage, LokiStack, and ClusterLogForwarder"
     remediationAction: enforce
     dependencies:
       - name: "cluster-logging-operator"
@@ -35,41 +58,55 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: loki/noobaa-s3-serving-cert.yml
+        name: loki-ca-configmap
+
       - path: loki/objectbucketclaim.yml
+        name: loki-objectbucketclaim
+
       - path: loki/loki-secret.yml
-        extraDependencies: 
-          - name: cluster-logging-configure
+        name: loki-secret
+        extraDependencies:
+          - name: loki-objectbucketclaim
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: loki/lokistack.yml
-        extraDependencies: 
+        name: lokistack-logging
+        extraDependencies:
           - name: loki-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: loki/health/loki-status.yml
+        name: loki-logging-status
         remediationAction: InformOnly
-        extraDependencies: 
+        extraDependencies:
           - name: lokistack-logging
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: uiplugin.yml
-        extraDependencies: 
+        name: logging-uiplugin
+        extraDependencies:
           - name: loki-logging-status
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: clusterlogging.yml
-        extraDependencies: 
+        name: clusterlogging
+        extraDependencies:
           - name: loki-logging-status
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: logfilemetricexporter.yml
+        name: logfile-metrics-exporter
 
   - name: logging-operator-status
+    description: "Monitors health of ClusterLogging deployment"
     remediationAction: InformOnly
     dependencies:
-      - name: "cluster-logging-configure"
+      - name: cluster-logging-configure
         compliance: "Compliant"
     manifests:
       - path: health/cluster-logging-status.yml

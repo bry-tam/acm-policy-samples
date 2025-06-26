@@ -1,0 +1,41 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+## skip_validation: true
+
+resources:
+- ../base/
+- argo-admin-crb.yml
+- gitopsservice.yml
+
+namespace: openshift-gitops
+
+patches:
+  - target:
+      kind: ArgoCD
+    path: argocd.yml
+  - target:
+      kind: ConsoleLink
+    path: consolelink.yml
+
+replacements:
+- source:
+    kind: ArgoCD
+    name: gitops
+    fieldPath: metadata.namespace
+  targets:
+  - select:
+      kind: ArgoCD
+      name: gitops
+    fieldPaths:
+    - metadata.name
+  - select:
+      kind: ConsoleLink
+      name: gitops
+    fieldPaths:
+    - metadata.name
+  - select:
+      kind: Namespace
+      name: gitops
+    fieldPaths:
+      -  metadata.labels.[argocd.argoproj.io/managed-by]

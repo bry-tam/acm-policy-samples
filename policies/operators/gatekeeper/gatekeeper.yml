@@ -1,53 +1,40 @@
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
+---
+apiVersion: operator.gatekeeper.sh/v1alpha1
+kind: Gatekeeper
 metadata:
-  name: gatekeeper-instance
+  name: gatekeeper
 spec:
-  remediationAction: enforce
-  severity: low
-  object-templates-raw: |
-    - complianceType: musthave
-      objectDefinition:
-        {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
-
-        apiVersion: operator.gatekeeper.sh/v1alpha1
-        kind: Gatekeeper
-        metadata:
-          name: gatekeeper
-        spec:
-          audit:
-            replicas: '{{ ($infraCount | default 2) | toInt }}'
-            logLevel: DEBUG
-            auditInterval: 60s
-            constraintViolationLimit: 55
-            auditFromCache: Enabled
-            auditChunkSize: 66
-            emitAuditEvents: Enabled
-            resources:
-              limits:
-                cpu: 500m
-                memory: 3Gi
-              requests:
-                cpu: 500m
-                memory: 1Gi
-          validatingWebhook: Enabled
-          mutatingWebhook: Enabled
-          webhook:
-            replicas: '{{ ($infraCount | default 2) | toInt }}'
-            emitAdmissionEvents: Enabled
-            logLevel: DEBUG
-            failurePolicy: Ignore
-            resources:
-              limits:
-                cpu: 480m
-                memory: 3Gi
-              requests:
-                cpu: 400m
-                memory: 1Gi
-        {{- if ne $infraCount 0 }}
-          tolerations:
-            - key: node-role.kubernetes.io/infra
-              operator: "Exists"
-          nodeSelector:
-            node-role.kubernetes.io/infra: ""
-        {{- end }}
+  audit:
+    replicas: '{{ (len (getNodesWithExactRoles "infra").items | default 2) | toInt }}'
+    logLevel: DEBUG
+    auditInterval: 60s
+    constraintViolationLimit: 55
+    auditFromCache: Enabled
+    auditChunkSize: 66
+    emitAuditEvents: Enabled
+    resources:
+      limits:
+        cpu: 500m
+        memory: 3Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  validatingWebhook: Enabled
+  mutatingWebhook: Enabled
+  webhook:
+    replicas: '{{ (len (getNodesWithExactRoles "infra").items | default 2) | toInt }}'
+    emitAdmissionEvents: Enabled
+    logLevel: DEBUG
+    failurePolicy: Ignore
+    resources:
+      limits:
+        cpu: 480m
+        memory: 3Gi
+      requests:
+        cpu: 400m
+        memory: 1Gi
+  tolerations:
+    - key: node-role.kubernetes.io/infra
+      operator: "Exists"
+  nodeSelector:
+    node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""

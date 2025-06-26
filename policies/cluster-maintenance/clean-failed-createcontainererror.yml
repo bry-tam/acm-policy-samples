@@ -1,3 +1,4 @@
+---
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
@@ -11,7 +12,7 @@ spec:
 
       {{/* ##  if the pod is blocked because the container failed to create we should delete the pod ## */}}
       {{- range $cns := $pp.staus.containerStatuses }}
-        {{- if and (eq $cns.laststate.terminated.reason "Error") 
+        {{- if and (eq $cns.laststate.terminated.reason "Error")
                   (eq $cns.started "false")
                   (eq $cns.state.waiting.reason "CreateContainerError") }}
     - complianceType: mustnothave

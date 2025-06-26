@@ -7,16 +7,32 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
-  policySets: 
+  policySets:
     - tempo-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: tempo-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "tempo-binding"
 
 policies:
   - name: tempo-operator
+    description: "Installs Tempo Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
+        name: tempo-namespace
+
       - path: operatorpolicy.yml
 
 policySets:

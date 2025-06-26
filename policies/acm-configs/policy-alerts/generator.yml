@@ -6,23 +6,23 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
-  ## set the default compliance annotations
-  categories: []
-  controls: []
-  standards: []
   policySets:
     - acm-alerts-placements
+
 placementBindingDefaults:
   name: "acm-alerts-placement-binding"
 
 policies:
   - name: acm-policy-alerts
     remediationAction: enforce
-    configurationPolicyAnnotations:  
+    configurationPolicyAnnotations:
       policy.open-cluster-management.io/disable-templates: "true"
     manifests:
       - path: namespace.yml
+        name: acm-alert-namespace
+
       - path: policy-prometheusrule.yml
+        name: acm-alert-prometheusrule
 
 policySets:
   - name: acm-alerts-placements

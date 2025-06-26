@@ -9,15 +9,30 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - developer-hub-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: dev-hub-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "developer-hub-binding"
 
 policies:
   - name: developer-hub-operator
+    description: "Installs Developer Hub Operator"
     manifests:
       - path: operatorpolicy.yml
 
   - name: developer-hub-acm-msa
+    description: "Creates ManagedServiceAccount for configuring managed clusters in DevHub"
     policySets:
       - developer-hub-acm
     dependencies:
@@ -27,8 +42,8 @@ policies:
       - path: acm/rhdh-managedservice-account.yml
         name: rhdh-msa
 
-
   - name: developer-hub-configure
+    description: "Configures developer hub instance"
     remediationAction: enforce
     hubTemplateOptions:
       serviceAccountName: rhdh-hub-serviceaccount
@@ -38,36 +53,26 @@ policies:
     manifests:
       - path: namespace.yml
         name: devhub-namespace
+
       - path: backstage.yml
         name: backstage
+
       - path: secrets-rhdh.yml
         name: backstage-secrets
+
       - path: app-config-rhdh.yml
         name: backstage-config
-        extraDependencies: 
+        extraDependencies:
           - name: backstage
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: dynamic-plugins-rhdh.yml
         name: dynamic-plugins
-        extraDependencies: 
+        extraDependencies:
           - name: backstage
             kind: ConfigurationPolicy
             compliance: "Compliant"
-  #     - path: noobaa-s3-serving-cert.yml
-  #       name: noobaa-s3-serving-cert
-  #     - path: hub-secret.yml
-  #       name: ansible-hub-odf
-  #       extraDependencies: 
-  #         - name: obc-hub-odf
-  #           kind: ConfigurationPolicy
-  #           compliance: "Compliant"
-  #     - path: ansibleautomationplatform.yml
-  #       name: ansibleautomationplatform
-  #       extraDependencies: 
-  #         - name: ansible-hub-odf
-  #           kind: ConfigurationPolicy
-  #           compliance: "Compliant"
 
 
   # - name: developer-hub-status

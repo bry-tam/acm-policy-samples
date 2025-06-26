@@ -9,24 +9,43 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - multi-cluster-logging-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: multicluster-logging-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "multi-cluster-logging-binding"
 
 policies:
-
   - name: multi-cluster-logging-configure
+    description: "Configures Cluster Logging to forward logs to Loki deployed on the ACM hub"
     remediationAction: enforce
     hubTemplateOptions:
-      serviceAccountName: hub-template-processor
+      serviceAccountName: logging-hub-serviceaccount
     dependencies:
       - name: "cluster-logging-operator"
         compliance: "Compliant"
     manifests:
       - path: multi-cluster-collector-token.yml
+        name: multi-cluster-collector-token
+
       - path: multi-clusterlogging.yml
+        name: multi-clusterlogging
+
       - path: logfilemetricexporter.yml
+        name: multi-cluster-logfile-metrics
 
   - name: multi-cluster-logging-operator-status
+    description: "Monitor the health of Cluster Logging deployment"
     remediationAction: InformOnly
     dependencies:
       - name: "multi-cluster-logging-configure"
@@ -40,4 +59,3 @@ policySets:
   - name: multi-cluster-logging-operator
     placement:
       placementName: "ft-logging--multi"
-

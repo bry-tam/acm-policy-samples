@@ -1,73 +1,77 @@
-﻿---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: odf-status
-spec:
-  remediationAction: inform
-  severity: high
-  object-templates-raw: |
-    {{/* ##  Create a list of all expected deployments in openshift-pipelines
-          Normally we would use labels to identify them, however there isn't
-          a selector available to uniquely identify the deployments   ## */}}
-    {{- $depList := list "csi-addons-controller-manager"
-                          "noobaa-endpoint"
-                          "noobaa-operator"
-                          "ocs-metrics-exporter"
-                          "ocs-operator"
-                          "odf-console"
-                          "odf-operator-controller-manager"
-                          "rook-ceph-operator"
-    }}
+---
+object-templates-raw: |
+  {{/* ##  Create a list of all expected deployments in openshift-pipelines
+        Normally we would use labels to identify them, however there isn't
+        a selector available to uniquely identify the deployments   ## */}}
+  {{- $depList := list "csi-addons-controller-manager"
+                        "noobaa-endpoint"
+                        "noobaa-operator"
+                        "ocs-metrics-exporter"
+                        "ocs-operator"
+                        "odf-console"
+                        "odf-operator-controller-manager"
+                        "rook-ceph-operator"
+  }}
 
-    ## Create a CompilianceType objectDefinition for each deployment
-    {{- range $depName := $depList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" "openshift-storage" $depName) }}
-    - complianceType: musthave
-      objectDefinition:
-        kind: Deployment
-        apiVersion: apps/v1
-        metadata:
-          namespace: openshift-storage
-      ## If the deployment does not exist we need to specify the name
-      {{- if not $dep }}
-          name: {{ $depName }}
-      {{- else }}
-      ## when the deployment exists the compliance will be determined by
-      ## the labels, spec.selector.matchLabels and the expected healthy status
-          labels:
-        {{- range $k, $v := $dep.metadata.labels }}
-            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+  ## Create a CompilianceType objectDefinition for each deployment
+  {{- range $depName := $depList }}
+    {{- $dep := (lookup "apps/v1" "Deployment" "openshift-storage" $depName) }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: Deployment
+      apiVersion: apps/v1
+      metadata:
+        namespace: openshift-storage
+        name: {{ $depName }}
+      status:
+        replicas: {{ $dep.spec.replicas }}
+        updatedReplicas: {{ $dep.spec.replicas }}
+        readyReplicas: {{ $dep.spec.replicas }}
+        availableReplicas: {{ $dep.spec.replicas }}
+        conditions:
+        {{- range $c := $dep.status.conditions }}
+          {{- $_ := set $c "status" "True" }}
+        - {{ $c | toRawJson | toLiteral }}
         {{- end }}
-        spec:
-          selector:
-            matchLabels:
-            {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-            {{- end }}
-        status:
-          replicas: {{ $dep.spec.replicas }}
-          updatedReplicas: {{ $dep.spec.replicas }}
-          readyReplicas: {{ $dep.spec.replicas }}
-          availableReplicas: {{ $dep.spec.replicas }}
-          conditions:
-            - type: Available
-              status: 'True'
-        {{- end }}
-    {{- end }}
+  {{- end }}
 
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: ocs.openshift.io/v1
-        kind: StorageCluster
-        metadata:
-          namespace: openshift-storage
-        status:
-          conditions:
-            - message: Reconcile completed successfully
-              reason: ReconcileCompleted
-              status: 'True'
-              type: ReconcileComplete
-            - status: 'True'
-              type: Available
-          phase: Ready
+  {{- $sc := (lookup "ocs.openshift.io/v1" "StorageCluster" "openshift-storage" "ocs-storagecluster") }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: ocs.openshift.io/v1
+      kind: StorageCluster
+      metadata:
+        name:   {{ $sc.metadata.name }}
+        namespace: openshift-storage
+      status:
+        conditions:
+        {{- range $c := $sc.status.conditions }}
+          {{- if eq $c.type "ReconcileComplete" "Available" "Upgradeable" }}
+            {{- $_ := set $c "status" "True" }}
+          {{- else if eq $c.type "VersionMismatch" "Progressing" "Degraded" }}
+            {{- $_ := set $c "status" "False" }}
+          {{- end }}
+        - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
+        phase: Ready
+
+  {{- if not (semverCompare  ">= 4.19" (fromClusterClaim "version.openshift.io")) }}
+  {{- $ss := (lookup "odf.openshift.io/v1alpha1" "StorageSystem" "openshift-storage" "ocs-storagecluster-storagesystem") }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: odf.openshift.io/v1alpha1
+      kind: StorageSystem
+      metadata:
+        name:   {{ $ss.metadata.name }}
+        namespace: openshift-storage
+      status:
+        conditions:
+        {{- range $c := $ss.status.conditions }}
+          {{- if eq $c.type "VendorCsvReady" "Available" "VendorSystemPresent" }}
+            {{- $_ := set $c "status" "True" }}
+          {{- else if eq $c.type "StorageSystemInvalid" "Progressing" }}
+            {{- $_ := set $c "status" "False" }}
+          {{- end }}
+        - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
+  {{- end }}

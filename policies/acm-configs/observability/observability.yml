@@ -4,7 +4,15 @@ kind: MultiClusterObservability
 metadata:
   name: observability
 spec:
-  observabilityAddonSpec: {}
+  capabilities:
+    platform:
+      analytics:
+        incidentDetection:
+          enabled: true
+  observabilityAddonSpec:
+    enableMetrics: true
+    interval: 300
+
   storageConfig:
     metricObjectStorage:
       name: thanos-object-storage

@@ -1,0 +1,36 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: gitops-operator-install
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: Automatic
+  subscription:
+    channel: gitops-1.17
+    config:
+      env:
+        - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
+          value: openshift-gitops
+        - name: DISABLE_DEFAULT_ARGOCD_CONSOLELINK
+          value: "true"
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+        - operator: Exists
+          key: node-role.kubernetes.io/infra
+    name: openshift-gitops-operator
+    namespace: openshift-gitops-operator
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace

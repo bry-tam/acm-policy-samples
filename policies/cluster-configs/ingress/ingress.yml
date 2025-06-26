@@ -1,3 +1,4 @@
+---
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
@@ -26,7 +27,7 @@ spec:
         spec:
           httpEmptyRequestsPolicy: Respond
           nodePlacement:
-            nodeSelector: 
+            nodeSelector:
               matchLabels:
                 {{ $nodeSelector }}: ""
             tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'

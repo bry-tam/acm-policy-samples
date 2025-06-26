@@ -21,3 +21,5 @@ spec:
     channel: stable
     name: tempo-product
     namespace: openshift-tempo-operator
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace

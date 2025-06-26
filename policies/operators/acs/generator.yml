@@ -12,40 +12,41 @@ policyDefaults:
     noncompliant: 10s
   policySets:
     - acs-operator-hub
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: acs-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "acs-operator-binding"
 
 policies:
   - name: acs-operator
+    description: "Installs and managed ACS Operator"
     remediationAction: enforce
     policySets:
       - acs-operator-hub
       - acs-operator-managed
     manifests:
       - path: ns-rhacs-operator.yml
+        name: acs-operator-namespace
+
       - path: ns-stackrox.yml
-      - path: operatorgroup.yml
-        extraDependencies: 
-          - name: acs-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: subscription.yml
-        extraDependencies: 
-          - name: acs-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: health/operator/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies: 
-          - name: acs-operator3
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-          - name: acs-operator4
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        name: stackrox-namespace
+
+      - path: operatorpolicy.yml
 
 
   - name: acs-central
+    description: "Configures the Central component of ACS along with reporting health status of Central"
     remediationAction: enforce
     policySets:
       - acs-operator-hub
@@ -54,16 +55,23 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: central/central.yml
+        name: stackrox-central-services
+
       - path: central/consolelink.yml
+        name: acs-consolelink
+
       - path: health/central/central-status.yml
+        name: acs-central-status
         remediationAction: InformOnly
-        extraDependencies: 
-          - name: acs-central
+        severity: high
+        extraDependencies:
+          - name: stackrox-central-services
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
 
   - name: acs-central-init-bundle
+    description: "Configures Job to generate init-bundle"
     remediationAction: enforce
     policySets:
       - acs-operator-hub
@@ -72,22 +80,30 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: central/init-bundle/serviceaccount.yml
+        name: create-cluster-init-serviceaccount
+
       - path: central/init-bundle/role.yml
+        name: create-cluster-init-role
+
       - path: central/init-bundle/rolebinding.yml
+        name: create-cluster-init-rolebinding
+
       - path: central/init-bundle/job.yml
-        extraDependencies: 
-          - name: acs-central-init-bundle
+        name: create-cluster-init-job
+        extraDependencies:
+          - name: create-cluster-init-serviceaccount
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-central-init-bundle2
+          - name: create-cluster-init-role
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-central-init-bundle3
+          - name: create-cluster-init-rolebinding
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
 
   - name: acs-central-init-bundle-cert
+    description: "Configures ACS hub SecuredCluster and CertificatePolicy for init-bundle expiration"
     remediationAction: enforce
     policySets:
       - acs-operator-hub
@@ -97,17 +113,20 @@ policies:
     manifests:
       - path: health/central/init-bundle/sensor-tls-cert.yml
         name: acs-bundle-certificates
+
       - path: central/init-bundle/expired-sensor-tls.yml
         remediationAction: InformOnly
-        name: expired-sensor-tls
+        name: acs-cert-sensor-tls
+
       - path: sensor/securedcluster.yml
-        extraDependencies: 
-          - name: expired-sensor-tls
+        extraDependencies:
+          - name: acs-cert-sensor-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
 
   - name: acs-central-expired-certs
+    description: "When init-bundle is expired policy removes expired secrets and resets init-bundle job to create a new init-bundle."
     remediationAction: enforce
     complianceType: mustnothave
     policySets:
@@ -119,22 +138,30 @@ policies:
     ignorePending: true
     manifests:
       - path: central/init-bundle/expired-admission-control-tls.yml
+        name: expired-admission-control-tls
+
       - path: central/init-bundle/expired-collector-tls.yml
+        name: expired-collector-tls
+
       - path: central/init-bundle/expired-sensor-tls.yml
+        name: expired-sensor-tls
+
       - path: central/init-bundle/job.yml
-        extraDependencies: 
-          - name: acs-central-expired-certs
+        name: expired-init-bundle-job
+        extraDependencies:
+          - name: expired-admission-control-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-central-expired-certs2
+          - name: expired-collector-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-central-expired-certs3
+          - name: expired-sensor-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
 
   - name: acs-sensor-sync-certs
+    description: "Syncs ACS init-bundle secrets to policy namespace"
     remediationAction: enforce
     policySets:
       - acs-operator-hub
@@ -143,31 +170,39 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: sensor/sensor-sync-tls-certs.yml
+        name: sensor-sync-tls-certs
 
-  
   - name: acs-sensor
+    description: "Propagate init-bundle secrets to managed cluster and create SecuredCluster"
     remediationAction: enforce
     policySets:
       - acs-operator-managed
     manifests:
       - path: sensor/propagate-admission-control-tls.yml
+        name: propagate-admission-control-tls
+
       - path: sensor/propagate-collector-tls.yml
+        name: propagate-collector-tls
+
       - path: sensor/propagate-sensor-tls.yml
+        name: propagate-sensor-tls
+
       - path: sensor/securedcluster.yml
-        extraDependencies: 
-          - name: acs-sensor
+        name: managed-securedcluster
+        extraDependencies:
+          - name: propagate-admission-control-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-sensor2
+          - name: propagate-collector-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-sensor3
+          - name: propagate-sensor-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
 policySets:
   - name: acs-operator-hub
-    placement:  
+    placement:
       placementName: "ft-acs--hub"
 
   - name: acs-operator-managed

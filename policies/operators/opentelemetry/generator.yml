@@ -7,19 +7,39 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
-  policySets: 
+  policySets:
     - opentelemetry-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: opentelemetry-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "opentelemetry-binding"
 
 policies:
   - name: opentelemetry-operator
+    description: "Install OpenTelemetry Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
+        name: otel-namespace
+
       - path: operatorpolicy.yml
+
       - path: clusterrole.yml
+        name: otel-clusterrole
+
       - path: clusterrolebinding.yml
+        name: otel-clusterrolebinding
 
 policySets:
   - name: opentelemetry-operator

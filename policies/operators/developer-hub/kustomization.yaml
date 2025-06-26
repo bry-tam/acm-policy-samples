@@ -1,3 +1,4 @@
+---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -5,4 +6,5 @@ generators:
   - ./generator.yml
 
 resources:
-  - acm/rhdh-hub-serviceaccount.yml
+  - hub-template-auth/serviceaccount.yml
+  - hub-template-auth/clusterrolebinding.yml

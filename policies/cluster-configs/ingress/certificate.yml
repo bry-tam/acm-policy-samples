@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{- $ingrscntl := (lookup "operator.openshift.io/v1" "IngressController" "openshift-ingress-operator" "default") }}
   {{- $apiURL := $ingrscntl.status.domain | trimAll "https://" | trimAll ":6443"  }}

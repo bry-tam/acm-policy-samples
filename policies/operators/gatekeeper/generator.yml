@@ -9,33 +9,57 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - gatekeeper-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: gatekeeper-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "gatekeeper-binding"
 
 policies:
   - name: gatekeeper-operator
+    description: "Installs Gatekeeper Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
-      - path: subscription.yml
-      - path: health/operator-status.yml
-        remediationAction: inform
+        name: gatekeeper-system-namespace
+
+      - path: operatorpolicy.yml
 
   - name: gatekeeper-instance
+    description: "Configures Gatekeeper instance and monitoring, along with custom syncdata policy"
     remediationAction: enforce
     manifests:
       - path: gatekeeper.yml
+        name: gatekeeper-instance
+
       - path: sync-configmap.yml
+        name: gatekeeper-syncdata
+
       - path: metrics-service.yml
         name: gatekeeper-metrics-service
+
       - path: servicemonitor.yml
         name: gatekeeper-metrics-servicemon
+
       - path: health/gatekeeper-status.yml
+        name: gatekeeper-status
         remediationAction: inform
 
   - name: gatekeeper-violations
     manifests:
       - path: violation-events.yml
+        name: gatekeeper-violation-event
+
 policySets:
   - name: gatekeeper-operator
     placement:

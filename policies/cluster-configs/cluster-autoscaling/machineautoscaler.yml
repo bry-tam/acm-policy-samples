@@ -1,3 +1,4 @@
+---
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
@@ -22,8 +23,8 @@ spec:
         spec:
           minReplicas: '{{ (index $ms.metadata.labels "autoscale.minreplicas") | toInt }}'
           maxReplicas: '{{ (index $ms.metadata.labels "autoscale.maxreplicas") | toInt }}'
-          scaleTargetRef: 
+          scaleTargetRef:
             apiVersion: machine.openshift.io/v1beta1
-            kind: MachineSet 
+            kind: MachineSet
             name: {{ $ms.metadata.name }}
     {{- end }}

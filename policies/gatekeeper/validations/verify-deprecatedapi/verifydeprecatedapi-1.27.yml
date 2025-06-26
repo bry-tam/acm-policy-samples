@@ -20,7 +20,7 @@ spec:
               - apiGroups: ["storage.k8s.io"]
                 kinds: ["CSIStorageCapacity"]
           parameters:
-            kvs: 
+            kvs:
               - deprecatedAPI: "storage.k8s.io/v1beta1"
                 kinds: ["CSIStorageCapacity"]
                 targetAPI: "storage.k8s.io/v1"

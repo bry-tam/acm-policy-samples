@@ -6,9 +6,9 @@ metadata:
 rules:
   - apiGroups:
       - 'tempo.grafana.com'
-    resources: 
+    resources:
       - user
     resourceNames:
       - traces
     verbs:
-      - 'get' 
+      - 'get'

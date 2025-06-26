@@ -1,0 +1,35 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: advanced-cluster-management-operator-install
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: Automatic
+  subscription:
+    channel: release-2.14
+    name: advanced-cluster-management
+    namespace: open-cluster-management
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    config:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+        - operator: Exists
+          key: node-role.kubernetes.io/infra
+  operatorGroup:
+    name: open-cluster-management
+    targetNamespaces:
+      - open-cluster-management
