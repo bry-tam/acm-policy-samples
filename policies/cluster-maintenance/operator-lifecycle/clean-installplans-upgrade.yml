@@ -1,8 +1,9 @@
+---
 object-templates-raw: |
   {{/* ##  Label each subscription with the current channel if it is set to manual updates.   ## */}}
   {{/* ##  Existing labels that don't match the current channel mean there is possiblity for blocking installplans  ## */}}
   {{/* ##  Blocking installplans happen when there is an IP in approved=false status, but the channel change expects a new IP ## */}}
-  
+
   {{- $subs := (lookup "operators.coreos.com/v1alpha1" "Subscription" "" "").items }}
   {{- range $sb := $subs }}
     {{- if eq $sb.spec.installPlanApproval "Automatic" }}
@@ -17,7 +18,7 @@ object-templates-raw: |
       kind: Subscription
       metadata: '{{ $sb.metadata | toRawJson | toLiteral }}'
 
-      
+
     {{- if and (ne $sb.spec.channel $lastChannel) (ne $sb.status.installedCSV $sb.status.currentCSV) }}
   - complianceType: mustnothave
     objectDefinition:

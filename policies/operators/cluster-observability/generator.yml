@@ -7,18 +7,36 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
-  policySets: 
+  policySets:
     - cluster-observability-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: cluster-observability-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "cluster-observability-binding"
 
 policies:
   - name: cluster-observability-operator
+    description: "Installs the Cluster Observability Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
+        name: coo-namespace
+
       - path: operatorpolicy.yml
+
       - path: health/cluster-observability-status.yml
+        name: cluster-observability-status
         remediationAction: InformOnly
 
 policySets:

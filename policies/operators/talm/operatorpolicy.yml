@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: talm-operator-install
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: Automatic
+  subscription:
+  # channel: '{{hub (index .ManagedClusterLabels "openshiftVersion-major-minor") hub}}'
+  ## turns out the operator is broken if you don't specify stable.  Leaving the above to remember the fun times.
+    channel: stable
+    name: topology-aware-lifecycle-manager
+    namespace: openshift-talm-operator
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace

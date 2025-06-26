@@ -22,7 +22,7 @@ spec:
               - apiGroups: ["autoscaling"]
                 kinds: ["HorizontalPodAutoscaler"]
           parameters:
-            kvs: 
+            kvs:
               - deprecatedAPI: "flowcontrol.apiserver.k8s.io/v1beta1"
                 kinds: ["FlowSchema", "PriorityLevelConfiguration"]
                 targetAPI: "flowcontrol.apiserver.k8s.io/v1beta3"

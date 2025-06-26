@@ -7,16 +7,32 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
-  policySets: 
+  policySets:
     - kiali-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: kiali-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "kiali-binding"
 
 policies:
   - name: kiali-operator
+    description: "Installs Kiali Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
+        name: kiali-namespace
+
       - path: operatorpolicy.yml
 
 policySets:

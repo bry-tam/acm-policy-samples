@@ -6,12 +6,9 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
-  ## turn off the default compliance annotations
-  categories: []
-  controls: []
-  standards: []
   policySets:
     - acm-managed-sa
+
 placementBindingDefaults:
   name: "acm-managed-sa"
 
@@ -20,7 +17,10 @@ policies:
     remediationAction: enforce
     manifests:
       - path: managedserviceaccount.yml
+        name: configure-msa
+
       - path: multiclusterengine.yml
+        name: multiclusterengine
 
 policySets:
   - name: acm-managed-sa

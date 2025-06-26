@@ -1,3 +1,4 @@
+---
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
@@ -6,22 +7,18 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{- $obsNamespace := "open-cluster-management-addon-observability" }}
-    {{- if eq (fromClusterClaim "name") "local-cluster" }}
-      {{- $obsNamespace = "open-cluster-management-observability" }}
-    {{- end }}
+    {{- $obsHubInfoSecret := (lookup "v1" "Secret" (eq (fromClusterClaim "name") "local-cluster" | ternary "open-cluster-management-observability" "open-cluster-management-addon-observability") "hub-info-secret") }}
 
-    {{/* ##  set the nodeSelector and toleration if infra nodes exist.    ## */}}
-    {{/* ##  tolerations are passed to mustFromJson to validate input  ## */}}
-    {{- $nodeSelector := "node-role.kubernetes.io/worker" }}
-    {{- $nodeTolerations := mustFromJson "[]" }}
+    {{/* ##  check if managed cluster is self-hosted or ARO/ROSA ## */}}
+    {{- $isSelfHosted := (not (eq (fromClusterClaim "product.open-cluster-management.io") "ARO" "ROSA")) }}
 
-    {{- if (hasNodesWithExactRoles "infra") }}
-      {{- $nodeSelector = "node-role.kubernetes.io/infra" }}
-      {{- $nodeTolerations = mustFromJson "[{\"operator\":\"Exists\",\"key\":\"node-role.kubernetes.io/infra\"}]" }}
-    {{- end }}
     - complianceType: musthave
       objectDefinition:
+    {{/* ##  set the nodeSelector and toleration if infra nodes exist.    ## */}}
+    {{/* ##  tolerations are passed to mustFromJson to validate input  ## */}}
+    {{- $nodeSelector := printf "node-role.kubernetes.io/%s" (hasNodesWithExactRoles "infra" | ternary "infra" "worker") }}
+    {{- $nodeTolerations := mustFromJson "[{\"operator\":\"Exists\",\"key\":\"node-role.kubernetes.io/infra\"}]" }}
+
         apiVersion: v1
         kind: ConfigMap
         metadata:
@@ -30,11 +27,21 @@ spec:
         data:
           config.yaml: |
             prometheus:
+            {{- if $isSelfHosted }}
               retention: 24h
+              retentionSize: 100GB
               resources:
                 requests:
                   cpu: 200m
                   memory: 2Gi
+
+              volumeClaimTemplate:
+                spec:
+                  resources:
+                    requests:
+                      storage: 100Gi
+                  storageClassName: gp3-csi
+            {{- end }}
               nodeSelector:
                 {{ $nodeSelector }}: ""
               tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
@@ -45,7 +52,6 @@ spec:
                 product: {{ fromClusterClaim "product.open-cluster-management.io" }}
                 managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
 
-    {{- $obsHubInfoSecret := (lookup "v1" "Secret" $obsNamespace "hub-info-secret") }}
     {{- if not (empty $obsHubInfoSecret ) }}
       {{- $hubInfo := (index $obsHubInfoSecret.data "hub-info.yaml") | base64dec }}
       {{- $amURL := "" }}
@@ -75,6 +81,27 @@ spec:
               nodeSelector:
                 {{ $nodeSelector }}: ""
               tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
+
+            thanosRuler:
+            {{- if $isSelfHosted }}
+              retention: 24h
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 2Gi
+
+              volumeClaimTemplate:
+                spec:
+                  resources:
+                    requests:
+                      storage: 100Gi
+                  storageClassName: gp3-csi
+            {{- end }}
+              nodeSelector:
+                {{ $nodeSelector }}: ""
+              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
+
+
 
     {{- if not (empty $obsHubInfoSecret ) }}
     - complianceType: mustonlyhave

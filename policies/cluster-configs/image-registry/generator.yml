@@ -17,22 +17,22 @@ policies:
     remediationAction: enforce
     manifests:
       - path: objectbucketclaim.yml
-        extraDependencies: 
+        extraDependencies:
           - name: odf-operator-status
             kind: Policy
             compliance: "Compliant"
       - path: registry-s3-access-secret.yml
-        extraDependencies: 
+        extraDependencies:
           - name: image-registry-config
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: image-registry-s3-bundle-configmap.yml
-        extraDependencies: 
+        extraDependencies:
           - name: image-registry-config
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: imageregistry-config.yml
-        extraDependencies: 
+        extraDependencies:
           - name: registry-s3-access-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"

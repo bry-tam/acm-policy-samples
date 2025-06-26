@@ -1,4 +1,5 @@
-﻿object-templates-raw: |
+---
+object-templates-raw: |
   {{/* ##  Create a list of all expected deployments in open-cluster-management-observability ## */}}
   {{- $aapNamespace := "ansible-automation-platform"}}
   {{- $depList := list "aap-controller-task"
@@ -11,7 +12,7 @@
   }}
 
   {{- $aap := index (lookup "aap.ansible.com/v1alpha1" "AnsibleAutomationPlatform" $aapNamespace "").items 0 }}
-      
+
   {{- $edaDiabled := (dig "spec" "eda" "disabled" "false" $aap) }}
   {{- if not $edaDiabled }}
     {{- $depList = append $depList "aap-eda-activation-worker" }}
@@ -46,8 +47,10 @@
         readyReplicas: {{ $dep.spec.replicas }}
         availableReplicas: {{ $dep.spec.replicas }}
         conditions:
-          - type: Available
-            status: 'True'
+          {{- range $c := $dep.status.conditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
+          {{- end }}
   {{- end }}
 
 

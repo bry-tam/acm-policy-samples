@@ -7,13 +7,27 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
-  policySets: 
+  policySets:
     - workload-availability-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: workload-availability-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "workload-availability-binding"
 
 policies:
   - name: workload-availability-operator
+    description: "Installs Fence Agent, Self Node Remediation, Node Healthcheck, and Machine Deletion Operators"
     manifests:
       - path: namespace.yml
       - path: fence-agent-operatorpolicy.yml
@@ -21,7 +35,7 @@ policies:
       - path: node-healthcheck-operatorpolicy.yml
       - path: node-remediation-console.yml
         name: node-remediation-console
-        extraDependencies: 
+        extraDependencies:
           - apiVersion: policy.open-cluster-management.io/v1beta1
             kind: OperatorPolicy
             name: node-healthcheck-operator-install
@@ -29,6 +43,7 @@ policies:
       - path: machine-deletion-operatorpolicy.yml
 
   - name: workload-availability-remediation
+    description: "Configures example node remediation using Self Node Remediation or Fence Agent Operator"
     dependencies:
       - name: workload-availability-operator
         compliance: "Compliant"

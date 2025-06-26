@@ -1,0 +1,51 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-compliance
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - compliance-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: compliance-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "compliance-binding"
+
+policies:
+  - name: compliance-operator
+    description: "Installs the Compliance Operator"
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+        name: compliance-namespace
+
+      - path: operatorpolicy.yml
+
+  - name: compliance-operator-example
+    description: "Configures an example scan using the nerc-cip profile"
+    remediationAction: enforce
+    manifests:
+      - path: example-scan/scansetting.yml
+        name: compliance-scansetting
+
+      - path: example-scan/scansettingbinding.yml
+        name: compliance-scansettingbinding
+
+policySets:
+  - name: compliance-operator
+    placement:
+      placementName: "ft-compliance--enabled"

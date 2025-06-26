@@ -1,0 +1,60 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-multi-cluster-gitops
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: multi-cluster-gitops
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "multi-cluster-gitops-binding"
+
+policies:
+  - name: multi-cluster-gitops-hub
+    description: "Configures ManagedServiceAccount and permissions for each app team to deploy and managed their application from a single argo to all ManagedClusters"
+    policySets:
+      - multi-cluster-gitops-hub
+    dependencies:
+      - name: "gitops-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: argocd-instances/team-scooter/managedserviceaccount.yml
+        name: scooter-msa
+
+
+  - name: multi-cluster-gitops
+    description: "Deploy an instance of Argo for Team Scooter"
+    hubTemplateOptions:
+      serviceAccountName: argo-mulitcluster-hub-serviceaccount
+    consolidateManifests: true
+    policySets:
+      - gitops-team-scooter
+    manifests:
+      - path: argocd-instances/team-scooter/
+        name: scooter-argo
+
+      - path: argocd-instances/team-scooter/cluster-secrets.yml
+        name: scooter-argo-clusters
+
+policySets:
+  - name: gitops-team-scooter
+    placement:
+      placementName: "ft-scooter--enabled"
+
+  - name: multi-cluster-gitops-hub
+    placement:
+      placementName: "env-bound-hub-placement"

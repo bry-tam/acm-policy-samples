@@ -9,46 +9,61 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - gitops-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: gitops-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "gitops-binding"
 
 policies:
   - name: gitops-110-migration
+    description: "Migrates pre-1.10 deployments to new operator namespace"
     remediationAction: inform
     manifests:
       - path: migrate-gitops-1.10.yml
 
   - name: gitops-operator
-    remediationAction: enforce
+    description: "Installs GitOps Operator"
     dependencies:
       - name: "gitops-110-migration"
         compliance: "Compliant"
     manifests:
       - path: operator-ns.yml
-      - path: operatorgroup.yml
+        name: operator-namespace
+
       - path: argocd-ns.yml
-      - path: subscription.yml
-      - path: health/operator-status.yml
-        remediationAction: inform
+        name: argo-namespace
+
+      - path: operatorpolicy.yml
 
   - name: gitops-instances
-    remediationAction: enforce
-    namespaceSelector:
-      matchLabels:
-        app.host: argocd
+    description: "Configures multiple ArgoCd instances to demonstrate how to make use of kustomize"
+    consolidateManifests: true
     dependencies:
       - name: "gitops-operator"
         compliance: "Compliant"
     manifests:
       - path: argocd-instances/default
+        name: argo-instances
+
       - path: argocd-instances/dev
+        name: argo-instances
+
       - path: argocd-instances/argo-server-host.yml
+        name: argocd-instance-host
 
   - name: gitops-acm-policygenerator
-    remediationAction: enforce
-    namespaceSelector:
-      matchLabels:
-        app.host: argocd
+    description: "Configures ArgoCD Repo server with the ACM PolicyGenerator"
     dependencies:
       - name: "gitops-instances"
         compliance: "Compliant"
@@ -56,48 +71,27 @@ policies:
       - gitops-acm-hub
     manifests:
       - path: argocd-policygenerator.yml
-      - path: ./applicationset-config/managedclustersetbinding.yml
-  
-  - name: gitops-enable-notifications
-    remediationAction: enforce
-    namespaceSelector:
-      matchLabels:
-        app.host: argocd
-    dependencies:
-      - name: "gitops-instances"
-        compliance: "Compliant"
-    manifests:
-      - path: argocd-notifications-enable.yml
-      - path: health/notification-available.yml
-        remediationAction: inform
+        name: argo-policygenerator
 
-  - name: gitops-config-notifiations
-    remediationAction: enforce
-    namespaceSelector:
-      matchLabels:
-        app.host: argocd
-    dependencies:
-      - name: "gitops-enable-notifications"
-        compliance: "Compliant"
-    manifests:
-      - path: notifications
+      - path: applicationset-config/managedclustersetbinding.yml
+        name: applicationset-clusterbinding
 
   - name: gitops-instance-status
+    description: "Monitors the health of ArgoCd instances"
     remediationAction: inform
     dependencies:
       - name: "gitops-instances"
         compliance: "Compliant"
     manifests:
       - path: health/argocd-status.yml
-        remediationAction: inform
-
+        name: argocd-instance-status
+        remediationAction: InformOnly
 
 policySets:
   - name: gitops-operator
     placement:
       placementName: "env-bound-placement"
-  
-  - name: gitops-acm-hub
-    placement:  
-      placementName: "ft-acm-hub"
 
+  - name: gitops-acm-hub
+    placement:
+      placementName: "ft-acm-hub"

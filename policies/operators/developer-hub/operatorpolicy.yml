@@ -23,5 +23,3 @@ spec:
     namespace: rhdh-operator
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-
-

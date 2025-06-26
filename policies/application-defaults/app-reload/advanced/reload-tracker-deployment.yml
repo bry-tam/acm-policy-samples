@@ -32,7 +32,7 @@ spec:
         {{- $resourceKey := (list $dp.metadata.name ($wi.apiVersion | replace "/" "__") $wi.kind $dp.metadata.namespace $wi.name) | join "--" }}
         {{- $curResourceVersion := (lookup $wi.apiVersion $wi.kind $dp.metadata.namespace $wi.name).metadata.resourceVersion }}
         {{- $trackedResourceVersion := "0000" }}
-        {{- if $currentTracker.data }} 
+        {{- if $currentTracker.data }}
           {{- $trackedResourceVersion = (dig "$resourceKey" "000" $currentTracker.data) }}
         {{- end }}
 

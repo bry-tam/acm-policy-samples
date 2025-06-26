@@ -1,3 +1,4 @@
+---
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
@@ -24,27 +25,27 @@ spec:
         kind: MachineSet
         metadata:
           labels:
-            machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }} 
-          name: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }} 
+            machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
+          name: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }}
           namespace: openshift-machine-api
         spec:
           replicas: 1
           selector:
             matchLabels:
-              machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }} 
-              machine.openshift.io/cluster-api-machineset: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }} 
+              machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
+              machine.openshift.io/cluster-api-machineset: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }}
           template:
             metadata:
               labels:
-                machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }} 
-                machine.openshift.io/cluster-api-machine-role: {{ $machineset_role }} 
-                machine.openshift.io/cluster-api-machine-type: {{ $machineset_role }} 
-                machine.openshift.io/cluster-api-machineset: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }} 
+                machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
+                machine.openshift.io/cluster-api-machine-role: {{ $machineset_role }}
+                machine.openshift.io/cluster-api-machine-type: {{ $machineset_role }}
+                machine.openshift.io/cluster-api-machineset: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }}
             spec:
               metadata:
                 labels:
-                  node-role.kubernetes.io/{{ $machineset_role }}: "" 
-              taints: 
+                  node-role.kubernetes.io/{{ $machineset_role }}: ""
+              taints:
                 - key: node-role.kubernetes.io/{{ $machineset_role }}
                   effect: NoSchedule
               providerSpec: '{{ $worker_ms.spec.template.spec.providerSpec | toRawJson | toLiteral }}'

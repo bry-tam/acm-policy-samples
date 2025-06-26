@@ -1,21 +1,14 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: validate-elasticsearch-instance
-spec:
-  remediationAction: InformOnly
-  severity: high
-  object-templates-raw: |
-    {{/* ##  Find the elasticsearch instances.  There shouldn't be any after the ClusterLogging is removed ## */}}
-    {{- $loggers := (lookup "logging.openshift.io/v1" "Elasticsearch" "" "").items }}
+object-templates-raw: |
+  {{/* ##  Find the elasticsearch instances.  There shouldn't be any after the ClusterLogging is removed ## */}}
+  {{- $loggers := (lookup "logging.openshift.io/v1" "Elasticsearch" "" "").items }}
 
-    {{- range $es := $loggers }}
-    - complianceType: mustnothave
-      objectDefinition:
-        apiVersion: {{ $es.apiVersion }}
-        kind: {{ $es.kind }}
-        metadata:
-          name: {{ $es.metadata.name }}
-          namespace: {{ $es.metadata.namespace }}
-    {{- end }}
+  {{- range $es := $loggers }}
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: {{ $es.apiVersion }}
+      kind: {{ $es.kind }}
+      metadata:
+        name: {{ $es.metadata.name }}
+        namespace: {{ $es.metadata.namespace }}
+  {{- end }}

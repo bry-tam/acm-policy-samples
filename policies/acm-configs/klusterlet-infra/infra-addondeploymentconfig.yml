@@ -1,0 +1,13 @@
+---
+apiVersion: addon.open-cluster-management.io/v1alpha1
+kind: AddOnDeploymentConfig
+metadata:
+  name: infra-deploy-config
+  namespace: open-cluster-management-hub
+spec:
+  nodePlacement:
+    nodeSelector:
+      node-role.kubernetes.io/infra: ""
+    tolerations:
+    - operator: Exists
+      key: node-role.kubernetes.io/infra

@@ -3,7 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: istio-proxies-monitor
-  namespace: istio-system 
+  namespace: istio-system
 spec:
   selector:
     matchExpressions:
@@ -44,5 +44,5 @@ spec:
       action: replace
       targetLabel: namespace
     - action: replace
-      replacement: "default" 
+      replacement: "default"
       targetLabel: mesh_id

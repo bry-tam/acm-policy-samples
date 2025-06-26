@@ -1,0 +1,8 @@
+---
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: gitops
+spec:
+  href: 'https://{{ (lookup "route.openshift.io/v1" "Route" "argocd-dev" "argocd-dev-server").spec.host }}'
+  text: Dev App GitOps

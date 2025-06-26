@@ -1,24 +1,17 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: validate-logging-version
-spec:
-  remediationAction: InformOnly
-  severity: high
-  object-templates-raw: |
-    {{/* ##  Find the ClusterLogging subscription ## */}}
-    {{- $logSub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-logging" "").items }}
+object-templates-raw: |
+  {{/* ##  Find the ClusterLogging subscription ## */}}
+  {{- $logSub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-logging" "").items }}
 
-    {{- range $sub := $logSub }}
-      {{- $channel := (trimAll "stable-" $sub.spec.channel) }} 
-      {{ if and (eq $sub.spec.name "cluster-logging") (lt (($channel | split ".")._0 | toInt) 6) }}
-    - complianceType: mustnothave
-      objectDefinition:
-        apiVersion: "operators.coreos.com/v1alpha1"
-        kind: Subscription
-        metadata:
-          name: {{ $sub.metadata.name }}
-          namespace: openshift-logging
-      {{- end }}
+  {{- range $sub := $logSub }}
+    {{- $channel := (trimAll "stable-" $sub.spec.channel) }}
+    {{ if and (eq $sub.spec.name "cluster-logging") (lt (($channel | split ".")._0 | toInt) 6) }}
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: "operators.coreos.com/v1alpha1"
+      kind: Subscription
+      metadata:
+        name: {{ $sub.metadata.name }}
+        namespace: openshift-logging
     {{- end }}
+  {{- end }}

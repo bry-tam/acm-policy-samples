@@ -4,4 +4,5 @@ kind: Namespace
 metadata:
   labels:
     openshift.io/cluster-monitoring: "true"
+    openshift.io/node-selector: ""
   name: openshift-storage

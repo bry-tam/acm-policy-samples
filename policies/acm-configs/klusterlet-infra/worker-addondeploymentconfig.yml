@@ -1,0 +1,10 @@
+---
+apiVersion: addon.open-cluster-management.io/v1alpha1
+kind: AddOnDeploymentConfig
+metadata:
+  name: worker-deploy-config
+  namespace: open-cluster-management-hub
+spec:
+  nodePlacement:
+    nodeSelector:
+      node-role.kubernetes.io/worker: ""

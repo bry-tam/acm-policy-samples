@@ -13,12 +13,11 @@ placementBindingDefaults:
   name: "logging-migration-binding"
 
 policies:
-
-
   - name: prepare-logging-migration
     remediationAction: InformOnly
     manifests:
       - path: validate-logging-version.yml
+        name: validate-logging-version
 
   - name: clean-logging-migration
     ## ignorePending prevents the NotCompliant dependency from causing this policy to always report as pending
@@ -29,31 +28,40 @@ policies:
 
     manifests:
       - path: remove-cluster-logging-forwarder.yml
+        name: remove-clusterlogging-forwarder
+
       - path: remove-cluster-logging.yml
-        extraDependencies: 
+        name: remove-clusterlogging
+        extraDependencies:
           - name: remove-clusterlogging-forwarder
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: validate-elasticsearch-instance.yml
-        extraDependencies: 
+        name: validate-elasticsearch-instance
+        remediationAction: InformOnly
+        extraDependencies:
           - name: remove-clusterlogging
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: remove-logging-storage.yml
-        extraDependencies: 
+        name: remove-logging-storage
+        extraDependencies:
           - name: validate-elasticsearch-instance
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: remove-logging-namespaces.yml
-        extraDependencies: 
+        name: remove-logging-namespaces
+        extraDependencies:
           - name: remove-logging-storage
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: remove-logging-customresourcedefinition.yml
-        extraDependencies: 
+        name: remove-logging-customresourcedefinition
+        extraDependencies:
           - name: remove-logging-storage
             kind: ConfigurationPolicy
             compliance: "Compliant"

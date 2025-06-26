@@ -1,3 +1,4 @@
+---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -9,9 +10,6 @@ namespace: bry-tam-policies-dev
 transformers:
   ## set the name of the PolicySets to include a suffix specific to this environment
   - kustomize-configs/policyset-suffixer.yml
-  
-  ## replace all references to ManagedClusterSet with the name of the ManagedClusterSet created for this environment
-  - ../../kustomize-configs/
 
 resources:
   - managedclusterset.yml
@@ -19,28 +17,6 @@ resources:
   ## include all policies
   - ../../policies/
 
-
-## ensure all policies have the copyPolicyMetadata set to false, unset the toplevel remediation action.
-patches:
-  - target:
-      kind: Policy
-    patch: |
-      - op: add
-        path: /spec/copyPolicyMetadata
-        value: false
-
-
-  ## Add the ClusterSet that should be managed as part of this environment.  This patch will update the placments and ManagedClusterSetbinding
-  # - target:
-  #     kind: Placement
-  #   patch: |-
-
-      ## there should be no reason to inject enviroment info to the placement since
-      ## the clusterset would control what clusters the policy is deployed to
-      ## If you need this aditional level of control, uncomment the below.
-      # - op: add
-      #   path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions/-
-      #   value: 
-      #     key: environment
-      #     operator: In
-      #     values: ["Prod"]
+components:
+  ## include all of the kustomize transformers and configurations
+  - ../../kustomize-configs/

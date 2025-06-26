@@ -7,7 +7,7 @@ rules:
   - apiGroups:
       - ''
     resources:
-      - Secret
+      - secret
     verbs:
       - get
       - watch

@@ -81,7 +81,7 @@ policies:
             compliance: "Compliant"
 
   - name: etcd-backup
-    configurationPolicyAnnotations:  
+    configurationPolicyAnnotations:
       policy.open-cluster-management.io/disable-templates: "true"
     # dependencies:
     #   - name: etcd-encryption
@@ -92,7 +92,7 @@ policies:
   - name: ocp-monitoring
     manifests:
       - path: monitoring/
- 
+
   - name: node-kubeletconfigs
     manifests:
       - path: kubeletconfig/
@@ -101,7 +101,7 @@ policies:
     # dependencies:
     #   - name: etcd-encryption
     #     compliance: "Compliant"
-    policySets: 
+    policySets:
       - cluster-configs-infra
     manifests:
       - path: machinesets/infra-machineset.yml
@@ -111,20 +111,20 @@ policies:
     # dependencies:
     #   - name: etcd-encryption
     #     compliance: "Compliant"
-    policySets: 
+    policySets:
       - cluster-configs-storage
     manifests:
       - path: machinesets/infra-storage-machineset.yml
       - path: machineconfigpools/storage.yml
 
   - name: cluster-autoscaling
-    policySets: 
+    policySets:
       - cluster-autoscaling
     manifests:
       - path: cluster-autoscaling/
 
   - name: cluster-scheduler
-    policySets: 
+    policySets:
       - cluster-scheduler
     manifests:
       - path: default-scheduler/bry-tam-worker-node-label.yml
@@ -143,9 +143,9 @@ policySets:
       placementName: "env-bound-placement"
 
   - name: etcd-encryption
-    placement: 
+    placement:
       placementName: "ft-etcd-encryption--encrypt"
-      
+
   - name: cluster-configs-infra
     placement:
       placementName: "ft-inframachines--enabled"
