@@ -6,12 +6,9 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
-  ## turn off the default compliance annotations
-  categories: []
-  controls: []
-  standards: []
   policySets:
     - acm-kubeadmin-trustca
+
 placementBindingDefaults:
   name: "acm-kubeadmin-trustca-binding"
 
@@ -20,6 +17,7 @@ policies:
     remediationAction: enforce
     manifests:
       - path: update-kubeadmin-trustca.yml
+        name: update-kubeadmin-trustca
 
 policySets:
   - name: acm-kubeadmin-trustca

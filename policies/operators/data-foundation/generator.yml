@@ -9,39 +9,60 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - odf-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: odf-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "odf-binding"
 
 policies:
   - name: odf-operator
+    description: "Installs ODF Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
-      - path: operatorgroup.yml
-      - path: subscription.yml
-      - path: health/operator-status.yml
-        remediationAction: inform
+        name: odf-namespace
+
+      - path: operatorpolicy.yml
 
   - name: odf-configure
+    description: "Configures ODF, only multi-object-gateway is deployed"
     remediationAction: enforce
     dependencies:
       - name: "odf-operator"
         compliance: "Compliant"
     manifests:
       - path: console.yml
-      - path: storagesystem.yml
+        name: odf-console
+
+      # commented out until bug https://issues.redhat.com/browse/ACM-23563
+      # - path: storagesystem.yml
+      #   name: storagesystem
+
       - path: storagecluster.yml
+        name: storagecluster
 
   - name: odf-operator-status
+    description: "Monitors health of ODF deployment"
     remediationAction: inform
     dependencies:
       - name: "odf-configure"
         compliance: "Compliant"
     manifests:
       - path: health/odf-status.yml
+        name: odf-status
 
 policySets:
   - name: odf-operator
     placement:
       placementName: "ft-storage--odf"
-

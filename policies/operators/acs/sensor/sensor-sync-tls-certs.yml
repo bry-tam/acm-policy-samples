@@ -1,61 +1,44 @@
-
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: sensor-sync-tls-certs
-spec:
-  remediationAction: enforce
-  severity: low
-  object-templates-raw: |
-    {{/* ##  Gather all Policies from the hub cluster that propagate the sensor-tls certs ## */}}
-    {{- range $plcy := (lookup "policy.open-cluster-management.io/v1" "Policy" "" "" "!policy.open-cluster-management.io/root-policy").items }}
-      {{- if not (eq $plcy.metadata.name "acs-sensor") }}
-        {{- continue }}
-      {{- end }}
-    - complianceType: mustonlyhave
-      objectDefinition:
-        apiVersion: v1
-        data: '{{ copySecretData "stackrox" "admission-control-tls" }}'
-        kind: Secret
-        metadata:
-          labels:
-            certificate_key_name: admission-control-cert.pem
-          name: admission-control-tls
-          namespace: {{ $plcy.metadata.namespace }}
-        type: Opaque
-
-    - complianceType: mustonlyhave
-      objectDefinition:
-        apiVersion: v1
-        data: '{{ copySecretData "stackrox" "collector-tls" }}'
-        kind: Secret
-        metadata:
-          labels:
-            certificate_key_name: collector-cert.pem
-          name: collector-tls
-          namespace: {{ $plcy.metadata.namespace }}
-        type: Opaque
-
-    - complianceType: mustonlyhave
-      objectDefinition:
-        apiVersion: v1
-        data: '{{ copySecretData "stackrox" "sensor-tls" }}'
-        kind: Secret
-        metadata:
-          labels:
-            certificate_key_name: sensor-cert.pem
-          name: sensor-tls
-          namespace: {{ $plcy.metadata.namespace }}
-        type: Opaque
-
+object-templates-raw: |
+  {{/* ##  Gather all Policies from the hub cluster that propagate the sensor-tls certs ## */}}
+  {{- range $plcy := (lookup "policy.open-cluster-management.io/v1" "Policy" "" "" "!policy.open-cluster-management.io/root-policy").items }}
+    {{- if not (eq $plcy.metadata.name "acs-sensor") }}
+      {{- continue }}
     {{- end }}
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: v1
+      data: '{{ copySecretData "stackrox" "admission-control-tls" }}'
+      kind: Secret
+      metadata:
+        labels:
+          certificate_key_name: admission-control-cert.pem
+        name: admission-control-tls
+        namespace: {{ $plcy.metadata.namespace }}
+      type: Opaque
 
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: v1
+      data: '{{ copySecretData "stackrox" "collector-tls" }}'
+      kind: Secret
+      metadata:
+        labels:
+          certificate_key_name: collector-cert.pem
+        name: collector-tls
+        namespace: {{ $plcy.metadata.namespace }}
+      type: Opaque
 
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: v1
+      data: '{{ copySecretData "stackrox" "sensor-tls" }}'
+      kind: Secret
+      metadata:
+        labels:
+          certificate_key_name: sensor-cert.pem
+        name: sensor-tls
+        namespace: {{ $plcy.metadata.namespace }}
+      type: Opaque
 
-
-
-
-
-
-
+  {{- end }}

@@ -22,7 +22,7 @@ policies:
     manifests:
       - path: max-devspaces/constrainttemplate.yml
       - path: max-devspaces/maxdevworkspaces.yml
-        # extraDependencies: 
+        # extraDependencies:
         #   - name: maxdevworkspaces
         #     apiVersion: templates.gatekeeper.sh/v1beta1
         #     kind: ConstraintTemplate

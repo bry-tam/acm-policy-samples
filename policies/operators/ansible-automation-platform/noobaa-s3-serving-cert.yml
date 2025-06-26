@@ -4,5 +4,5 @@ kind: ConfigMap
 metadata:
   name: noobaa-s3-serving-cert
   namespace: ansible-automation-platform
-data: 
+data:
   ca.crt: '{{ (fromSecret "openshift-storage" "noobaa-s3-serving-cert" "tls.crt") | base64dec | toRawJson | toLiteral  }}'

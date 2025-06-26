@@ -9,19 +9,33 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - talm-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: talm-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "talm-binding"
 
 policies:
   - name: talm-operator
+    description: "Installs TALM Operator"
     remediationAction: enforce
     manifests:
-      - path: subscription.yml
-      - path: health/operator-status.yml
-        remediationAction: inform
+      - path: namespace.yml
+        name: talm-namespace
+
+      - path: operatorpolicy.yml
 
 policySets:
   - name: talm-operator
     placement:
       placementName: "ft-acm-hub"
-

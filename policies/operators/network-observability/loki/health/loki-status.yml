@@ -1,94 +1,82 @@
-﻿---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: loki-netobserv-status
-spec:
-  remediationAction: inform
-  severity: high
-  object-templates-raw: |
-    {{- $lokiNamespace := "openshift-netobserv-operator" }}
-    {{- $lokiInstance := "loki" }}
+---
+object-templates-raw: |
+  {{- $lokiNamespace := "openshift-netobserv-operator" }}
+  {{- $lokiInstance := "loki" }}
+  {{- $loki := (lookup "loki.grafana.com/v1" "LokiStack" $lokiNamespace $lokiInstance)}}
 
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: loki.grafana.com/v1
-        kind: LokiStack
-        metadata:
-          name: {{ $lokiInstance }}
-          namespace: {{ $lokiNamespace }}
-        status:
-          conditions:
-            - message: All components ready
-              reason: ReadyComponents
-              status: 'True'
-              type: Ready
-
-
-    {{/* ##  Create a list of all expected deployments in openshift-netobserv-operator for loki ## */}}
-    {{- $depList := list (printf  "%s-distributor" $lokiInstance)
-                          (printf  "%s-gateway" $lokiInstance)
-                          (printf  "%s-querier" $lokiInstance)
-                          (printf  "%s-query-frontend" $lokiInstance)
-    }}
-
-    ## Create a CompilianceType objectDefinition for each deployment
-    {{- range $depName := $depList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" $lokiNamespace $depName) }}
-    - complianceType: musthave
-      objectDefinition:
-        kind: Deployment
-        apiVersion: apps/v1
-        metadata:
-          namespace: {{ $lokiNamespace }}
-          name: {{ $depName }}
-
-      ## when the deployment exists the compliance will be determined by
-      ## the labels, spec.selector.matchLabels and the expected healthy status
-          labels:
-        {{- range $k, $v := $dep.metadata.labels }}
-            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: loki.grafana.com/v1
+      kind: LokiStack
+      metadata:
+        name: {{ $lokiInstance }}
+        namespace: {{ $lokiNamespace }}
+      status:
+        conditions:
+        {{- range $c := $loki.status.conditions }}
+          {{- if eq $c.type "Pending" }}
+            {{- $_ := set $c "status" "False" }}
+          {{- else }}
+            {{- $_ := set $c "status" "True" }}
+          {{- end }}
+        - {{ $c | toRawJson | toLiteral }}
         {{- end }}
-        spec:
-          selector:
-            matchLabels:
-            {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-            {{- end }}
-        status:
-          replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          conditions:
-            - type: Available
-              status: 'True'
-    {{- end }}
 
-    {{/* ##  Create a list of all expected statefulesets in openshift-netobserv-operator for loki ## */}}
-    {{- $ssDepList := list (printf  "%s-compactor" $lokiInstance)
-                          (printf  "%s-index-gateway" $lokiInstance)
-                          (printf  "%s-ingester" $lokiInstance)
-    }}
 
-    ## Create a CompilianceType objectDefinition for each statefulset
-    {{- range $depName := $ssDepList }}
-      {{- $dep := (lookup "apps/v1" "StatefulSet" $lokiNamespace $depName) }}
-    - complianceType: musthave
-      objectDefinition:
-        kind: StatefulSet
-        apiVersion: apps/v1
-        metadata:
-          namespace: {{ $lokiNamespace }}
-          name: {{ $depName }}
-      ## If the statefulset does not exist we don't need to worry about the status
-      {{- if $dep }}
-        status:
-          availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          currentReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-          collisionCount: 0
-          readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-      {{- end }}
+  {{/* ##  Create a list of all expected deployments in openshift-netobserv for loki ## */}}
+  {{- $depList := list (printf  "%s-distributor" $lokiInstance)
+                        (printf  "%s-gateway" $lokiInstance)
+                        (printf  "%s-querier" $lokiInstance)
+                        (printf  "%s-query-frontend" $lokiInstance)
+  }}
+
+  ## Create a CompilianceType objectDefinition for each deployment
+  {{- range $depName := $depList }}
+    {{- $dep := (lookup "apps/v1" "Deployment" $lokiNamespace $depName) }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: Deployment
+      apiVersion: apps/v1
+      metadata:
+        namespace: {{ $lokiNamespace }}
+        name: {{ $depName }}
+
+      status:
+        replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        conditions:
+        {{- range $c := $dep.status.conditions }}
+          {{- $_ := set $c "status" "True" }}
+        - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
+  {{- end }}
+
+  {{/* ##  Create a list of all expected statefulesets in openshift-netobserv for loki ## */}}
+  {{- $ssDepList := list (printf  "%s-compactor" $lokiInstance)
+                        (printf  "%s-index-gateway" $lokiInstance)
+                        (printf  "%s-ingester" $lokiInstance)
+  }}
+
+  ## Create a CompilianceType objectDefinition for each statefulset
+  {{- range $depName := $ssDepList }}
+    {{- $dep := (lookup "apps/v1" "StatefulSet" $lokiNamespace $depName) }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: StatefulSet
+      apiVersion: apps/v1
+      metadata:
+        namespace: {{ $lokiNamespace }}
+        name: {{ $depName }}
+    ## If the statefulset does not exist we don't need to worry about the status
+    {{- if $dep }}
+      status:
+        availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        currentReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        collisionCount: 0
+        readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
     {{- end }}
+  {{- end }}

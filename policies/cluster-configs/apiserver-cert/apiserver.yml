@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{- $clstr := (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster") }}
   {{- $apiURL := $clstr.status.apiServerURL | trimAll "https://" | trimAll ":6443"  }}

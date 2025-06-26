@@ -1,3 +1,4 @@
+---
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
@@ -6,11 +7,11 @@ spec:
   remediationAction: enforce
   severity: low
   object-templates-raw: |
-    {{/* ##  find pods in terminated state due to node shutdown ## */}} 
+    {{/* ##  find pods in terminated state due to node shutdown ## */}}
     {{/* ##  corrects known https://issues.redhat.com/browse/OCPBUGS-26008 ## */}}
     {{- range $pp := (lookup "v1" "Pod" "" "").items }}
       {{/* ##  if the pod is blocked because it is in node shutdown we should delete the pod ## */}}
-      {{- if and (eq $pp.status.phase "Failed") 
+      {{- if and (eq $pp.status.phase "Failed")
                  (eq $pp.status.reason "NodeShutdown") }}
     - complianceType: mustnothave
       objectDefinition:

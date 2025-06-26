@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{- $crt := (lookup "cert-manager.io/v1" "Certificate" "openshift-config" "apiserver-cert") }}
   - complianceType: musthave

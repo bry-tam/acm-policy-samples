@@ -1,53 +1,46 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: placement-tolerations
-spec:
-  remediationAction: enforce
-  severity: low
-  object-templates-raw: |
-    {{/* ##  Gather all Placements from the hub cluster ## */}}
-    {{- $unreachableToleration := "cluster.open-cluster-management.io/unreachable" }}
-    {{- $unavailableToleration := "cluster.open-cluster-management.io/unavailable" }}
+object-templates-raw: |
+  {{/* ##  Gather all Placements from the hub cluster ## */}}
+  {{- $unreachableToleration := "cluster.open-cluster-management.io/unreachable" }}
+  {{- $unavailableToleration := "cluster.open-cluster-management.io/unavailable" }}
 
-    {{- range $pt := (lookup "cluster.open-cluster-management.io/v1beta1" "Placement" "" "").items }}
-      {{- $hasUnreachable := false }}
-      {{- $hasUnavailable := false }}
+  {{- range $pt := (lookup "cluster.open-cluster-management.io/v1beta1" "Placement" "" "").items }}
+    {{- $hasUnreachable := false }}
+    {{- $hasUnavailable := false }}
 
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: cluster.open-cluster-management.io/v1beta1
-        kind: Placement
-        metadata:
-          name: {{ $pt.metadata.name }}
-          namespace: {{ $pt.metadata.namespace }}
-        spec:
-          tolerations:
-      {{- range $t := $pt.spec.tolerations }}
-        {{/* ##  check if the toleration is unavailable or unreachable ## */}}
-        {{- if eq $t.key $unreachableToleration }}
-          {{- $hasUnreachable = true }}
-        {{- else if eq $t.key $unavailableToleration }}
-          {{- $hasUnavailable = true }}
-        {{- end }}
-            - key: {{ $t.key }}
-              operator: {{ $t.operator }}
-        {{- if not (empty $t.value) }}
-              value: {{ $t.value }}
-        {{- end }}
-        {{- if not (empty $t.tolerationSeconds) }}
-              tolerationSeconds: {{ $t.tolerationSeconds }}
-        {{- end }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: cluster.open-cluster-management.io/v1beta1
+      kind: Placement
+      metadata:
+        name: {{ $pt.metadata.name }}
+        namespace: {{ $pt.metadata.namespace }}
+      spec:
+        tolerations:
+    {{- range $t := $pt.spec.tolerations }}
+      {{/* ##  check if the toleration is unavailable or unreachable ## */}}
+      {{- if eq $t.key $unreachableToleration }}
+        {{- $hasUnreachable = true }}
+      {{- else if eq $t.key $unavailableToleration }}
+        {{- $hasUnavailable = true }}
       {{- end }}
-
-      {{- if not $hasUnreachable }}
-            - key: {{ $unreachableToleration }}
-              operator: Exists
+          - key: {{ $t.key }}
+            operator: {{ $t.operator }}
+      {{- if not (empty $t.value) }}
+            value: {{ $t.value }}
       {{- end }}
-
-      {{- if not $hasUnavailable  }}
-            - key: {{ $unavailableToleration }}
-              operator: Exists
+      {{- if not (empty $t.tolerationSeconds) }}
+            tolerationSeconds: {{ $t.tolerationSeconds }}
       {{- end }}
     {{- end }}
+
+    {{- if not $hasUnreachable }}
+          - key: {{ $unreachableToleration }}
+            operator: Exists
+    {{- end }}
+
+    {{- if not $hasUnavailable  }}
+          - key: {{ $unavailableToleration }}
+            operator: Exists
+    {{- end }}
+  {{- end }}

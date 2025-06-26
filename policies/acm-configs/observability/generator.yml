@@ -9,6 +9,7 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - acm-observability
+
 placementBindingDefaults:
   name: "acm-observe-binding"
 
@@ -17,26 +18,46 @@ policies:
     remediationAction: enforce
     manifests:
       - path: namespace.yml
+        name: acm-observ-namespace
+
       - path: console.yml
+        name: acm-observ-consolelink
+
       - path: pull-secret.yml
+        name: acm-observ-pull-secret
+
       - path: objectbucketclaim.yml
-        extraDependencies: 
+        name: acm-observ-obc
+        extraDependencies:
           - name: odf-operator-status
             kind: Policy
             compliance: "Compliant"
+
       - path: noobaa-cert-secret.yml
-        extraDependencies: 
+        name: acm-observ-noobaa-cert
+        extraDependencies:
           - name: odf-operator-status
             kind: Policy
-            compliance: "Compliant"      
+            compliance: "Compliant"
+
       - path: thanos-secret.yml
-        extraDependencies: 
-          - name: acm-observe5
+        name: thanos-secret
+        extraDependencies:
+          - name: acm-observ-obc
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: observability.yml
-        extraDependencies: 
+        name: acm-observ-multiclusterobservability
+        extraDependencies:
           - name: thanos-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+      - path: uiplugin.yml
+        name: acm-alert-ui
+        extraDependencies:
+          - name: acm-observ-multiclusterobservability
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
@@ -47,9 +68,9 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: health/acm-observability-status.yml
+        name: acm-observabiltiy-status
 
 policySets:
   - name: acm-observability
     placement:
       placementName: "ft-acm-observability--enabled"
-

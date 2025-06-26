@@ -19,7 +19,7 @@ policies:
     manifests:
       - path: reload-tracker-configmap.yml
       - path: reload-tracker-deployment.yml
-        extraDependencies: 
+        extraDependencies:
           - name: app-reload-tracker
             kind: ConfigurationPolicy
             compliance: "NonCompliant"
@@ -27,5 +27,5 @@ policies:
 
 policySets:
   - name: app-reload
-    placement:  
+    placement:
       placementName: "ft-app--reload"

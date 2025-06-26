@@ -9,34 +9,32 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - loki-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: loki-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "loki-binding"
 
 policies:
   - name: loki-operator
-    remediationAction: enforce
+    description: "Installs Loki Operator"
     manifests:
       - path: namespace.yml
-      - path: operatorgroup.yml
-        extraDependencies:
-          - name: loki-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: subscription.yml
-        extraDependencies:
-          - name: loki-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: health/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies:
-          - name: loki-operator3
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        name: loki-namespace
 
+      - path: operatorpolicy.yml
 
 policySets:
   - name: loki-operator
     placement:
       placementName: "ft-loki--enabled"
-

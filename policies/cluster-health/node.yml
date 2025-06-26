@@ -13,7 +13,7 @@ spec:
 
     {{/* ##  Determine if an even numbered release by divide by two, and compare  if the result rounds up ## */}}
     {{- $isEvenRelease := (eq (div $desiredVersion.Minor 2 | toInt)  (div (add $desiredVersion.Minor 1) 2 | toInt)) }}
-    
+
     {{/* ##  Get the list of MachineConfigPools so we can get the rendered config name ## */}}
     {{- $mcpList := (lookup "machineconfiguration.openshift.io/v1" "MachineConfigPool" "" "").items }}
     {{- $nodeList := (lookup "v1" "Node" "" "").items }}
@@ -30,7 +30,7 @@ spec:
       {{- $currentRenderedConfig := $mcp.status.configuration.name }}
       {{- if or (eq $mcp.metadata.name "master")
                 (not (hasPrefix "eus" $cVer.spec.channel))
-                (and (hasPrefix "eus" $cVer.spec.channel) 
+                (and (hasPrefix "eus" $cVer.spec.channel)
                   (or $isEvenRelease (and (not $isEvenRelease) (not $mcp.spec.paused)))
                 ) }}
         {{- $currentRenderedConfig = $mcp.spec.configuration.name }}
@@ -41,7 +41,7 @@ spec:
         {{- $workerRenderedConfig = $currentRenderedConfig }}
         {{- continue }}
       {{- end }}
-      
+
 
       {{- range $node := $nodeList }}
         {{- $nodeMatches := true }}
@@ -56,7 +56,7 @@ spec:
               {{- break }}
             {{- end }}
           {{- end }}
-        {{- else }}  
+        {{- else }}
           {{- range $e := $mcp.spec.nodeSelector.matchExpressions }}
             {{/* ##  When the operator is Exists it does not matter the value, the label must be there ## */}}
             {{/* ##  If it is not there we can exit quickly as this node is not a match ## */}}
@@ -75,7 +75,7 @@ spec:
                   {{- $labelFound = true }}
                 {{- end }}
               {{- end }}
-              
+
               {{/* ##  check if we found the label within the $e.values ## */}}
               {{/* ##  If the operator is "IN" any value found will satisfy the requirement ## */}}
               {{/* ##  If the operator is "NOTIN" none of the values can be found ## */}}
@@ -88,7 +88,7 @@ spec:
 
         {{/* ##  If we didn't find a match for the node in the selector exit this iteration ## */}}
         {{- if not $nodeMatches }}
-          {{- continue }} 
+          {{- continue }}
         {{- end }}
 
         {{/* ##  record the node name so we can exclude it when checking the worker MCP. ## */}}

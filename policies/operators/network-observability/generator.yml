@@ -9,34 +9,33 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - network-observability-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: netobserv-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "netobserv-binding"
 
 policies:
   - name: network-observability-operator
-    remediationAction: enforce
+    description: "Install Network Observability Operator"
     manifests:
       - path: namespace.yml
-      - path: operatorgroup.yml
-        extraDependencies:
-          - name: network-observability-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: subscription.yml
-        extraDependencies:
-          - name: network-observability-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: health/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies:
-          - name: network-observability-operator3
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        name: netobserv-namespace
 
+      - path: operatorpolicy.yml
 
   - name: network-observability-configure
-    remediationAction: enforce
+    description: "Configured loki storage, Lokistack and flowcollector"
     dependencies:
       - name: network-observability-operator
         compliance: "Compliant"
@@ -44,41 +43,54 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: loki/noobaa-s3-serving-cert.yml
+        name: loki-s3-cert
+
       - path: loki/objectbucketclaim.yml
+        name: loki-objectbucketclaim
+
       - path: loki/loki-secret.yml
-        extraDependencies: 
-          - name: network-observability-configure
+        name: netobserv-loki-secret
+        extraDependencies:
+          - name: loki-s3-cert
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: loki/lokistack.yml
-        extraDependencies: 
+        name: lokistack-netobserv
+        extraDependencies:
           - name: netobserv-loki-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: loki/health/loki-status.yml
+        name: loki-netobserv-status
         remediationAction: InformOnly
-        extraDependencies: 
+        extraDependencies:
           - name: lokistack-netobserv
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: flowcollector.yml
-        extraDependencies: 
+        name: flowcollector
+        extraDependencies:
           - name: loki-netobserv-status
             kind: ConfigurationPolicy
             compliance: "Compliant"
-      - path: console.yml
 
+      - path: console.yml
+        name: netobserv-console-plugin
 
   - name: network-observability-status
+    description: "Monitor NetObserv operator health"
     remediationAction: InformOnly
     dependencies:
       - name: "network-observability-configure"
         compliance: "Compliant"
     manifests:
       - path: health/network-observability-status.yml
+        name: network-observability-status
 
 policySets:
   - name: network-observability-operator
     placement:
       placementName: "ft-netobserv--enabled"
-

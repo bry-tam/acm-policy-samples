@@ -23,13 +23,13 @@ spec:
       ingress_gateway_namespace: istio-ingress
 
     tracing:
-      enabled: true 
-      provider: tempo 
+      enabled: true
+      provider: tempo
       use_grpc: false
-      internal_url: https://tempo-ossm-tempostack-gateway.tracing-system.svc.cluster.local:8080/api/traces/v1/user/tempo 
+      internal_url: https://tempo-ossm-tempostack-gateway.tracing-system.svc.cluster.local:8080/api/traces/v1/user/tempo
       external_url: 'https://{{ dig "spec" "host" "" (lookup "route.openshift.io/v1" "Route" "tracing-system" "tempo-ossm-tempostack-gateway") }}/api/traces/v1/user/search'
       health_check_url: 'https://{{ dig "spec" "host" "" (lookup "route.openshift.io/v1" "Route" "tracing-system" "tempo-ossm-tempostack-gateway") }}/api/traces/v1/user/tempo/api/echo'
-      auth: 
+      auth:
         ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
         insecure_skip_verify: false
         type: bearer
@@ -37,5 +37,5 @@ spec:
       tempo_config:
          url_format: "jaeger"
 
-    grafana: 
+    grafana:
       enabled: false

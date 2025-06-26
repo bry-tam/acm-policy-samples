@@ -19,11 +19,11 @@ policies:
   - name: operator-lifecycle-status
     remediationAction: inform
     namespaceSelector:
-      include:  
+      include:
         - openshift-*
         - open-cluster-management
         - multicluster-engine
-      exclude: 
+      exclude:
         - kube-*
         - default
     manifests:

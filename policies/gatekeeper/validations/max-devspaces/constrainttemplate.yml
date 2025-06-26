@@ -1,3 +1,4 @@
+---
 apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
@@ -55,11 +56,11 @@ spec:
           # Get all DevWorkspaces that are running
           devworkspace_list := {dw | data.inventory.namespace[_]["workspace.devfile.io/v1alpha2"].DevWorkspace[i].status.phase == workspace_status[_];
                                 dw := data.inventory.namespace[_]["workspace.devfile.io/v1alpha2"].DevWorkspace[i]}
-          
+
 
           total_workspaces := count(devworkspace_list)
           total_workspaces >= max_workspaces
-          
+
           msg := sprintf("Total number of active workspaces exceeded the cluster limit allowed, can't start. Max Dev Workspaces allowed: %v - current total: %v", [max_workspaces, total_workspaces] )
 
         }
@@ -72,7 +73,7 @@ spec:
           # Get all DevWorkspaces that are running
           devworkspace_list := {dw | data.inventory.namespace[_]["workspace.devfile.io/v1alpha2"].DevWorkspace[i].status.phase == workspace_status[_];
                                 dw := data.inventory.namespace[_]["workspace.devfile.io/v1alpha2"].DevWorkspace[i]}
-          
+
 
           total_workspaces := count(devworkspace_list)
           total_workspaces >= max_workspaces
