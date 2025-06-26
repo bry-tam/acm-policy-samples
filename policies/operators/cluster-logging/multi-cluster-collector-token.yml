@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+data: '{{hub copySecretData "openshift-logging" "collector-token" hub}}'
+kind: Secret
+metadata:
+  name: acm-collector-token
+  namespace: openshift-logging
+type: Opaque

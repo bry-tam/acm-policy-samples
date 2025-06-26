@@ -1,0 +1,43 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-multi-cluster-logging
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - multi-cluster-logging-operator
+placementBindingDefaults:
+  name: "multi-cluster-logging-binding"
+
+policies:
+
+  - name: multi-cluster-logging-configure
+    remediationAction: enforce
+    hubTemplateOptions:
+      serviceAccountName: hub-template-processor
+    dependencies:
+      - name: "cluster-logging-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: multi-cluster-collector-token.yml
+      - path: multi-clusterlogging.yml
+      - path: logfilemetricexporter.yml
+
+  - name: multi-cluster-logging-operator-status
+    remediationAction: InformOnly
+    dependencies:
+      - name: "multi-cluster-logging-configure"
+        compliance: "Compliant"
+    manifests:
+      - path: health/cluster-logging-status.yml
+        name: multi-cluster-logging-status
+        severity: high
+
+policySets:
+  - name: multi-cluster-logging-operator
+    placement:
+      placementName: "ft-logging--multi"
+

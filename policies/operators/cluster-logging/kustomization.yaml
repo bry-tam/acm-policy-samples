@@ -3,9 +3,11 @@ kind: Kustomization
 
 resources:
   - logs-6.x-migration
+  - hub-template-auth
 
 generators:
   - ./generator.yml
+  - ./multi-cluster-generator.yml
 
 patchesJson6902:
 - target:
@@ -15,3 +17,19 @@ patchesJson6902:
     - op: add
       path: /spec/policies/-
       value: 'cluster-observability-operator'
+
+- target:
+    kind: PolicySet
+    name: multi-cluster-logging-operator
+  patch: |
+    - op: add
+      path: /spec/policies/-
+      value: 'prepare-logging-migration'
+
+    - op: add
+      path: /spec/policies/-
+      value: 'clean-logging-migration'
+
+    - op: add
+      path: /spec/policies/-
+      value: 'cluster-logging-operator'

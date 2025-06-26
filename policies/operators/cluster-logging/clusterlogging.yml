@@ -12,6 +12,8 @@ spec:
         apiVersion: "observability.openshift.io/v1"
         kind: ClusterLogForwarder
         metadata:
+          annotations:
+            observability.openshift.io/tech-preview-otlp-output: enabled
           name: collector
           namespace: openshift-logging
         spec:
@@ -42,6 +44,7 @@ spec:
           - name: default-lokistack
             type: lokiStack
             lokiStack:
+              dataModel: Otel
               target:
                 name: logging-loki
                 namespace: openshift-logging
@@ -53,16 +56,18 @@ spec:
                 key: service-ca.crt
                 configMapName: openshift-service-ca.crt
 
+
           pipelines:
           - name: default-logstore
             outputRefs:
-            - default-lokistack
+              - default-lokistack
             inputRefs:
-            - application
-            - infrastructure
-            - audit
+              - application
+              - infrastructure
+              - audit
             filterRefs: 
               - kubeapi-filter
+              - ocp-multicluster-labels
 
           filters:
             - name: kubeapi-filter
@@ -71,3 +76,8 @@ spec:
                 # Don't generate audit events for all requests in RequestReceived stage.
                 omitStages:
                   - "RequestReceived"
+
+            - name: ocp-multicluster-labels
+              type: openshiftLabels
+              openshiftLabels:
+                cluster_name: '{{ fromClusterClaim "name" }}'

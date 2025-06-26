@@ -35,34 +35,55 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: controlplane/namespace.yml
-      - path: controlplane/namespace-collector.yml
-      - path: controlplane/opentelemetrycollector.yml
+        name: istio-namespace
+      - path: controlplane/namespace-cni.yml
+        name: istio-cni-namespace
+      - path: controlplane/istio.yml
+        name: istio-default
+      - path: controlplane/istiocni.yml
+        name: istio-cni
+
+
       - path: tracing/namespace.yml
+        name: tracing-namespace
+
+      - path: tracing/tempo-tenant-readerbinding.yml
+        name: tracing-readerbinding
+      - path: tracing/tempo-tenant-readerrole.yml
+        name: tracing-readerrole
+      - path: tracing/tempo-tenant-writerrole.yml
+        name: tracing-writerrole
+      - path: tracing/opentelemetrycollector.yml
+        name: otel-collector
+      - path: tracing/opentelemetry-rolebinding.yml
+        name: otel-collector-rolebinding
+
       - path: tracing/objectbucketclaim.yml
+        name: tracing-objectbucket
       - path: tracing/tempo-s3-access-secret.yml
+        name: tracing-s3access-secret
       - path: tracing/tempo-s3-bundle-configmap.yml
+        name: tracing-s3-ca
       - path: tracing/tempo-s3-tls-secret.yml
+        name: tracing-s3-tls-secret
       - path: tracing/tempostack.yml
-        extraDependencies: 
-          - name: servicemesh-controlplane17
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        name: tracing-ossm-tempostack
+
       - path: controlplane/kiali-clusterrolebinding.yml
+        name: kiali-clusterrolebinding
       - path: controlplane/kiali.yml
-        extraDependencies: 
-          - name: servicemesh-controlplane17
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        name: kiali
       - path: controlplane/ossmconsole.yml
-        extraDependencies: 
-          - name: servicemesh-controlplane17
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        name: ossm-console-plugin
+
       - path: controlplane/podmonitor.yml
+        name: istio-proxy-podmonitor
       - path: controlplane/servicemonitor.yml
+        name: istiod-monitor
       - path: controlplane/telemetry.yml
-      - path: controlplane/user-workload-access-networkpolicy.yml
-      - path: controlplane/servicemeshcontrolplane.yml
+        name: istio-telemetry
+  #     - path: controlplane/user-workload-access-networkpolicy.yml
+  #     - path: controlplane/servicemeshcontrolplane.yml
 
 
   - name: servicemesh-ingress
@@ -72,13 +93,23 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: ingress/namespace.yml
+        name: ossm-namespace
       - path: ingress/deployment.yml
+        name: ossm-deployment
+      - path: ingress/serviceaccount.yml
+        name: ossm-serviceaccount
       - path: ingress/service.yml
+        name: ossm-service
       - path: ingress/horizontalpodautoscaler.yml
+        name: ossm-hpa
       - path: ingress/networkpolicy.yml
+        name: ossm-networkpolicy
       - path: ingress/poddisruptionbudget.yml
+        name: ossm-pdb
       - path: ingress/role.yml
+        name: ossm-role
       - path: ingress/rolebinding.yml
+        name: ossm-rolebinding
 
 
   # - name: servicemesh-status

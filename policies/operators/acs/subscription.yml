@@ -7,7 +7,7 @@ metadata:
   labels:
     acm-policy: rhacs-operator
 spec:
-  channel: rhacs-4.6
+  channel: rhacs-4.7
   installPlanApproval: Automatic
   name: rhacs-operator
   source: redhat-operators

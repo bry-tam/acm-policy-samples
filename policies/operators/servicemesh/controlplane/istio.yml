@@ -1,0 +1,46 @@
+---
+apiVersion: sailoperator.io/v1
+kind: Istio
+metadata:
+  name: default
+spec:
+  namespace: istio-system
+  updateStrategy:
+    type: RevisionBased
+    inactiveRevisionDeletionGracePeriodSeconds: 30
+    updateWorkloads: false
+  version: v1.24-latest
+  values:
+    global:
+      istioNamespace: istio-system
+      logAsJson: true
+      logging:
+        level: "http:debug,http2:debug,router:debug"
+      platform: openshift
+    telemetry:
+      enabled: true
+      v2:
+        enabled: true
+        prometheus:
+          enabled: true
+
+    meshConfig:
+      defaultProviders:
+        tracing:
+          - otel
+      discoverySelectors:
+        - matchLabels:
+            istio-discovery: enabled
+      tlsDefaults:
+        cipherSuites:
+        - TLS_AES_256_GCM_SHA384
+        - TLS_CHACHA20_POLY1305_SHA256
+        - ECDHE-ECDSA-AES256-GCM-SHA384
+        - ECDHE-RSA-AES256-GCM-SHA384
+        minProtocolVersion: "TLSV1_3"
+      enableTracing: true
+      extensionProviders:
+      - name: otel
+        opentelemetry:
+          port: 4317
+          service: otel-collector.tracing-system.svc.cluster.local

@@ -1,0 +1,134 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: ConfigurationPolicy
+metadata:
+  name: multi-clusterlogging
+spec:
+  remediationAction: enforce
+  severity: high
+  object-templates-raw: |
+    {{hub $lokiRoute := (lookup "route.openshift.io/v1" "Route" "openshift-logging" "logging-loki").spec.host hub}}
+
+    - complianceType: mustonlyhave
+      objectDefinition:
+        apiVersion: "observability.openshift.io/v1"
+        kind: ClusterLogForwarder
+        metadata:
+          annotations:
+            observability.openshift.io/tech-preview-otlp-output: enabled
+          name: collector
+          namespace: openshift-logging
+        spec:
+          serviceAccount:
+            name: collector
+          managementState: Managed
+          collector:
+            tolerations:
+              - operator: Exists
+
+          inputs:
+            - name: infrastructure
+              type: infrastructure
+              infrastructure:
+                sources:
+                  - node
+                  - container
+            - name: audit
+              type: audit
+              audit:
+                sources:
+                  - kubeAPI
+                  - openshiftAPI
+                  - ovn
+                  - auditd
+
+          outputs:
+            - name: otlp-loki-route-app
+              type: otlp
+              otlp:
+                tuning:
+                  compression: gzip
+                  deliveryMode: AtLeastOnce
+                  maxRetryDuration: 20
+                  maxWrite: 32M
+                  minRetryDuration: 5
+                url: '{{hub printf "https://%s/api/logs/v1/application/otlp/v1/logs" $lokiRoute hub}}'
+                authentication:
+                  token:
+                    from: secret
+                    secret:
+                      key: token
+                      name: acm-collector-token
+
+            - name: otlp-loki-route-infra
+              type: otlp
+              otlp:
+                tuning:
+                  compression: gzip
+                  deliveryMode: AtLeastOnce
+                  maxRetryDuration: 20
+                  maxWrite: 32M
+                  minRetryDuration: 5
+                url: '{{hub printf "https://%s/api/logs/v1/infrastructure/otlp/v1/logs" $lokiRoute hub}}'
+                authentication:
+                  token:
+                    from: secret
+                    secret:
+                      key: token
+                      name: acm-collector-token
+
+            - name: otlp-loki-route-audit
+              type: otlp
+              otlp:
+                tuning:
+                  compression: gzip
+                  deliveryMode: AtLeastOnce
+                  maxRetryDuration: 20
+                  maxWrite: 32M
+                  minRetryDuration: 5
+                url: '{{hub printf "https://%s/api/logs/v1/audit/otlp/v1/logs" $lokiRoute hub}}'
+                authentication:
+                  token:
+                    from: secret
+                    secret:
+                      key: token
+                      name: acm-collector-token
+
+          pipelines:
+            - name: app-logstore
+              outputRefs:
+              - otlp-loki-route-app
+              inputRefs:
+              - application
+              filterRefs:
+                - ocp-multicluster-labels
+
+            - name: infra-logstore
+              outputRefs:
+              - otlp-loki-route-infra
+              inputRefs:
+              - infrastructure
+              filterRefs:
+                - ocp-multicluster-labels
+
+            - name: audit-logstore
+              outputRefs:
+              - otlp-loki-route-audit
+              inputRefs:
+              - audit
+              filterRefs:
+                - kubeapi-filter
+                - ocp-multicluster-labels
+
+          filters:
+            - name: kubeapi-filter
+              type: kubeAPIAudit
+              kubeAPIAudit:
+                omitStages:
+                  - "RequestReceived"
+
+            - name: ocp-multicluster-labels
+              type: openshiftLabels
+              openshiftLabels:
+                cluster_name: '{{ fromClusterClaim "name" }}'
+

@@ -22,4 +22,6 @@ resources:
   - ./gatekeeper/
   - ./cluster-health/
   - ./security/
+  - ./multicluster-data
+  
 

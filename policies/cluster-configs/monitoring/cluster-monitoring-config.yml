@@ -58,7 +58,7 @@ spec:
                 {{ $nodeSelector }}: ""
               tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
-    {{- $obsHubInfoSecret := (lookup "v1" "Secret" $obsNamespace "hub-info-secret") }}
+    {{- $obsHubInfoSecret := (lookup "v1" "Secret" "open-cluster-management-addon-observability" "hub-info-secret") }}
     {{- if not (empty $obsHubInfoSecret ) }}
       {{- $hubInfo := (index $obsHubInfoSecret.data "hub-info.yaml") | base64dec }}
       {{- $amURL := "" }}
@@ -94,10 +94,7 @@ spec:
             {{- if $isSelfHosted }}
               retention: 24h
             {{- end }}
-              nodeSelector:
-                {{ $nodeSelector }}: ""
-              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
-             
+
     {{/* ##  group all remaining components together since the only config is for infra nodes  ## */}}
             prometheusOperator:
               nodeSelector:
@@ -110,11 +107,6 @@ spec:
               tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
 
             openshiftStateMetrics:
-              nodeSelector:
-                {{ $nodeSelector }}: ""
-              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
-
-            grafana:
               nodeSelector:
                 {{ $nodeSelector }}: ""
               tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'

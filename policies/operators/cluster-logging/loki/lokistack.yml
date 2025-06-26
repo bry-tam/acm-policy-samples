@@ -17,6 +17,9 @@ spec:
         spec:
           limits:
             global: 
+              ingestion:
+                ingestionBurstSize: 40
+                ingestionRate: 75
               retention: 
                 days: 2
                 streams:
@@ -43,7 +46,7 @@ spec:
                 retention:
                   days: 1
           managementState: Managed
-          size: 1x.demo
+          size: 1x.extra-small
           storage:
             schemas:
             - version: v12
