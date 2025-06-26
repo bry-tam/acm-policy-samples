@@ -37,7 +37,13 @@ policies:
     manifests:
       - path: clean-failed-nodeshutdown.yml
       - path: clean-failed-createcontainererror.yml
-      
+
+  - name: clean-olm
+    manifests:
+      - path: operator-lifecycle/clean-olm-jobs-configmaps.yml
+        name: clean-old-jobs-configmaps
+      - path: operator-lifecycle/clean-installplans-upgrade.yml
+        name: clean-blocking-installplans
 
 policySets:
   - name: cluster-maintenance
