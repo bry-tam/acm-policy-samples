@@ -1,27 +1,17 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: acm-operator-multiclusterhub
-spec:
-  remediationAction: enforce
-  severity: high
-  object-templates-raw: |
-    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: operator.open-cluster-management.io/v1
-        kind: MultiClusterHub
-        metadata:
-          name: multiclusterhub
-          namespace: open-cluster-management
-        spec:
-          disableHubSelfManagement: {{ (eq (fromClusterClaim "acm-hub") "active") | ternary false true }}
+object-templates-raw: |
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: operator.open-cluster-management.io/v1
+      kind: MultiClusterHub
+      metadata:
+        name: multiclusterhub
+        namespace: open-cluster-management
+      spec:
+        disableHubSelfManagement: false
 
-    {{- if ne $infraCount 0 }}
-          nodeSelector:
-            node-role.kubernetes.io/infra: ""
-          tolerations:
-          - operator: Exists
-            key: node-role.kubernetes.io/infra
-    {{- end }}
+        nodeSelector:
+          node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+        tolerations:
+        - operator: Exists
+          key: node-role.kubernetes.io/infra
