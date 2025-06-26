@@ -7,7 +7,6 @@ rules:
   - apiGroups:
       - 'tempo.grafana.com'
     resources: 
-      - default
       - user
     resourceNames:
       - traces

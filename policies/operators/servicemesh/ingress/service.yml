@@ -7,7 +7,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    istio: istio-ingressgateway
+    istio: ingressgateway
   ports:
     - name: status-port
       port: 15021

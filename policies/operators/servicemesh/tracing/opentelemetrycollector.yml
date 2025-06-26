@@ -25,7 +25,7 @@ spec:
         add_metric_suffixes: false
         resource_to_telemetry_conversion:
           enabled: true
-      otlp/default: 
+      otlp: 
         auth:
           authenticator: bearertokenauth
         endpoint: tempo-ossm-tempostack-gateway.tracing-system.svc.cluster.local:8090
@@ -59,7 +59,7 @@ spec:
       pipelines:
         traces:
           exporters:
-            - otlp/default
+            - otlp
             - spanmetrics
           processors:
             - k8sattributes
