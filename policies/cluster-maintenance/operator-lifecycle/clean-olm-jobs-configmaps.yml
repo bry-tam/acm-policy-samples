@@ -1,0 +1,34 @@
+object-templates-raw: |
+  {{/* ##  Get list of all ConfigMaps linked to current InstallPlans.   ## */}}
+  {{/* ##  Remove any remaining ConfigMaps and Jobs not included in above ## */}}
+  
+  {{- $currentCM := list }}
+  {{- range $ip := (lookup "operators.coreos.com/v1alpha1" "InstallPlan" "" "").items }}
+      {{- range $plan := $ip.status.plan }}
+        {{- $cmName := ($plan.resource.manifest | fromJson).name }}
+        {{- if not (has $cmName $currentCM) }}
+          {{- $currentCM = append $currentCM $cmName }}
+        {{- end }}
+      {{- end }}
+  {{- end }}
+
+
+  {{- range $cm := (lookup "v1" "ConfigMap" "openshift-marketplace" "" "olm.managed=true").items }}
+    {{- if not (has $cm.metadata.name $currentCM) }}
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        namespace: openshift-marketplace
+        name: {{ $cm.metadata.name }}
+
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        namespace: openshift-marketplace
+        name: {{ $cm.metadata.name }}
+    {{- end }}
+  {{- end }}
