@@ -9,6 +9,7 @@ spec:
     metrics:
       createServiceMonitors: true
       createPrometheusRules: true
+
   storageSize: 1Gi
   storage: 
     secret:
@@ -21,6 +22,7 @@ spec:
   retention:
     global:
       traces: 48h0m0s
+
   resources:
     total:
       limits:
@@ -29,11 +31,13 @@ spec:
   search:
     defaultResultLimit: 20
     maxDuration: 0s
+
   tenants:
     mode: openshift 
     authentication: 
-      - tenantName: default
+      - tenantName: user
         tenantId: 1610b0c3-c509-4592-a256-a1871353dbfb
+
   template:
     compactor:
       replicas: 1
@@ -66,20 +70,6 @@ spec:
           prometheusEndpoint: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
         servicesQueryDuration: 72h0m0s
         tempoQuery: {}
-
-
-
-
-    # queryFrontend:
-    #   jaegerQuery: 
-    #     enabled: true
-    #     monitorTab:
-    #       enabled: true 
-    #       prometheusEndpoint: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091 
-    #     ingress:
-    #       route:
-    #         termination: edge
-    #       type: route
 
   managementState: Managed
   replicationFactor: 1

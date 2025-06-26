@@ -7,13 +7,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      istio: istio-ingressgateway
+      istio: ingressgateway
   template:
     metadata:
       annotations:
         inject.istio.io/templates: gateway 
       labels:
-        istio: istio-ingressgateway
+        istio: ingressgateway
         istio.io/rev: default-v1-24-latest
     spec:
       containers:
