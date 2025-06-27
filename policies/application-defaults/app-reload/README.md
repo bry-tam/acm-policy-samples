@@ -1,8 +1,7 @@
 The policies in "simple" and "advanced" showcase how to reload a deployment when a secret or configmap is updated.
 
 ### Simple policy
-This policy tracks a specific configmap/secret and updates a specific deployment.  The use case would be limited.
-> The simple policy example is currently broken and would need some adjustments to work.  The advanced is a much better way to acheive this.
+The original simple policy has been removed.
 
 ### Advanced policy
 This policy allows a more flexable use case.  Based loosely off https://github.com/stakater/Reloader
