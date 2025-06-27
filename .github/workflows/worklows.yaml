@@ -19,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          path: policy-collection
+          path: bry-tam-policy-samples
 
       - name: All files end with newline
         run: find . -path ./.git -prune -false -o -type f -print | xargs -r -L1 /usr/bin/bash -c 'test "$(tail -c1 "$0")" && echo "No newline at end of $0"'
