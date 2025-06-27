@@ -46,8 +46,10 @@
         readyReplicas: {{ $dep.spec.replicas }}
         availableReplicas: {{ $dep.spec.replicas }}
         conditions:
-          - type: Available
-            status: 'True'
+          {{- range $c := $dep.status.conditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
+          {{- end }}
   {{- end }}
 
 

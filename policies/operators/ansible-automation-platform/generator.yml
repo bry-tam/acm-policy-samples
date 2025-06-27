@@ -14,15 +14,14 @@ placementBindingDefaults:
 
 policies:
   - name: ansible-automation-operator
-    remediationAction: enforce
     manifests:
       - path: namespace.yml
+        name: aap-namespace
       - path: operatorpolicy.yml
-        name: aap-operator
+
 
 
   - name: ansible-automation-configure
-    remediationAction: enforce
     dependencies:
       - name: "ansible-automation-operator"
         compliance: "Compliant"
@@ -48,7 +47,7 @@ policies:
   - name: ansible-automation-status
     remediationAction: InformOnly
     dependencies:
-      - name: "ansible-automation-configure"
+      - name: ansible-automation-configure
         compliance: "Compliant"
     manifests:
       - path: health/ansible-automation-status.yml
