@@ -4,15 +4,27 @@ on:
   push:
     branches: [ '**' ]
   pull_request:
-    branches: [ '**' ]
+    branches: [ 'main' ]
+
+defaults:
+  run:
+    shell: bash
+    working-directory: bry-tam-policy-samples
 
 jobs:
-  build:
+  validation-tests:
     runs-on: ubuntu-latest
 
     steps:
-      # Your normal steps go here.
-      # Added:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: policy-collection
+
       - name: All files end with newline
         run: find . -path ./.git -prune -false -o -type f -print | xargs -r -L1 /usr/bin/bash -c 'test "$(tail -c1 "$0")" && echo "No newline at end of $0"'
         shell: bash
+
+      - name: Verify Policies
+        run: |
+          ./build/validate-policies.sh
