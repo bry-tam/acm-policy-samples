@@ -15,3 +15,4 @@ jobs:
       # Added:
       - name: All files end with newline
         run: find . -path ./.git -prune -false -o -type f -print | xargs -L1 bash -c 'test "$(tail -c1 "$0")" && echo "No newline at end of $0"'
+        shell: bash
