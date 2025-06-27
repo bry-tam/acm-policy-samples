@@ -1,17 +1,14 @@
 ---
-object-templates-raw: |
-  - complianceType: musthave
-    objectDefinition:
-      apiVersion: operator.open-cluster-management.io/v1
-      kind: MultiClusterHub
-      metadata:
-        name: multiclusterhub
-        namespace: open-cluster-management
-      spec:
-        disableHubSelfManagement: false
+apiVersion: operator.open-cluster-management.io/v1
+kind: MultiClusterHub
+metadata:
+  name: multiclusterhub
+  namespace: open-cluster-management
+spec:
+  disableHubSelfManagement: false
 
-        nodeSelector:
-          node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
-        tolerations:
-        - operator: Exists
-          key: node-role.kubernetes.io/infra
+  nodeSelector:
+    node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+  tolerations:
+  - operator: Exists
+    key: node-role.kubernetes.io/infra
