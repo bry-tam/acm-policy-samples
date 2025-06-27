@@ -18,8 +18,11 @@ validatePolicyGenerator() {
 	for project in `find . -name "kustomization.y*ml" | sed 's,/kustomization.*,,g'`; do
 	        cd $project
 		echo "Generating Policys $project"
-	        OUTPUT=`kustomize build --enable-alpha-plugins`
-          echo $OUTPUT |  kubeconform -schema-location 'schemas/{{ .ResourceKind }}_{{ .ResourceAPIVersion }}.json' -summary
+	        OUTPUT=`kustomize build --enable-alpha-plugins > $KPATH/${project}-kbout`
+          echo '${KPATH}/schemas/{{ .ResourceKind }}_{{ .ResourceAPIVersion }}.json' 
+          cd $KPATH
+          cat $KPATH/${project}-kbout |  kubeconform -schema-location 'schemas/{{ .ResourceKind }}_{{ .ResourceAPIVersion }}.json' -schema-location default -summary
+          rm -rf $KPATH/${project}-kbout
 	        cd $KPATH/$SETPATH
 	done
 	cd $KPATH
@@ -53,12 +56,15 @@ if [ ! -d schemas ]; then
 	chmod a+x crd-schema.py
 
 	echo "Converting CRDs to Schemas"
-	./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/multicloud-operators-subscription/main/deploy/common/apps.open-cluster-management.io_placementrules_crd.yaml
 	./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_placementbindings.yaml
 	./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policies.yaml
 	./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policysets.yaml
 	./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policyautomations.yaml
 	./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_02_clusters.open-cluster-management.io_placements.crd.yaml
+	./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_00_clusters.open-cluster-management.io_managedclusters.crd.yaml
+	./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_00_clusters.open-cluster-management.io_managedclustersets.crd.yaml
+	./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/placement/main/deploy/hub/0000_01_clusters.open-cluster-management.io_managedclustersetbindings.crd.yaml
+
 
 	cd ..
 fi
@@ -72,6 +78,7 @@ GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v5@$KUSTOMIZE_VERSION
 
 # Install the Policy Generator kustomize plugin
 export KUSTOMIZE_PLUGIN_HOME=${GOBIN}
+if [ ! -d ${GOBIN}/policy-generator-plugin ]; then
 echo "Downloading the generator"
 PLATFORM=`uname | tr '[:upper:]' '[:lower:]'`
 git clone --depth=1 https://github.com/${OCM_REPOSITORY_OWNER}/policy-generator-plugin ${GOBIN}/policy-generator-plugin
@@ -79,6 +86,7 @@ git clone --depth=1 https://github.com/${OCM_REPOSITORY_OWNER}/policy-generator-
 chmod a+x ${GOBIN}/policy-generator-plugin/PolicyGenerator
 mkdir -p ${KUSTOMIZE_PLUGIN_HOME}/${GENERATOR_PATH}
 mv ${GOBIN}/policy-generator-plugin/PolicyGenerator ${KUSTOMIZE_PLUGIN_HOME}/${GENERATOR_PATH}/PolicyGenerator
+fi
 
 # Validate the generator projects
 
@@ -86,9 +94,10 @@ echo "Checking environment based policy sets"
 validatePolicyGenerator environments
 
 echo "Checking all policies"
-validatePolicyGenerator policy
+validatePolicyGenerator policies
 
 # Cleanup
 rm -rf schemas
+rm -rf ${GOBIN}
 
 # Done
