@@ -1,0 +1,6 @@
+Installs the Cert-Manager operator and example clusterissuer.
+
+Note:
+  - ClusterIssuer is using a self-signed CA file.  Production environments should use an appropriate PKI
+  - Policy configures cluster-monitoring to scrape cert-manager.  There are no rules or alerts, only the ServiceMonitor to scrape cert-manager
+  - Configures cert-manager to include the cluster trusted-ca bundle.  This shouldn't hurt if you don't have a ca applied through the cluster-proxy.

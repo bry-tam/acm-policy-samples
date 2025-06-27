@@ -17,10 +17,20 @@ policies:
     remediationAction: enforce
     manifests:
       - path: namespace.yml
+        name: cert-manger-operator-namespace
       - path: operatorpolicy.yml
       - path: health/cert-manager-status.yml
         name: cert-manager-status
         remediationAction: InformOnly
+
+      - path: monitoring/namespace.yml
+        name: cert-manager-namespace
+      - path: monitoring/role.yml
+        name: cert-manager-monitor-role
+      - path: monitoring/rolebinding.yml
+        name: cert-manager-monitor-rolebinding
+      - path: monitoring/servicemonitor.yml
+        name: cert-manager-monitor-servicemonitor
 
   - name: cert-manager-clusterissuer
     remediationAction: enforce
