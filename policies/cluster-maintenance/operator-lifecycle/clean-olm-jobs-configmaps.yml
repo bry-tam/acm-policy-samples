@@ -13,7 +13,15 @@ object-templates-raw: |
   {{- end }}
 
 
+  {{/* ##  Need to ensure the ConfigMap is older than some period otherwise it will be removed during operator upgrade ## */}}
+  {{- $maxAgeHours := 12.0 }}
+
   {{- range $cm := (lookup "v1" "ConfigMap" "openshift-marketplace" "" "olm.managed=true").items }}
+    {{- $cmCreated := (toDate "2006-1-2T15:04:05Z" $cm.metadata.creationTimestamp) }}
+    {{- if lt (now.Sub $cmCreated).Hours $maxAgeHours }}
+      {{- continue }}
+    {{- end }}
+
     {{- if not (has $cm.metadata.name $currentCM) }}
   - complianceType: mustnothave
     objectDefinition:
