@@ -14,4 +14,4 @@ jobs:
       # Your normal steps go here.
       # Added:
       - name: All files end with newline
-        run: find dir1 dir2 -type f | xargs -L1 bash -c 'test "$(tail -c1 "$0")" && echo "No newline at end of $0"'
+        run: find . -path ./.git -prune -false -o -type f -print | xargs -L1 bash -c 'test "$(tail -c1 "$0")" && echo "No newline at end of $0"'
