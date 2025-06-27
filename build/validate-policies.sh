@@ -4,6 +4,8 @@ KUBECONFORM=kubeconform
 KC_VERSION=v0.6.4
 KUSTOMIZE_VERSION=v5.3.0
 GENERATOR_PATH=policy.open-cluster-management.io/v1/policygenerator
+KUSTOMIZE_OUTPUT_ROOT=${PWD}/bin/.kustomize
+export POLICY_GEN_ENABLE_HELM=true
 
 # Validate the policy resource file under the directory provided
 validatePolicies() {
@@ -18,11 +20,13 @@ validatePolicyGenerator() {
 	for project in `find . -name "kustomization.y*ml" | sed 's,/kustomization.*,,g'`; do
 	        cd $project
 		echo "Generating Policys $project"
-	        OUTPUT=`kustomize build --enable-alpha-plugins > $KPATH/${project}-kbout`
-          echo '${KPATH}/schemas/{{ .ResourceKind }}_{{ .ResourceAPIVersion }}.json' 
+          KUSTOMIZE_OUTPUT=${KUSTOMIZE_OUTPUT_ROOT}/${project}/kbout.yml
+          mkdir -p "$(dirname ${KUSTOMIZE_OUTPUT})"
+	        OUTPUT=`kustomize build --enable-alpha-plugins --enable-helm > ${KUSTOMIZE_OUTPUT}`
+
           cd $KPATH
-          cat $KPATH/${project}-kbout |  kubeconform -schema-location 'schemas/{{ .ResourceKind }}_{{ .ResourceAPIVersion }}.json' -schema-location default -summary
-          rm -rf $KPATH/${project}-kbout
+          cat ${KUSTOMIZE_OUTPUT} |  kubeconform -schema-location 'schemas/{{ .ResourceKind }}_{{ .ResourceAPIVersion }}.json' -schema-location default -summary
+
 	        cd $KPATH/$SETPATH
 	done
 	cd $KPATH
