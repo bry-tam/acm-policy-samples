@@ -1,15 +1,8 @@
-﻿---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: loki-logging-status
-spec:
-  remediationAction: inform
-  severity: high
-  object-templates-raw: |
+﻿  object-templates-raw: |
     {{- $lokiNamespace := "openshift-logging" }}
     {{- $lokiInstance := "logging-loki" }}
 
+    {{- $loki := (lookup "loki.grafana.com/v1" "LokiStack" $lokiNamespace $lokiInstance)}}
     - complianceType: musthave
       objectDefinition:
         apiVersion: loki.grafana.com/v1
@@ -19,10 +12,10 @@ spec:
           namespace: {{ $lokiNamespace }}
         status:
           conditions:
-            - message: All components ready
-              reason: ReadyComponents
-              status: 'True'
-              type: Ready
+          {{- range $c := $loki.status.conditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
+          {{- end }}
 
 
     {{/* ##  Create a list of all expected deployments in openshift-logging for loki ## */}}

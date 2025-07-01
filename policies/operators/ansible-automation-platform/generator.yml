@@ -17,9 +17,8 @@ policies:
     manifests:
       - path: namespace.yml
         name: aap-namespace
+
       - path: operatorpolicy.yml
-
-
 
   - name: ansible-automation-configure
     dependencies:
@@ -28,21 +27,23 @@ policies:
     manifests:
       - path: objectbucketclaim.yml
         name: obc-hub-odf
+
       - path: noobaa-s3-serving-cert.yml
         name: noobaa-s3-serving-cert
+
       - path: hub-secret.yml
         name: ansible-hub-odf
         extraDependencies: 
           - name: obc-hub-odf
             kind: ConfigurationPolicy
             compliance: "Compliant"
+
       - path: ansibleautomationplatform.yml
         name: ansibleautomationplatform
         extraDependencies: 
           - name: ansible-hub-odf
             kind: ConfigurationPolicy
             compliance: "Compliant"
-
 
   - name: ansible-automation-status
     remediationAction: InformOnly

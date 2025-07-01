@@ -1,5 +1,4 @@
-﻿---
-object-templates-raw: |
+﻿object-templates-raw: |
   {{/* ##  Ensure the collector is deployed to all nodes ## */}}
   {{- $nodeCount := (len (lookup "v1" "Node" "" "").items) }}
   - complianceType: musthave
