@@ -1,3 +1,5 @@
 
 # exclude all .html files
+!*.html
 !**/*.html
+!/**/*.html
