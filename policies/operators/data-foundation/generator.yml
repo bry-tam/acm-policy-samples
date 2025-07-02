@@ -9,6 +9,7 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - odf-operator
+
 placementBindingDefaults:
   name: "odf-binding"
 
@@ -17,10 +18,9 @@ policies:
     remediationAction: enforce
     manifests:
       - path: namespace.yml
-      - path: operatorgroup.yml
-      - path: subscription.yml
-      - path: health/operator-status.yml
-        remediationAction: inform
+        name: odf-namespace
+      - path: operatorpolicy.yml
+
 
   - name: odf-configure
     remediationAction: enforce
@@ -29,8 +29,13 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: console.yml
+        name: odf-console
+
       - path: storagesystem.yml
+        name: storagesystem
+
       - path: storagecluster.yml
+        name: storagecluster
 
   - name: odf-operator-status
     remediationAction: inform
@@ -39,6 +44,7 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: health/odf-status.yml
+        name: odf-status
 
 policySets:
   - name: odf-operator
