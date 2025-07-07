@@ -19,6 +19,7 @@ policies:
     manifests:
       - path: namespace.yml
         name: odf-namespace
+
       - path: operatorpolicy.yml
 
 
