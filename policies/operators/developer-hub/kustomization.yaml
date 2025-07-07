@@ -5,4 +5,5 @@ generators:
   - ./generator.yml
 
 resources:
-  - acm/rhdh-hub-serviceaccount.yml
+  - hub-template-auth/serviceaccount.yml
+  - hub-template-auth/clusterrolebinding.yml
