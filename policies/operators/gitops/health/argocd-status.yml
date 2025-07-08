@@ -36,8 +36,8 @@ object-templates-raw: |
       kind: Deployment
       apiVersion: apps/v1
       metadata:
+        name: {{ $dep.metadata.name }}
         namespace: {{ $dep.metadata.namespace }}
-        name: {{ $dep.metadata.namespace }}
       status:
       replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
       updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
@@ -59,7 +59,7 @@ object-templates-raw: |
       kind: StatefulSet
       apiVersion: apps/v1
       metadata:
-        name: {{ $sset.metadata.namespace }}
+        name: {{ $sset.metadata.name }}
         namespace: {{ $sset.metadata.namespace }}
       status:
         availableReplicas: {{ $sset.spec.replicas }}
