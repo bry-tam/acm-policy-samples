@@ -39,15 +39,15 @@ object-templates-raw: |
         name: {{ $dep.metadata.name }}
         namespace: {{ $dep.metadata.namespace }}
       status:
-      replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-      updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-      readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-      availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
-      conditions:
-        {{- range $c := $dep.status.conditions }}
-          {{- $_ := set $c "status" "True" }}
-        - {{ $c | toRawJson | toLiteral }}
-        {{- end }}
+        replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        conditions:
+          {{- range $c := $dep.status.conditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
+          {{- end }}
       {{- end }}
     {{- end }}
 
