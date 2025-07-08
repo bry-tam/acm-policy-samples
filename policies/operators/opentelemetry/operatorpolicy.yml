@@ -21,3 +21,5 @@ spec:
     channel: stable
     name: opentelemetry-product
     namespace: openshift-opentelemetry-operator
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
