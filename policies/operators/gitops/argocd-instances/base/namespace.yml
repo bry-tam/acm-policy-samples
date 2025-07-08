@@ -2,8 +2,7 @@
 kind: Namespace
 apiVersion: v1
 metadata:
-  name: argocd-dev
+  name: gitops
   labels:
     openshift.io/cluster-monitoring: 'true'
-    argocd.argoproj.io/managed-by: argocd-dev
-    app.host: argocd
+    argocd.argoproj.io/managed-by: argo
