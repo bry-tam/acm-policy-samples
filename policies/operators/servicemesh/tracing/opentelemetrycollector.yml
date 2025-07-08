@@ -10,29 +10,29 @@ spec:
   serviceAccount: otel-collector
   observability:
     metrics:
-      enableMetrics: true 
+      enableMetrics: true
 
   config:
     connectors:
-      spanmetrics: 
+      spanmetrics:
         dimensions:
           - name: k8s.namespace.name
         metrics_flush_interval: 15s
 
     exporters:
-      prometheus: 
+      prometheus:
         endpoint: 0.0.0.0:8889
         add_metric_suffixes: false
         resource_to_telemetry_conversion:
           enabled: true
-      otlp: 
+      otlp:
         auth:
           authenticator: bearertokenauth
         endpoint: tempo-ossm-tempostack-gateway.tracing-system.svc.cluster.local:8090
         headers:
           X-Scope-OrgID: "default"
         tls:
-          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt" 
+          ca_file: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
 
     extensions:
       bearertokenauth:
