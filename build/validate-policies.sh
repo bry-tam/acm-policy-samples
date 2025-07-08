@@ -23,6 +23,7 @@ validatePolicyGenerator() {
     # skip any kustomize files that are labeled with skip_validation: true
     if grep -q "skip_validation: true" $kst; then
       echo "Skipping validation for $kst."
+      continue
     fi
     cd $project
     echo "Generating Policys $project"
