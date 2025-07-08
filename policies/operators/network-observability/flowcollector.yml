@@ -1,9 +1,15 @@
+---
 apiVersion: flows.netobserv.io/v1beta2
 kind: FlowCollector
 metadata:
   name: cluster
 spec:
   namespace: openshift-netobserv-operator
+  networkPolicy:
+    enable: true
+    additionalNamespaces:
+      - openshift-console
+      - openshift-monitoring
   deploymentModel: Direct
   agent:
     type: eBPF
