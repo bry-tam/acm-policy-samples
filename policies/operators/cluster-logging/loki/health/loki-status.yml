@@ -13,7 +13,11 @@
       status:
         conditions:
         {{- range $c := $loki.status.conditions }}
-          {{- $_ := set $c "status" "True" }}
+          {{- if eq $c.type "Pending" }}
+            {{- $_ := set $c "status" "False" }}
+          {{- else }}
+            {{- $_ := set $c "status" "True" }}
+          {{- end }}
         - {{ $c | toRawJson | toLiteral }}
         {{- end }}
 
