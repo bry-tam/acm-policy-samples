@@ -1,11 +1,9 @@
 The ACM Operator Policy provides the following functionality:
 - Controls what version/channel is deployed
 - Moves Operator to Infra nodes when such are available
-- Monitors health of operator deployment itself through the OperatorPolicy behavior.  
+- Monitors health of operator deployment itself through the OperatorPolicy behavior.
   - Does not monitor all of ACM health, just the multiclusterhub-operator deployment
 
 Some important notes:
 1. This will not configure ACM Observability or move other ACM workloads to infra nodes
 2. Because ACM can't install ACM, the namespace is expected to already exist.
-
-
