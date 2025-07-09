@@ -14,8 +14,10 @@ spec:
     tolerations:
       - operator: Exists
     resources:
-      limits:
-        memory: 3Gi
+      requests:
+        memory: 64Mi
+        cpu: 250m
+
 
   inputs:
     - name: infrastructure
