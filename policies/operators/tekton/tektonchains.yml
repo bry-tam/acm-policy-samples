@@ -1,3 +1,4 @@
+---
 apiVersion: operator.tekton.dev/v1alpha1
 kind: TektonChain
 metadata:
