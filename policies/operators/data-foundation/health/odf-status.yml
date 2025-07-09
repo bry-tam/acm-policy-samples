@@ -54,7 +54,7 @@
         {{- end }}
         phase: Ready
 
-  {{- $ss := (lookup "odf.openshift.io/v1alpha1" "StorageSystem" "openshift-storage" "ocs-storagecluster-storagesystem) }}
+  {{- $ss := (lookup "odf.openshift.io/v1alpha1" "StorageSystem" "openshift-storage" "ocs-storagecluster-storagesystem") }}
   - complianceType: musthave
     objectDefinition:
       apiVersion: odf.openshift.io/v1alpha1
