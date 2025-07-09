@@ -45,7 +45,30 @@
       status:
         conditions:
         {{- range $c := $sc.status.conditions }}
-          {{- $_ := set $c "status" "True" }}
+          {{- if eq $c.type "ReconcileComplete" "Available" "Upgradeable" }}
+            {{- $_ := set $c "status" "True" }}
+          {{- else if eq $c.type "VersionMismatch" "Progressing" "Degraded" }}
+            {{- $_ := set $c "status" "False" }}
+          {{- end }}
         - {{ $c | toRawJson | toLiteral }}
         {{- end }}
         phase: Ready
+
+  {{- $ss := (lookup "odf.openshift.io/v1alpha1" "StorageSystem" "openshift-storage" "ocs-storagecluster-storagesystem) }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: odf.openshift.io/v1alpha1
+      kind: StorageSystem
+      metadata:
+        name:   {{ $ss.metadata.name }}
+        namespace: openshift-storage
+      status:
+        conditions:
+        {{- range $c := $sc.status.conditions }}
+          {{- if eq $c.type "VendorCsvReady" "Available" "VendorSystemPresent" }}
+            {{- $_ := set $c "status" "True" }}
+          {{- else if eq $c.type "StorageSystemInvalid" "Progressing" }}
+            {{- $_ := set $c "status" "False" }}
+          {{- end }}
+        - {{ $c | toRawJson | toLiteral }}
+        {{- end }}
