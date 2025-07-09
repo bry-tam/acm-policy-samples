@@ -13,6 +13,9 @@ spec:
   collector:
     tolerations:
       - operator: Exists
+    resources:
+      limits:
+        memory: 3Gi
 
   inputs:
     - name: infrastructure
