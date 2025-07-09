@@ -50,7 +50,7 @@ policies:
       - path: loki/loki-secret.yml
         name: loki-secret
         extraDependencies: 
-          - name: cluster-logging-configure
+          - name: loki-objectbucketclaim
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
