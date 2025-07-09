@@ -18,15 +18,15 @@ policies:
     remediationAction: enforce
     manifests:
       - path: namespace.yml
-        name: namespace
+        name: otel-namespace
 
       - path: operatorpolicy.yml
 
       - path: clusterrole.yml
-        name: clusterrole
+        name: otel-clusterrole
 
       - path: clusterrolebinding.yml
-        name: clusterrolebinding
+        name: otel-clusterrolebinding
 
 policySets:
   - name: opentelemetry-operator

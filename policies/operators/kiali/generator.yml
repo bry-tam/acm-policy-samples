@@ -18,7 +18,7 @@ policies:
     remediationAction: enforce
     manifests:
       - path: namespace.yml
-        name: namespace
+        name: kiali-namespace
 
       - path: operatorpolicy.yml
 

@@ -17,7 +17,7 @@ policies:
   - name: network-observability-operator
     manifests:
       - path: namespace.yml
-        name: namespace
+        name: netobserv-namespace
 
       - path: operatorpolicy.yml
 

@@ -18,7 +18,7 @@ policies:
     remediationAction: enforce
     manifests:
       - path: namespace.yml
-        name: namespace
+        name: tempo-namespace
 
       - path: operatorpolicy.yml
 
