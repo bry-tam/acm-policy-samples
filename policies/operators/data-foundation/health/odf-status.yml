@@ -64,7 +64,7 @@
         namespace: openshift-storage
       status:
         conditions:
-        {{- range $c := $sc.status.conditions }}
+        {{- range $c := $ss.status.conditions }}
           {{- if eq $c.type "VendorCsvReady" "Available" "VendorSystemPresent" }}
             {{- $_ := set $c "status" "True" }}
           {{- else if eq $c.type "StorageSystemInvalid" "Progressing" }}
