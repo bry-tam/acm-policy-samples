@@ -1,6 +1,16 @@
+# OpenShift GitOps Operator
 Installs the OpenShift GitOps operator and example instances of ArgoCD.
 
-Note:
+## Dependencies
+  - None
+
+## Details
+ACM Minimal Version: 2.12
+
+Documentation: [latest](https://docs.redhat.com/en/documentation/red_hat_openshift_gitops/latest)
+
+---
+**Notes:**
   - Includes policy to migrate from openshift-operators namespace in GitOps 1.9 to openshift-gitops-operator in GitOps 1.10
   - For ACM clusters will:
     - Add the PolicyGenerator to the repo server component

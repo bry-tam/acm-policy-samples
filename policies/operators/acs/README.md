@@ -1,10 +1,19 @@
-## Overview of RH ACS Operator Policy
+# Advanced Cluster Security
+Installs and configures ACS Central on the hub and SecuredCluster on each managed cluster.  Also creates and manages lifecycle of init-bundle automatically updating the certs before the init-bundle expires.
 
 The RH ACS deployment is more complicated compared to other operators.  This is mainly caused by the need to deploy and configure the hub, create the certificates to allow managed clusters to communicate with the ACS Central component, and deploy the Sensor/Collector on the Managed clusters.
 
 If you are making use of the same organization and policy deployment model showcased in this repo the Placements are controlled by two labels on the ManagedClusters.  `acs=hub` and `acs=managed` will control which components are deployed.  You could easily swap this out for your own policies and deployment model.
 
-### Breakdown of 
+## Dependencies
+  - none
+
+## Details
+ACM Minimal Version: 2.12
+
+Documentation: [latest](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_security_for_kubernetes/latest)
+
+### Breakdown of ACS Policy
 Let's take a look at the various pieces of the Policy as defined in the `generator.yml`.
 
 There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one for the managed clusters (`acs-operator-manged`).
@@ -21,18 +30,18 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
       - path: ns-rhacs-operator.yml
       - path: ns-stackrox.yml
       - path: operatorgroup.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-operator
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: subscription.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-operator
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: health/operator/operator-status.yml
         remediationAction: InformOnly
-        extraDependencies: 
+        extraDependencies:
           - name: acs-operator3
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -58,7 +67,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
       - path: central/consolelink.yml
       - path: health/central/central-status.yml
         remediationAction: InformOnly
-        extraDependencies: 
+        extraDependencies:
           - name: acs-central
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -81,7 +90,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
       - path: central/init-bundle/role.yml
       - path: central/init-bundle/rolebinding.yml
       - path: central/init-bundle/job.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-central-init-bundle
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -110,7 +119,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
       - path: central/init-bundle/expired-sensor-tls.yml
         remediationAction: InformOnly
       - path: sensor/securedcluster.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-central-init-bundle-cert2
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -134,7 +143,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
       - path: central/init-bundle/expired-collector-tls.yml
       - path: central/init-bundle/expired-sensor-tls.yml
       - path: central/init-bundle/job.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-central-expired-certs
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -174,7 +183,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
       - path: sensor/propagate-collector-tls.yml
       - path: sensor/propagate-sensor-tls.yml
       - path: sensor/securedcluster.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-sensor
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -185,3 +194,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
             kind: ConfigurationPolicy
             compliance: "Compliant"
 ```
+
+---
+**Notes:**
+  -

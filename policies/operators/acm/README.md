@@ -1,9 +1,19 @@
-The ACM Operator Policy provides the following functionality:
-- Controls what version/channel is deployed
-- Moves Operator to Infra nodes when such are available
-- Monitors health of operator deployment itself through the OperatorPolicy behavior.
-  - Does not monitor all of ACM health, just the multiclusterhub-operator deployment
+# Advanced Cluster Management Operator
+Configures the ACM Operator and manages `multicluterhub` instance.  Policy controls what version/channel is deployed and moves the operator to Infra nodes when they are available in the cluster.
 
-Some important notes:
-1. This will not configure ACM Observability or move other ACM workloads to infra nodes
-2. Because ACM can't install ACM, the namespace is expected to already exist.
+As ACM is managing itself there is an expectation that ACM was likely installed by other means.
+
+## Dependencies
+- none
+
+## Details
+ACM Minimal Version: 2.12
+
+Documentation: [latest](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/latest)
+
+---
+**Notes:**
+  - Monitors health of operator deployment itself through the OperatorPolicy behavior.
+    - Does not monitor all of ACM health, just the multiclusterhub-operator deployment
+  - This will not configure ACM Observability or move other ACM workloads to infra nodes
+  - Because ACM can't install ACM, the namespace is expected to already exist.
