@@ -1,3 +1,4 @@
+---
 ﻿object-templates-raw: |
   {{/* ##  Create a list of all expected deployments in open-cluster-management-observability ## */}}
   {{- $aapNamespace := "ansible-automation-platform"}}

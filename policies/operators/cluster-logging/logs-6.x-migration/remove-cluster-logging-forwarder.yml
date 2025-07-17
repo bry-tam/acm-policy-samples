@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{/* ##  Find the ClusterLogging forwarders and metrics exporter ## */}}
   {{- $loggers := concat  (lookup "logging.openshift.io/v1alpha1" "LogFileMetricExporter" "" "").items

@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{- $loggers := list "openshift-operators-redhat" "openshift-logging" }}
 

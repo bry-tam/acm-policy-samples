@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{/* ##  Find the elasticsearch instances.  There shouldn't be any after the ClusterLogging is removed ## */}}
   {{- $loggers := (lookup "logging.openshift.io/v1" "Elasticsearch" "" "").items }}

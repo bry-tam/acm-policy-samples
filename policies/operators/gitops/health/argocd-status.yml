@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   ## Get all the ArgoCD instances we are checking health for
   {{- range $argo := (lookup "argoproj.io/v1beta1" "ArgoCD" "" "").items }}

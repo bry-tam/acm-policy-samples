@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{/* ##  Find the ClusterLogging subscription ## */}}
   {{- $logSub := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-logging" "").items }}

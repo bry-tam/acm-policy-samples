@@ -1,3 +1,4 @@
+---
 ﻿object-templates-raw: |
   {{- $lokiNamespace := "openshift-logging" }}
   {{- $lokiInstance := "logging-loki" }}

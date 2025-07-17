@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{/* ##  Label each subscription with the current channel if it is set to manual updates.   ## */}}
   {{/* ##  Existing labels that don't match the current channel mean there is possiblity for blocking installplans  ## */}}

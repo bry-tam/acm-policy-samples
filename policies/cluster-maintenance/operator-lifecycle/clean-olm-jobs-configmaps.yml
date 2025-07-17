@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{/* ##  Get list of all ConfigMaps linked to current InstallPlans.   ## */}}
   {{/* ##  Remove any remaining ConfigMaps and Jobs not included in above ## */}}

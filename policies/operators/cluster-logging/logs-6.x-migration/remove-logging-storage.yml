@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{/* ##  Find the ClusterLogging forwarders and metrics exporter ## */}}
   {{- $volumeclaims := concat  (lookup "v1" "PersistentVolumeClaim" "openshift-logging" "").items

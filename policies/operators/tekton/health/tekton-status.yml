@@ -1,3 +1,4 @@
+---
 ﻿object-templates-raw: |
   {{/* ##  Create a list of all expected deployments in openshift-pipelines
         Normally we would use labels to identify them, however there isn't

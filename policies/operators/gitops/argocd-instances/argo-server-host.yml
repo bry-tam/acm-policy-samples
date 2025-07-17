@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{/* ##  Get all the argoCD instances ## */}}
   {{- range $argo := (lookup "argoproj.io/v1beta1" "ArgoCD" "" "").items }}

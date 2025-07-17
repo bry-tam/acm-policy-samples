@@ -1,3 +1,4 @@
+---
 name: Policy-Checks
 
 on:
@@ -21,10 +22,18 @@ jobs:
         with:
           path: bry-tam-policy-samples
 
-      # - name: All files end with newline
-      #   run: find . -path ./.git -prune -false -o -type f -print | xargs -r -L1 /usr/bin/bash -c 'test "$(tail -c1 "$0")" && echo "No newline at end of $0"'
-      #   shell: bash
-
       - name: Verify Policies
         run: |
           ./build/validate-policies.sh
+
+      - name: Verify File Whitespace
+        run: |
+          ./build/validate-trailing-whitespace.sh
+
+      - name: Verify Yaml starts with doc
+        run: |
+          ./build/validate-yaml-doc.sh
+
+      - name: Verify file ends in newline
+        run: |
+          ./build/validate-end-of-file.sh

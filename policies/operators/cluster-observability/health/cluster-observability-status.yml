@@ -1,3 +1,4 @@
+---
 ﻿object-templates-raw: |
   {{/* ##  Create a list of all the UI Plugins ## */}}
   {{- $pluginList := (lookup "observability.openshift.io/v1alpha1" "UIPlugin" "" "").items }}

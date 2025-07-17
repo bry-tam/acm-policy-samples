@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{/* ##  Find the ClusterLogging configuration ## */}}
   {{- $loggers := (lookup "logging.openshift.io/v1" "ClusterLogging" "" "").items }}

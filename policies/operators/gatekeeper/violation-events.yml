@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   ## get all of the ConstraintTemplates so we know what kinds of constrainsts are possible
   {{- range $ctemp := (lookup "templates.gatekeeper.sh/v1beta1" "ConstraintTemplate" "" "").items }}

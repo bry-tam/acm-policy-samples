@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{- $rhdh_host := (lookup "route.openshift.io/v1" "Route" "developer-hub" "backstage-developer-hub").spec.host }}
   - complianceType: musthave

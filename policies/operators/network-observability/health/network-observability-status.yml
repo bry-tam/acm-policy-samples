@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{/* ##  Create a list of all expected deployments in openshift-netobserv-operator for loki ## */}}
   {{- $op_namespace := "openshift-netobserv-operator" }}
