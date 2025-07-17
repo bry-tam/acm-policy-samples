@@ -110,5 +110,6 @@ validatePolicyGenerator policies
 # Cleanup
 rm -rf schemas
 rm -rf ${KUSTOMIZE_OUTPUT_ROOT}
+rm -rf ${GOBIN}
 
 # Done
