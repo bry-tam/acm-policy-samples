@@ -1,5 +1,5 @@
 ---
-﻿object-templates-raw: |
+object-templates-raw: |
   {{/* ##  Create a list of all expected deployments in openshift-pipelines
         Normally we would use labels to identify them, however there isn't
         a selector available to uniquely identify the deployments   ## */}}

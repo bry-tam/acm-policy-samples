@@ -1,5 +1,4 @@
 ---
-﻿---
 apiVersion: policy.open-cluster-management.io/v1
 kind: ConfigurationPolicy
 metadata:
