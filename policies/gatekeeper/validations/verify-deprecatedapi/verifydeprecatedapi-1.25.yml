@@ -28,7 +28,7 @@ spec:
               - apiGroups: ["policy"]
                 kinds: ["PodDisruptionBudget", "PodSecurityPolicy"]
           parameters:
-            kvs: 
+            kvs:
               - deprecatedAPI: "batch/v1beta1"
                 kinds: ["CronJob"]
                 targetAPI: "batch/v1"

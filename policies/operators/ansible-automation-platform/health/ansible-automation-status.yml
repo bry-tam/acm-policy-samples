@@ -12,7 +12,7 @@ object-templates-raw: |
   }}
 
   {{- $aap := index (lookup "aap.ansible.com/v1alpha1" "AnsibleAutomationPlatform" $aapNamespace "").items 0 }}
-      
+
   {{- $edaDiabled := (dig "spec" "eda" "disabled" "false" $aap) }}
   {{- if not $edaDiabled }}
     {{- $depList = append $depList "aap-eda-activation-worker" }}

@@ -29,5 +29,5 @@ policies:
 
 policySets:
   - name: acm-operator
-    placement:  
+    placement:
       placementName: "ft-acm-hub"

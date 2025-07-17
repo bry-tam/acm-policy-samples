@@ -49,14 +49,14 @@ policies:
 
       - path: loki/loki-secret.yml
         name: loki-secret
-        extraDependencies: 
+        extraDependencies:
           - name: loki-objectbucketclaim
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: loki/lokistack.yml
         name: lokistack-logging
-        extraDependencies: 
+        extraDependencies:
           - name: loki-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -64,21 +64,21 @@ policies:
       - path: loki/health/loki-status.yml
         name: loki-logging-status
         remediationAction: InformOnly
-        extraDependencies: 
+        extraDependencies:
           - name: lokistack-logging
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: uiplugin.yml
         name: logging-uiplugin
-        extraDependencies: 
+        extraDependencies:
           - name: loki-logging-status
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: clusterlogging.yml
         name: clusterlogging
-        extraDependencies: 
+        extraDependencies:
           - name: loki-logging-status
             kind: ConfigurationPolicy
             compliance: "Compliant"

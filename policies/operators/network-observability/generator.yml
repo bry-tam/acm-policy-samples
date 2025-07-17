@@ -36,14 +36,14 @@ policies:
 
       - path: loki/loki-secret.yml
         name: netobserv-loki-secret
-        extraDependencies: 
+        extraDependencies:
           - name: loki-s3-cert
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: loki/lokistack.yml
         name: lokistack-netobserv
-        extraDependencies: 
+        extraDependencies:
           - name: netobserv-loki-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -51,14 +51,14 @@ policies:
       - path: loki/health/loki-status.yml
         name: loki-netobserv-status
         remediationAction: InformOnly
-        extraDependencies: 
+        extraDependencies:
           - name: lokistack-netobserv
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: flowcollector.yml
         name: flowcollector
-        extraDependencies: 
+        extraDependencies:
           - name: loki-netobserv-status
             kind: ConfigurationPolicy
             compliance: "Compliant"

@@ -4,7 +4,7 @@ kind: KubeletConfig
 metadata:
   name: worker-kubelet
 spec:
-  autoSizingReserved: true 
+  autoSizingReserved: true
   machineConfigPoolSelector:
     matchLabels:
-      pools.operator.machineconfiguration.openshift.io/worker: "" 
+      pools.operator.machineconfiguration.openshift.io/worker: ""

@@ -8,7 +8,7 @@ This policy allows a more flexable use case.  Based loosely off https://github.c
 
 Some notable differences:
   - There is no auto watcher.  The deployment needs a label to enable reloading, and an annotation with the Secrets/ConfigMap to monitor.
-  - It does not parse the Deployment to see if the ConfigMap/Secret is used as a volumeMount or an env reference.  
+  - It does not parse the Deployment to see if the ConfigMap/Secret is used as a volumeMount or an env reference.
   - The last known resourceVersion of the ConfigMap/Secret is recorded for tracking purposes.  If this does not match the Deployment is updated with `kubectl.kubernetes.io/restartedAt` annotation on the pod template.  And the tracking ConfigMap is updated.
   - Only Deployments are currently reloaded
 

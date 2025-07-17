@@ -22,7 +22,7 @@ spec:
 
       {{/* ##  for each kubeconfig replace the CA for the server. ## */}}
       {{- range $kubeSecret := $kubeConfigSecrets }}
-      
+
         {{/* ##  Validate age of kubeconfig, block updating clusters until after 24 hours ## */}}
         {{/* ##  This allows time for the day-2 config to be applied before expecting the api cert would be replaced. ## */}}
         {{- $secretCreated := (toDate "2006-1-2T15:04:05Z" $kubeSecret.metadata.creationTimestamp) }}

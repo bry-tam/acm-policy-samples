@@ -1,6 +1,6 @@
 This policy will apply the following annotations to all `ManagedClusters` that contain nodes labeled as infra nodes.
 
-For the policies in this repo the `inframachines` label on the ManagedCluster is used to activate the Policy which creates the Infra MachineSet.  
+For the policies in this repo the `inframachines` label on the ManagedCluster is used to activate the Policy which creates the Infra MachineSet.
 
 Annotations applied to `ManagedCluster`
 ```

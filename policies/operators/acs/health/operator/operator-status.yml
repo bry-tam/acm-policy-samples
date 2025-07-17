@@ -10,7 +10,7 @@ spec:
     {{/* ##  Get the subscription we are checking health for ## */}}
     {{- $op_namespace := "rhacs-operator" }}
     {{- $op_subName := "rhacs-operator"}}
-    
+
     {{/* ##  Ensure the Subscription is at latest known release status ## */}}
     {{- $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" $op_namespace $op_subName) }}
     - complianceType: musthave

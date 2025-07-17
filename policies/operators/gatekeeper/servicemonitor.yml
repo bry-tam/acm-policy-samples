@@ -19,4 +19,4 @@ spec:
   selector:
     matchLabels:
       gatekeeper.sh/operation: metrics
-   
+

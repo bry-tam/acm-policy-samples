@@ -22,33 +22,33 @@ policies:
     manifests:
       - path: verify-deprecatedapi/constrainttemplate.yml
       - path: verify-deprecatedapi/verifydeprecatedapi-1.16.yml
-        # extraDependencies: 
+        # extraDependencies:
         #   - name: verifydeprecatedapi
         #     apiVersion: templates.gatekeeper.sh/v1beta1
         #     kind: ConstraintTemplate
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.22.yml
-        # extraDependencies: 
+        # extraDependencies:
         #   - name: verifydeprecatedapi
         #     kind: ConfigurationPolicy
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.25.yml
-        # extraDependencies: 
+        # extraDependencies:
         #   - name: verifydeprecatedapi
         #     kind: ConfigurationPolicy
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.26.yml
-        # extraDependencies: 
+        # extraDependencies:
         #   - name: verifydeprecatedapi
         #     kind: ConfigurationPolicy
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.27.yml
-        # extraDependencies: 
+        # extraDependencies:
         #   - name: verifydeprecatedapi
         #     kind: ConfigurationPolicy
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.29.yml
-        # extraDependencies: 
+        # extraDependencies:
         #   - name: verifydeprecatedapi
         #     kind: ConfigurationPolicy
         #     compliance: "Compliant"

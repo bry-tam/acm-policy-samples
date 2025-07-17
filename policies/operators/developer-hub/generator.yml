@@ -47,14 +47,14 @@ policies:
 
       - path: app-config-rhdh.yml
         name: backstage-config
-        extraDependencies: 
+        extraDependencies:
           - name: backstage
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: dynamic-plugins-rhdh.yml
         name: dynamic-plugins
-        extraDependencies: 
+        extraDependencies:
           - name: backstage
             kind: ConfigurationPolicy
             compliance: "Compliant"

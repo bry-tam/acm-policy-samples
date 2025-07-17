@@ -20,22 +20,22 @@ policies:
       - path: console.yml
       - path: pull-secret.yml
       - path: objectbucketclaim.yml
-        extraDependencies: 
+        extraDependencies:
           - name: odf-operator-status
             kind: Policy
             compliance: "Compliant"
       - path: noobaa-cert-secret.yml
-        extraDependencies: 
+        extraDependencies:
           - name: odf-operator-status
             kind: Policy
-            compliance: "Compliant"      
+            compliance: "Compliant"
       - path: thanos-secret.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acm-observe5
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: observability.yml
-        extraDependencies: 
+        extraDependencies:
           - name: thanos-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"

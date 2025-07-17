@@ -25,18 +25,18 @@ policies:
       - path: ns-rhacs-operator.yml
       - path: ns-stackrox.yml
       - path: operatorgroup.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-operator
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: subscription.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-operator
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: health/operator/operator-status.yml
         remediationAction: InformOnly
-        extraDependencies: 
+        extraDependencies:
           - name: acs-operator3
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -57,7 +57,7 @@ policies:
       - path: central/consolelink.yml
       - path: health/central/central-status.yml
         remediationAction: InformOnly
-        extraDependencies: 
+        extraDependencies:
           - name: acs-central
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -75,7 +75,7 @@ policies:
       - path: central/init-bundle/role.yml
       - path: central/init-bundle/rolebinding.yml
       - path: central/init-bundle/job.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-central-init-bundle
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -101,7 +101,7 @@ policies:
         remediationAction: InformOnly
         name: expired-sensor-tls
       - path: sensor/securedcluster.yml
-        extraDependencies: 
+        extraDependencies:
           - name: expired-sensor-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -122,7 +122,7 @@ policies:
       - path: central/init-bundle/expired-collector-tls.yml
       - path: central/init-bundle/expired-sensor-tls.yml
       - path: central/init-bundle/job.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-central-expired-certs
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -144,7 +144,7 @@ policies:
     manifests:
       - path: sensor/sensor-sync-tls-certs.yml
 
-  
+
   - name: acs-sensor
     remediationAction: enforce
     policySets:
@@ -154,7 +154,7 @@ policies:
       - path: sensor/propagate-collector-tls.yml
       - path: sensor/propagate-sensor-tls.yml
       - path: sensor/securedcluster.yml
-        extraDependencies: 
+        extraDependencies:
           - name: acs-sensor
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -167,7 +167,7 @@ policies:
 
 policySets:
   - name: acs-operator-hub
-    placement:  
+    placement:
       placementName: "ft-acs--hub"
 
   - name: acs-operator-managed

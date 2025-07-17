@@ -74,7 +74,7 @@ policySets:
   - name: gitops-operator
     placement:
       placementName: "env-bound-placement"
-  
+
   - name: gitops-acm-hub
-    placement:  
+    placement:
       placementName: "ft-acm-hub"

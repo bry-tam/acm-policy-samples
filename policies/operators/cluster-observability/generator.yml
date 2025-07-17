@@ -7,7 +7,7 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
-  policySets: 
+  policySets:
     - cluster-observability-operator
 placementBindingDefaults:
   name: "cluster-observability-binding"

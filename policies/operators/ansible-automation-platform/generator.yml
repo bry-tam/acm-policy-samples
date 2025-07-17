@@ -33,14 +33,14 @@ policies:
 
       - path: hub-secret.yml
         name: ansible-hub-odf
-        extraDependencies: 
+        extraDependencies:
           - name: obc-hub-odf
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
       - path: ansibleautomationplatform.yml
         name: ansibleautomationplatform
-        extraDependencies: 
+        extraDependencies:
           - name: ansible-hub-odf
             kind: ConfigurationPolicy
             compliance: "Compliant"

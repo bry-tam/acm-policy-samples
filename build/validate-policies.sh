@@ -39,7 +39,7 @@ validatePolicyGenerator() {
   cd $KPATH
 }
 
-# Setup 
+# Setup
 
 # Go Setup
 export GOBIN=${PWD}/bin

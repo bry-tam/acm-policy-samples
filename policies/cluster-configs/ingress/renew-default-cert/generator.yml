@@ -44,7 +44,7 @@ policies:
 
       - path: ingress-operator-pod.yml
         name: ingress-operator-pod
-        extraDependencies: 
+        extraDependencies:
           - name: router-ca-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"
@@ -54,7 +54,7 @@ policies:
 
       - path: default-router-pod.yml
         name: default-router-pod
-        extraDependencies: 
+        extraDependencies:
           - name: router-ca-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"

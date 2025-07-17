@@ -1,4 +1,4 @@
-The cluster-maintenance policies provide a process to manage a cluster long term. 
+The cluster-maintenance policies provide a process to manage a cluster long term.
 These policies will review RoleBindings, groups and other objects to find out of date cruft and clean itfrom th cluster
 
 Policies:
