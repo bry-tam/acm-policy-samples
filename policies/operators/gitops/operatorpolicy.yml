@@ -21,11 +21,15 @@ spec:
     channel: gitops-1.16
     config:
       env:
-        ## remove the default ARGOCD instance
         - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
           value: openshift-gitops
         - name: DISABLE_DEFAULT_ARGOCD_CONSOLELINK
           value: "true"
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+        - operator: Exists
+          key: node-role.kubernetes.io/infra
     name: openshift-gitops-operator
     namespace: openshift-gitops-operator
     source: redhat-operators
