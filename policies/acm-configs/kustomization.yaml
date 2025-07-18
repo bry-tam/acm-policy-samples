@@ -8,6 +8,5 @@ resources:
   - ./policy-alerts/
   - ./observability/
   - ./managedserviceaccount/
-  - ./policygenerator-download/
   - ./klusterlet-infra/
   - ./kubeadmin-config-trustca/

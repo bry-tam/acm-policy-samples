@@ -1,5 +1,5 @@
 # Tempo Operator
-Installs the Tempo operator.
+Installs the Tempo operator.  Also known as Distributed Tracing in the OCP Documentation.
 
 ## Dependencies
   - None
@@ -7,7 +7,7 @@ Installs the Tempo operator.
 ## Details
 ACM Minimal Version: 2.12
 
-Documentation: [latest](https://docs.redhat.com/en/documentation/red_hat_openshift_service_mesh/latest/html-single/observability/index#ossm-distr-tracing)
+Documentation: [latest](https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html-single/distributed_tracing/index)
 
 ---
 **Notes:**

@@ -7,12 +7,9 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   pruneObjectBehavior: DeleteIfCreated
-  ## turn off the default compliance annotations
-  categories: []
-  controls: []
-  standards: []
   policySets:
     - acm-klusterlet-infra
+
 placementBindingDefaults:
   name: "acm-klusterlet-infra-binding"
 
@@ -21,6 +18,10 @@ policies:
     remediationAction: enforce
     manifests:
       - path: infra-selector-tolerations.yml
+        name: infra-selector-tolerations
+
+      - path: addondeploymentconfig.yml
+        name: infra-deploy-config
 
 policySets:
   - name: acm-klusterlet-infra

@@ -1,11 +1,11 @@
 # acm-policy-samples
 
-RHACM sample policies meant to showcase best practices.
+This repo contains many RHACM sample policies meant to showcase best practices.  The full list of included policies can be found in [docs/policy-list.md](docs/policy-list.md).
 
 ## Background
 Many users have requirements that Policy changes should be deployed to Dev --> QA --> Prod clusters in sequence to allow testing.  Many also require a workflow that allows blocking changes except during maintenance windows.
 
-These customer requirements are in contradiction to basic GitOps practices and ACM functionaltiy.  RHACM does not have a control process that enables managing changes to Policies through the managed cluster environments.  When we have RHACM `Policies` that should be applied to every cluster we want to use all of the tooling in the best way possible to meet our requirements while at the same time following GitOps and code maintenance best practices.  When a new Policy that deployed to all clusters is created, or an existing edited, we want to make sure those changes can be controlled where and when they are deployed.
+These customer requirements are a basic GitOps practices, however they are not native to ACM functionality.  RHACM does not have a control process that enables managing changes to Policies through the managed cluster environments.  When we have RHACM `Policies` that should be applied to every cluster we want to use all of the tooling in the best way possible to meet our requirements while at the same time following GitOps and code maintenance best practices.  When a new Policy that deployed to all clusters is created, or an existing edited, we want to make sure those changes can be controlled where and when they are deployed.
 
 Additionally we don't want to have to manage multiple copies of the same Policy, such as using directories would cause.  We want to have as little friction between the Policy definition itself and the business rules used to determine when/where a Policy is applied.
 

@@ -1,44 +1,37 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: ft-flag-placement
-spec:
-  remediationAction: enforce
-  severity: low
-  object-templates-raw: |
-    {{/* ##  Gather all PlacementBindings from the hub cluster ## */}}
-    {{- range $pb := (lookup "policy.open-cluster-management.io/v1" "PlacementBinding" "" "").items }}
-      {{/* ##  test if the name of the Placement in the PlacementBinding matches the naming of a feature flag ## */}}
-      {{- $pname := $pb.placementRef.name }}
-      {{- if hasPrefix "ft-" $pname }}
-        {{- $feature := (split "--" ($pname | replace "ft-" "")) }}
+object-templates-raw: |
+  {{/* ##  Gather all PlacementBindings from the hub cluster ## */}}
+  {{- range $pb := (lookup "policy.open-cluster-management.io/v1" "PlacementBinding" "" "").items }}
+    {{/* ##  test if the name of the Placement in the PlacementBinding matches the naming of a feature flag ## */}}
+    {{- $pname := $pb.placementRef.name }}
+    {{- if hasPrefix "ft-" $pname }}
+      {{- $feature := (split "--" ($pname | replace "ft-" "")) }}
 
-        {{/* ##  Lookup an existing Placement in the same namespace so we can use the same ClusterSet ## */}}
-        {{- $refPlacement := (index (lookup "cluster.open-cluster-management.io/v1beta1" "Placement" $pb.metadata.namespace "").items 0) }}
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: cluster.open-cluster-management.io/v1beta1
-        kind: Placement
-        metadata:
-          name: {{ $pname }}
-          namespace: {{ $pb.metadata.namespace }}
-        spec:
-          clusterSets:
-            - {{ index ($refPlacement.spec.clusterSets) 0 }}
-          predicates:
-            - requiredClusterSelector:
-                labelSelector:
-                  matchExpressions:
-                    - key: vendor
-                      operator: In
-                      values:
-                        - OpenShift
-                    - key: {{ $feature._0 }}
-                      operator: {{ (empty $feature._1) | ternary "Exists" "In" }}
-        {{- if not (empty $feature._1) }}
-                      values:
-                        - {{ $feature._1 }}
-        {{- end }}
+      {{/* ##  Lookup an existing Placement in the same namespace so we can use the same ClusterSet ## */}}
+      {{- $refPlacement := (index (lookup "cluster.open-cluster-management.io/v1beta1" "Placement" $pb.metadata.namespace "").items 0) }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: cluster.open-cluster-management.io/v1beta1
+      kind: Placement
+      metadata:
+        name: {{ $pname }}
+        namespace: {{ $pb.metadata.namespace }}
+      spec:
+        clusterSets:
+          - {{ index ($refPlacement.spec.clusterSets) 0 }}
+        predicates:
+          - requiredClusterSelector:
+              labelSelector:
+                matchExpressions:
+                  - key: vendor
+                    operator: In
+                    values:
+                      - OpenShift
+                  - key: {{ $feature._0 }}
+                    operator: {{ (empty $feature._1) | ternary "Exists" "In" }}
+      {{- if not (empty $feature._1) }}
+                    values:
+                      - {{ $feature._1 }}
       {{- end }}
     {{- end }}
+  {{- end }}
