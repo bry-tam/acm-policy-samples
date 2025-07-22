@@ -22,6 +22,7 @@ policies:
 
       - path: addondeploymentconfig.yml
         name: infra-deploy-config
+        complianceType: mustonlyhave
 
 policySets:
   - name: acm-klusterlet-infra
