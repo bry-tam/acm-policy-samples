@@ -1,0 +1,37 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-compliance
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - compliance-operator
+
+placementBindingDefaults:
+  name: "compliance-binding"
+
+policies:
+  - name: compliance-operator
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+        name: compliance-namespace
+
+      - path: operatorpolicy.yml
+
+  - name: compliance-operator-example
+    remediationAction: enforce
+    manifests:
+      - path: example-scan/scansetting.yml
+        name: compliance-scansetting
+
+      - path: example-scan/scansettingbinding.yml
+        name: compliance-scansettingbinding
+
+policySets:
+  - name: compliance-operator
+    placement:
+      placementName: "ft-compliance-enabled"
