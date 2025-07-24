@@ -4,5 +4,5 @@ kind: ConsoleLink
 metadata:
   name: gitops
 spec:
-  href: 'https://{{ (lookup "route.openshift.io/v1" "Route" "argocd-dev" "argocd-dev-server").spec.host }}'
+  href: 'https://{{ (lookup "route.openshift.io/v1" "Route" "openshift-gitops" "openshift-gitops-server").spec.host }}'
   text: Cluster GitOps
