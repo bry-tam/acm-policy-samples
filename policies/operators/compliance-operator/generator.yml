@@ -34,4 +34,4 @@ policies:
 policySets:
   - name: compliance-operator
     placement:
-      placementName: "ft-compliance-enabled"
+      placementName: "ft-compliance--enabled"
