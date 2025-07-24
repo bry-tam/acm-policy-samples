@@ -30,5 +30,6 @@ spec:
       # - name: PLATFORM
       #   value: "HyperShift"
   operatorGroup:
+    name: compliance-operator
     targetNamespaces:
       - openshift-compliance
