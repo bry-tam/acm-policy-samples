@@ -55,6 +55,7 @@ object-templates-raw: |
         {{- end }}
         phase: Ready
 
+  {{- if not (semverCompare  ">= 4.19" (fromClusterClaim "version.openshift.io")) }}
   {{- $ss := (lookup "odf.openshift.io/v1alpha1" "StorageSystem" "openshift-storage" "ocs-storagecluster-storagesystem") }}
   - complianceType: musthave
     objectDefinition:
@@ -73,3 +74,4 @@ object-templates-raw: |
           {{- end }}
         - {{ $c | toRawJson | toLiteral }}
         {{- end }}
+  {{- end }}
