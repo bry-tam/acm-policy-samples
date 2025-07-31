@@ -9,16 +9,31 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - acm-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_group.name: acm-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "acm-operator-binding"
 
 policies:
   - name: acm-operator
+    description: "Manages ACM Operator install and version"
     remediationAction: enforce
     manifests:
       - path: operatorpolicy.yml
 
   - name: acm-multiclusterhub
+    description: "Configures MultiClusterHub instance for ACM Operator"
     remediationAction: enforce
     dependencies:
       - name: acm-operator
@@ -26,6 +41,13 @@ policies:
     manifests:
       - path: multiclusterhub.yml
         name: acm-operator-multiclusterhub
+
+      - path: uiplugin.yml
+        name: acm-alert-ui
+        extraDependencies:
+          - name: cluster-observability-operator
+            kind: Policy
+            compliance: "Compliant"
 
 policySets:
   - name: acm-operator
