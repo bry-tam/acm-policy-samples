@@ -29,25 +29,7 @@ There are two PolicySets defined; one for the Hub (`acs-operator-hub`) and one f
     manifests:
       - path: ns-rhacs-operator.yml
       - path: ns-stackrox.yml
-      - path: operatorgroup.yml
-        extraDependencies:
-          - name: acs-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: subscription.yml
-        extraDependencies:
-          - name: acs-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: health/operator/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies:
-          - name: acs-operator3
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-          - name: acs-operator4
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+      - path: operatorpolicy.yml
 ```
 
 ***acs-central*** policy:

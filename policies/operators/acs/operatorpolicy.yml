@@ -1,0 +1,25 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: advanced-cluster-secutity-operator-install
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: Automatic
+  subscription:
+    channel: rhacs-4.7
+    name: rhacs-operator
+    namespace: rhacs-operator
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace

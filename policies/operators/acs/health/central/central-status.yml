@@ -1,45 +1,23 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: acs-central-status
-spec:
-  remediationAction: InformOnly
-  severity: high
-  object-templates-raw: |
-    {{/* ##  Ensure the central deployments exists and has reached full pod health ## */}}
-    {{- $opDepList := list "central" "central-db" "scanner" "scanner-db" }}
+object-templates-raw: |
+  {{/* ##  Ensure the central deployments exists and has reached full pod health ## */}}
+  {{- $opDepList := list "central" "central-db" "scanner" "scanner-db" }}
 
-    {{- range $depName := $opDepList }}
-      {{- $dep := (lookup "apps/v1" "Deployment" "stackrox" $depName) }}
-    - complianceType: musthave
-      objectDefinition:
-        kind: Deployment
-        apiVersion: apps/v1
-        metadata:
-          namespace: stackrox
-      {{- if not $dep }}
-          name: {{ $depName }}
-      {{- else }}
-      ## when the deployment exists the compliance will be determined by
-      ## the labels, spec.selector.matchLabels and the expected healthy status
-          labels:
-        {{- range $k, $v := $dep.metadata.labels }}
-            {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-        {{- end }}
-        spec:
-          selector:
-            matchLabels:
-            {{- range $k, $v := $dep.spec.selector.matchLabels }}
-              {{ $k }}: {{ (empty $v) | ternary "''" $v }}
-            {{- end }}
-        status:
-          replicas: {{ $dep.spec.replicas }}
-          updatedReplicas: {{ $dep.spec.replicas }}
-          readyReplicas: {{ $dep.spec.replicas }}
-          availableReplicas: {{ $dep.spec.replicas }}
-          conditions:
-            - type: Available
-              status: 'True'
-      {{- end }}
-    {{- end }}
+  {{- range $depName := $opDepList }}
+    {{- $dep := (lookup "apps/v1" "Deployment" "stackrox" $depName) }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: Deployment
+      apiVersion: apps/v1
+      metadata:
+        namespace: stackrox
+        name: {{ $depName }}
+      status:
+        replicas: {{ $dep.spec.replicas }}
+        updatedReplicas: {{ $dep.spec.replicas }}
+        readyReplicas: {{ $dep.spec.replicas }}
+        availableReplicas: {{ $dep.spec.replicas }}
+        conditions:
+          - type: Available
+            status: 'True'
+  {{- end }}

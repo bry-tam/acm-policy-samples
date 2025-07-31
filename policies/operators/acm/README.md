@@ -4,7 +4,7 @@ Configures the ACM Operator and manages `multicluterhub` instance.  Policy contr
 As ACM is managing itself there is an expectation that ACM was likely installed by other means.
 
 ## Dependencies
-- none
+  - [Cluster Observability](../cluster-observability/)
 
 ## Details
 ACM Minimal Version: 2.12
@@ -17,3 +17,4 @@ Documentation: [latest](https://docs.redhat.com/en/documentation/red_hat_advance
     - Does not monitor all of ACM health, just the multiclusterhub-operator deployment
   - This will not configure ACM Observability or move other ACM workloads to infra nodes
   - Because ACM can't install ACM, the namespace is expected to already exist.
+  - Deploys multi-cluster alert UI plugin

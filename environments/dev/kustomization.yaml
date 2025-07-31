@@ -20,19 +20,3 @@ resources:
 components:
   ## include all of the kustomize transformers and configurations
   - ../../kustomize-configs/
-
-
-  ## Add the ClusterSet that should be managed as part of this environment.  This patch will update the placments and ManagedClusterSetbinding
-  # - target:
-  #     kind: Placement
-  #   patch: |-
-
-      ## there should be no reason to inject enviroment info to the placement since
-      ## the clusterset would control what clusters the policy is deployed to
-      ## If you need this aditional level of control, uncomment the below.
-      # - op: add
-      #   path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions/-
-      #   value:
-      #     key: environment
-      #     operator: In
-      #     values: ["Prod"]
