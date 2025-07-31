@@ -1,0 +1,6 @@
+---
+nameReference:
+- kind: PolicySet
+  fieldSpecs:
+  - kind: PlacementBinding
+    path: subjects/name
