@@ -1,0 +1,29 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: odf-operator-install
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: Automatic
+  subscription:
+    channel: 'stable-{{ fromClusterClaim "openshiftversion-major-minor" }}'
+    name: odf-operator
+    namespace: openshift-storage
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+  operatorGroup:
+    name: openshift-storage-operatorgroup
+    targetNamespaces:
+    - openshift-storage

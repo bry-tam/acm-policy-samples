@@ -1,0 +1,19 @@
+---
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: gitops
+spec:
+  rbac:
+    defaultPolicy: readonly
+    policy: |
+      g, system:cluster-admins, role:admin
+      g, cluster-admins, role:admin
+      g, "bry-tam", role:admin
+      p, role:org-team, projects, get, *, allow
+      p, role:org-team, projects, create, *, allow
+      p, role:org-team, projects, update, *, allow
+      p, role:org-team, projects, delete, *, allow
+      g, argoteam, role:org-team
+    scopes: '[groups]'
+  helpChatURL: 'https://cloud-native.slack.com/archives/C01TSERG0KZ'

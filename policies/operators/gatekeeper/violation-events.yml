@@ -1,34 +1,27 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: gatekeeper-violation-event
-spec:
-  remediationAction: inform
-  severity: high
-  object-templates-raw: |
-    ## get all of the ConstraintTemplates so we know what kinds of constrainsts are possible
-    {{- range $ctemp := (lookup "templates.gatekeeper.sh/v1beta1" "ConstraintTemplate" "" "").items }}
-      {{- range $constrnt :=  (lookup "constraints.gatekeeper.sh/v1beta1" $ctemp.spec.crd.spec.names.kind "" "").items }}
-    - complianceType: mustnothave
-      objectDefinition:
-        apiVersion: v1
-        kind: Event
-        metadata:
-          namespace: openshift-gatekeeper-system
-          annotations:
-            constraint_action: deny
-            constraint_kind: {{ $constrnt.kind }}
-            constraint_name: {{ $constrnt.metadata.name }}
-            event_type: violation
-    
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: constraints.gatekeeper.sh/v1beta1
-        kind: {{ $constrnt.kind }}
-        metadata:
-          name: {{ $constrnt.metadata.name }}
-        status:
-          totalViolations: 0
-      {{- end }}
+object-templates-raw: |
+  ## get all of the ConstraintTemplates so we know what kinds of constrainsts are possible
+  {{- range $ctemp := (lookup "templates.gatekeeper.sh/v1beta1" "ConstraintTemplate" "" "").items }}
+    {{- range $constrnt :=  (lookup "constraints.gatekeeper.sh/v1beta1" $ctemp.spec.crd.spec.names.kind "" "").items }}
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: v1
+      kind: Event
+      metadata:
+        namespace: openshift-gatekeeper-system
+        annotations:
+          constraint_action: deny
+          constraint_kind: {{ $constrnt.kind }}
+          constraint_name: {{ $constrnt.metadata.name }}
+          event_type: violation
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: constraints.gatekeeper.sh/v1beta1
+      kind: {{ $constrnt.kind }}
+      metadata:
+        name: {{ $constrnt.metadata.name }}
+      status:
+        totalViolations: 0
     {{- end }}
+  {{- end }}

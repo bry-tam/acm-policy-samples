@@ -9,31 +9,17 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - loki-operator
+
 placementBindingDefaults:
   name: "loki-binding"
 
 policies:
   - name: loki-operator
-    remediationAction: enforce
     manifests:
       - path: namespace.yml
-      - path: operatorgroup.yml
-        extraDependencies:
-          - name: loki-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: subscription.yml
-        extraDependencies:
-          - name: loki-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: health/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies:
-          - name: loki-operator3
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
+        name: loki-namespace
 
+      - path: operatorpolicy.yml
 
 policySets:
   - name: loki-operator

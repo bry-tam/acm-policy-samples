@@ -7,7 +7,7 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
-  policySets: 
+  policySets:
     - workload-availability-operator
 placementBindingDefaults:
   name: "workload-availability-binding"
@@ -21,7 +21,7 @@ policies:
       - path: node-healthcheck-operatorpolicy.yml
       - path: node-remediation-console.yml
         name: node-remediation-console
-        extraDependencies: 
+        extraDependencies:
           - apiVersion: policy.open-cluster-management.io/v1beta1
             kind: OperatorPolicy
             name: node-healthcheck-operator-install

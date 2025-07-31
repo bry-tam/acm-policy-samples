@@ -1,54 +1,45 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: configure-appliationset-clusterbinding
-spec:
-  remediationAction: enforce
-  severity: high
-  object-templates-raw: |
-    {{- range $mcs := (lookup "cluster.open-cluster-management.io/v1beta2" "ManagedClusterSet" "" "").items }}
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: cluster.open-cluster-management.io/v1beta2
-        kind: ManagedClusterSetBinding
-        metadata:
-          name: {{ $mcs.metadata.name }}
-          namespace: openshift-gitops
-        spec:
-          clusterSet: {{ $mcs.metadata.name }}
+object-templates-raw: |
+  {{- range $mcs := (lookup "cluster.open-cluster-management.io/v1beta2" "ManagedClusterSet" "" "").items }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: cluster.open-cluster-management.io/v1beta2
+      kind: ManagedClusterSetBinding
+      metadata:
+        name: {{ $mcs.metadata.name }}
+        namespace: openshift-gitops
+      spec:
+        clusterSet: {{ $mcs.metadata.name }}
 
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: cluster.open-cluster-management.io/v1beta1
-        kind: Placement
-        metadata:
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: cluster.open-cluster-management.io/v1beta1
+      kind: Placement
+      metadata:
+        name: {{ $mcs.metadata.name }}-placement
+        namespace: openshift-gitops
+      spec:
+        clusterSets:
+          - {{ $mcs.metadata.name }}
+        tolerations:
+          - key: cluster.open-cluster-management.io/unreachable
+            operator: Exists
+          - key: cluster.open-cluster-management.io/unavailable
+            operator: Exists
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: apps.open-cluster-management.io/v1beta1
+      kind: GitOpsCluster
+      metadata:
+        name: gitops-cluster-{{ $mcs.metadata.name }}
+        namespace: openshift-gitops
+      spec:
+        argoServer:
+          cluster: local-cluster
+          argoNamespace: openshift-gitops
+        placementRef:
+          kind: Placement
+          apiVersion: cluster.open-cluster-management.io/v1beta1
           name: {{ $mcs.metadata.name }}-placement
-          namespace: openshift-gitops
-        spec:
-          clusterSets:
-            - {{ $mcs.metadata.name }}
-          tolerations:
-            - key: cluster.open-cluster-management.io/unreachable
-              operator: Exists
-            - key: cluster.open-cluster-management.io/unavailable
-              operator: Exists
-
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: apps.open-cluster-management.io/v1beta1
-        kind: GitOpsCluster
-        metadata:
-          name: gitops-cluster-{{ $mcs.metadata.name }}
-          namespace: openshift-gitops
-        spec:
-          argoServer:
-            cluster: local-cluster
-            argoNamespace: openshift-gitops
-          placementRef:
-            kind: Placement
-            apiVersion: cluster.open-cluster-management.io/v1beta1
-            name: {{ $mcs.metadata.name }}-placement
-
-
-    {{- end }}
+  {{- end }}

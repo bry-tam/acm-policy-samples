@@ -11,14 +11,14 @@ spec:
   template:
     metadata:
       annotations:
-        inject.istio.io/templates: gateway 
+        inject.istio.io/templates: gateway
       labels:
         istio: ingressgateway
         istio.io/rev: default-v1-24-latest
     spec:
       containers:
         - name: istio-proxy
-          image: auto 
+          image: auto
           securityContext:
             capabilities:
               drop:
@@ -42,4 +42,4 @@ spec:
         sysctls:
         - name: net.ipv4.ip_unprivileged_port_start
           value: "0"
-      serviceAccountName: secret-reader 
+      serviceAccountName: secret-reader

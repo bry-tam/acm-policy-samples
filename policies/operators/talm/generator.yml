@@ -9,6 +9,7 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - talm-operator
+
 placementBindingDefaults:
   name: "talm-binding"
 
@@ -16,12 +17,12 @@ policies:
   - name: talm-operator
     remediationAction: enforce
     manifests:
-      - path: subscription.yml
-      - path: health/operator-status.yml
-        remediationAction: inform
+      - path: namespace.yml
+        name: talm-namespace
+
+      - path: operatorpolicy.yml
 
 policySets:
   - name: talm-operator
     placement:
       placementName: "ft-acm-hub"
-

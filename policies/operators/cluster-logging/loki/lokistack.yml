@@ -1,116 +1,104 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
+apiVersion: loki.grafana.com/v1
+kind: LokiStack
 metadata:
-  name: lokistack-logging
+  name: logging-loki
+  namespace: openshift-logging
 spec:
-  remediationAction: enforce
-  severity: high
-  object-templates-raw: |
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: loki.grafana.com/v1
-        kind: LokiStack
-        metadata:
-          name: logging-loki
-          namespace: openshift-logging
-        spec:
-          limits:
-            global: 
-              ingestion:
-                ingestionBurstSize: 40
-                ingestionRate: 75
-              retention: 
-                days: 2
-                streams:
-                - days: 2
-                  priority: 1
-                  selector: '{kubernetes_namespace_name=~"test.+"}' 
-                - days: 1
-                  priority: 1
-                  selector: '{log_type="infrastructure"}'
-            tenants: 
-              application:
-                retention:
-                  days: 1
-                  streams:
-                    - days: 2
-                      selector: '{kubernetes_namespace_name=~"test.+"}' 
-              infrastructure:
-                retention:
-                  days: 1
-                  streams:
-                    - days: 1
-                      selector: '{kubernetes_namespace_name=~"openshift-cluster.+"}'
-              audit:
-                retention:
-                  days: 1
-          managementState: Managed
-          size: 1x.extra-small
-          storage:
-            schemas:
-            - version: v12
-              effectiveDate: '2022-06-01'
-            - version: v13
-              effectiveDate: '2024-05-30'
-            secret:
-              name: logging-loki-odf
-              type: s3 
-            tls:
-              caName: noobaa-s3-serving-cert
-              caKey: ca.crt
-          storageClassName: gp3-csi
-          tenants:
-            mode: openshift-logging
-    {{- $infraCount := (len (lookup "v1" "Node" "" "" "node-role.kubernetes.io/infra" "!node-role.kubernetes.io/storage").items) }}
-    {{- if ne $infraCount 0 }}
-          template:
-            compactor:
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-            distributor:
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-            gateway:
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-            indexGateway:
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-            ingester:
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-            querier:
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-            queryFrontend:
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-            ruler:
-              nodeSelector:
-                node-role.kubernetes.io/infra: ""
-              tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-    {{- end }}
+  limits:
+    global:
+      ingestion:
+        ingestionBurstSize: 40
+        ingestionRate: 75
+      retention:
+        days: 2
+        streams:
+        - days: 2
+          priority: 1
+          selector: '{kubernetes_namespace_name=~"test.+"}'
+        - days: 1
+          priority: 1
+          selector: '{log_type="infrastructure"}'
+    tenants:
+      application:
+        retention:
+          days: 1
+          streams:
+            - days: 2
+              selector: '{kubernetes_namespace_name=~"test.+"}'
+      infrastructure:
+        retention:
+          days: 1
+          streams:
+            - days: 1
+              selector: '{kubernetes_namespace_name=~"openshift-cluster.+"}'
+      audit:
+        retention:
+          days: 1
+  managementState: Managed
+  size: 1x.extra-small
+  storage:
+    schemas:
+    - version: v12
+      effectiveDate: '2022-06-01'
+    - version: v13
+      effectiveDate: '2024-05-30'
+    secret:
+      name: logging-loki-odf
+      type: s3
+    tls:
+      caName: noobaa-s3-serving-cert
+      caKey: ca.crt
+  storageClassName: gp3-csi
+  tenants:
+    mode: openshift-logging
+
+  template:
+    compactor:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
+    distributor:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
+    gateway:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
+    indexGateway:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
+    ingester:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
+    querier:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
+    queryFrontend:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
+    ruler:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra

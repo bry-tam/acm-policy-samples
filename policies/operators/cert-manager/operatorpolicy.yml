@@ -18,8 +18,12 @@ spec:
   severity: critical
   upgradeApproval: Automatic
   subscription:
-    channel: stable-v1.15
+    channel: stable-v1.16
     name: openshift-cert-manager-operator
     namespace: cert-manager-operator
     source: redhat-operators
     sourceNamespace: openshift-marketplace
+    config:
+      env:
+        - name: TRUSTED_CA_CONFIGMAP_NAME
+          value: trusted-ca

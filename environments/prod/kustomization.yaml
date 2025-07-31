@@ -1,3 +1,4 @@
+---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
@@ -9,7 +10,7 @@ namespace: bry-tam-policies-prod
 transformers:
   ## set the name of the PolicySets to include a suffix specific to this environment
   - kustomize-configs/policyset-suffixer.yml
-  
+
   ## replace all references to ManagedClusterSet with the name of the ManagedClusterSet created for this environment
   - ../../kustomize-configs/
 
@@ -18,7 +19,7 @@ resources:
 
   ## include the hub in this environment
   - ../../local-cluster/
-  
+
   ## include all policies
   - ../../policies/
 
@@ -42,7 +43,7 @@ patches:
       ## If you need this aditional level of control, uncomment the below.
       # - op: add
       #   path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions/-
-      #   value: 
+      #   value:
       #     key: environment
       #     operator: In
       #     values: ["Prod"]

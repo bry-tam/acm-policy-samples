@@ -22,7 +22,7 @@ spec:
               - apiGroups: ["extensions"]
                 kinds: ["PodSecurityPolicy", "ReplicaSet", "Deployment", "DaemonSet", "NetworkPolicy"]
           parameters:
-            kvs: 
+            kvs:
               - deprecatedAPI: "apps/v1beta1"
                 kinds: ["Deployment", "ReplicaSet", "StatefulSet"]
                 targetAPI: "apps/v1"

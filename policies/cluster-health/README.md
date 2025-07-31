@@ -5,4 +5,4 @@ The purpose of this policy is to validate the OCP cluster is healthy.  This shou
 - all nodes are healthy and schedulable
   - updated to the rendered config matching the MCP
   - are managed by an MCP
-- 
+-

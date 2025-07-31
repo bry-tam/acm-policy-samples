@@ -1,9 +1,10 @@
+---
 apiVersion: machineconfiguration.openshift.io/v1
 kind: KubeletConfig
 metadata:
   name: master-kubelet
 spec:
-  autoSizingReserved: true 
+  autoSizingReserved: true
   machineConfigPoolSelector:
     matchLabels:
-      pools.operator.machineconfiguration.openshift.io/master: "" 
+      pools.operator.machineconfiguration.openshift.io/master: ""

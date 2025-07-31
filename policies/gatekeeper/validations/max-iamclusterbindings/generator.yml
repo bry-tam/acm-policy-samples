@@ -22,7 +22,7 @@ policies:
     manifests:
       - path: max-iamclusterbindings/constrainttemplate.yml
       - path: max-iamclusterbindings/maxiamclusterbindings.yml
-        # extraDependencies: 
+        # extraDependencies:
         #   - name: maxclusteradmins
         #     apiVersion: templates.gatekeeper.sh/v1beta1
         #     kind: ConstraintTemplate

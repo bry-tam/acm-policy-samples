@@ -1,7 +1,9 @@
+---
 apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
 metadata:
   name: openshift-gitops
+  namespace: openshift-gitops
 spec:
   kustomizeBuildOptions: --enable-alpha-plugins
   repo:
@@ -25,4 +27,4 @@ spec:
       name: policy-generator
     volumes:
     - emptyDir: {}
-      name: policy-generator 
+      name: policy-generator

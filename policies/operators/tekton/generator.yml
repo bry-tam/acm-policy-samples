@@ -8,20 +8,20 @@ policyDefaults:
   remediationAction: enforce
   consolidateManifests: false
   policySets:
-    - tekton-operators
+    - tekton-operator
+
 placementBindingDefaults:
   name: "tekton-binding"
 
 policies:
   - name: tekton-operator
-    remediationAction: enforce
     manifests:
-      - path: subscription.yml
-      - path: health/operator-status.yml
-        remediationAction: inform
+      - path: namespace.yml
+        name: tkn-namespace
+
+      - path: operatorpolicy.yml
 
   - name: tekton-rh-auth
-    remediationAction: enforce
     namespaceSelector:
       matchLabels:
         tekton.rh-reg-auth: true
@@ -30,15 +30,18 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: pull-secret-auth/
+        name: pipeline-pull-secret
 
   - name: tekton-configure
-    remediationAction: enforce
     dependencies:
       - name: "tekton-operator"
         compliance: "Compliant"
     manifests:
       - path: tektonchains.yml
+        name: tekton-chain
+
       - path: tektonconfig.yml
+        name: tekton-config
 
   - name: tekton-operator-status
     remediationAction: inform
@@ -47,9 +50,9 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: health/tekton-status.yml
+        name: tekton-status
 
 policySets:
-  - name: tekton-operators
+  - name: tekton-operator
     placement:
       placementName: "ft-tekton--enabled"
-

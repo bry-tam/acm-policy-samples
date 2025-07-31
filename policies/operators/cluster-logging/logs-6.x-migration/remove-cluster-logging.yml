@@ -1,21 +1,14 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: remove-clusterlogging
-spec:
-  remediationAction: enforce
-  severity: high
-  object-templates-raw: |
-    {{/* ##  Find the ClusterLogging configuration ## */}}
-    {{- $loggers := (lookup "logging.openshift.io/v1" "ClusterLogging" "" "").items }}
+object-templates-raw: |
+  {{/* ##  Find the ClusterLogging configuration ## */}}
+  {{- $loggers := (lookup "logging.openshift.io/v1" "ClusterLogging" "" "").items }}
 
-    {{- range $clf := $loggers }}
-    - complianceType: mustnothave
-      objectDefinition:
-        apiVersion: {{ $clf.apiVersion }}
-        kind: {{ $clf.kind }}
-        metadata:
-          name: {{ $clf.metadata.name }}
-          namespace: {{ $clf.metadata.namespace }}
-    {{- end }}
+  {{- range $clf := $loggers }}
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: {{ $clf.apiVersion }}
+      kind: {{ $clf.kind }}
+      metadata:
+        name: {{ $clf.metadata.name }}
+        namespace: {{ $clf.metadata.namespace }}
+  {{- end }}

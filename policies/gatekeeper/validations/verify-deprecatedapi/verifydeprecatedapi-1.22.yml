@@ -42,7 +42,7 @@ spec:
               - apiGroups: ["storage.k8s.io/v1beta1"]
                 kinds: ["CSIDriver", "CSINode", "StorageClass", "VolumeAttachment"]
           parameters:
-            kvs: 
+            kvs:
               - deprecatedAPI: "admissionregistration.k8s.io/v1beta1"
                 kinds: ["MutatingWebhookConfiguration", "ValidatingWebhookConfiguration"]
                 targetAPI: "admissionregistration.k8s.io/v1"

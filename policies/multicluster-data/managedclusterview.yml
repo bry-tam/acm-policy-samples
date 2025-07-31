@@ -1,3 +1,4 @@
+---
 object-templates-raw: |
   {{range $mc := (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "" "" "servicemesh-federation=enabled").items }}
   - complianceType: mustonlyhave

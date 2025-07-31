@@ -16,24 +16,7 @@ policies:
   - name: acm-operator
     remediationAction: enforce
     manifests:
-      - path: namespace.yml
-      - path: operatorgroup.yml
-        extraDependencies: 
-          - name: acm-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: subscription.yml
-        extraDependencies: 
-          - name: acm-operator
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-      - path: health/operator-status.yml
-        remediationAction: InformOnly
-        extraDependencies: 
-          - name: acm-operator-subscription
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-
+      - path: operatorpolicy.yml
 
   - name: acm-multiclusterhub
     remediationAction: enforce
@@ -42,8 +25,9 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: multiclusterhub.yml
+        name: acm-operator-multiclusterhub
 
 policySets:
   - name: acm-operator
-    placement:  
+    placement:
       placementName: "ft-acm-hub"

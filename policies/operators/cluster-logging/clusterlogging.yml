@@ -1,83 +1,78 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
+apiVersion: "observability.openshift.io/v1"
+kind: ClusterLogForwarder
 metadata:
-  name: clusterlogging
+  annotations:
+    observability.openshift.io/tech-preview-otlp-output: enabled
+  name: collector
+  namespace: openshift-logging
 spec:
-  remediationAction: enforce
-  severity: high
-  object-templates-raw: |
-    - complianceType: mustonlyhave
-      objectDefinition:
-        apiVersion: "observability.openshift.io/v1"
-        kind: ClusterLogForwarder
-        metadata:
-          annotations:
-            observability.openshift.io/tech-preview-otlp-output: enabled
-          name: collector
-          namespace: openshift-logging
-        spec:
-          serviceAccount:
-            name: collector
-          managementState: Managed
-          collector:
-            tolerations:
-              - operator: Exists
-
-          inputs:
-            - name: infrastructure
-              type: infrastructure
-              infrastructure:
-                sources: 
-                  - node
-                  - container
-            - name: audit
-              type: audit
-              audit:
-                sources: 
-                  - kubeAPI
-                  - openshiftAPI
-                  - ovn
-                  - auditd
-
-          outputs:
-          - name: default-lokistack
-            type: lokiStack
-            lokiStack:
-              dataModel: Otel
-              target:
-                name: logging-loki
-                namespace: openshift-logging
-              authentication:
-                token:
-                  from: serviceAccount
-            tls:
-              ca:
-                key: service-ca.crt
-                configMapName: openshift-service-ca.crt
+  serviceAccount:
+    name: collector
+  managementState: Managed
+  collector:
+    tolerations:
+      - operator: Exists
+    resources:
+      requests:
+        memory: 64Mi
+        cpu: 250m
 
 
-          pipelines:
-          - name: default-logstore
-            outputRefs:
-              - default-lokistack
-            inputRefs:
-              - application
-              - infrastructure
-              - audit
-            filterRefs: 
-              - kubeapi-filter
-              - ocp-multicluster-labels
+  inputs:
+    - name: infrastructure
+      type: infrastructure
+      infrastructure:
+        sources:
+          - node
+          - container
+    - name: audit
+      type: audit
+      audit:
+        sources:
+          - kubeAPI
+          - openshiftAPI
+          - ovn
+          - auditd
 
-          filters:
-            - name: kubeapi-filter
-              type: kubeAPIAudit
-              kubeAPIAudit:
-                # Don't generate audit events for all requests in RequestReceived stage.
-                omitStages:
-                  - "RequestReceived"
+  outputs:
+  - name: default-lokistack
+    type: lokiStack
+    lokiStack:
+      dataModel: Otel
+      target:
+        name: logging-loki
+        namespace: openshift-logging
+      authentication:
+        token:
+          from: serviceAccount
+    tls:
+      ca:
+        key: service-ca.crt
+        configMapName: openshift-service-ca.crt
 
-            - name: ocp-multicluster-labels
-              type: openshiftLabels
-              openshiftLabels:
-                cluster_name: '{{ fromClusterClaim "name" }}'
+
+  pipelines:
+  - name: default-logstore
+    outputRefs:
+      - default-lokistack
+    inputRefs:
+      - application
+      - infrastructure
+      - audit
+    filterRefs:
+      - kubeapi-filter
+      - ocp-multicluster-labels
+
+  filters:
+    - name: kubeapi-filter
+      type: kubeAPIAudit
+      kubeAPIAudit:
+        # Don't generate audit events for all requests in RequestReceived stage.
+        omitStages:
+          - "RequestReceived"
+
+    - name: ocp-multicluster-labels
+      type: openshiftLabels
+      openshiftLabels:
+        cluster_name: '{{ fromClusterClaim "name" }}'

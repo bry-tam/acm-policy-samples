@@ -1,9 +1,0 @@
----
-kind: Namespace
-apiVersion: v1
-metadata:
-  name: argocd-dev
-  labels:
-    openshift.io/cluster-monitoring: 'true'
-    argocd.argoproj.io/managed-by: argocd-dev
-    app.host: argocd

@@ -1,7 +1,8 @@
+---
 object-templates-raw: |
   {{/* ##  Get list of all ConfigMaps linked to current InstallPlans.   ## */}}
   {{/* ##  Remove any remaining ConfigMaps and Jobs not included in above ## */}}
-  
+
   {{- $currentCM := list }}
   {{- range $ip := (lookup "operators.coreos.com/v1alpha1" "InstallPlan" "" "").items }}
       {{- range $plan := $ip.status.plan }}

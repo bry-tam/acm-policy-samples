@@ -1,7 +1,0 @@
----
-apiVersion: operators.coreos.com/v1alpha2
-kind: OperatorGroup
-metadata:
-  name: openshift-gitops-operatorgroup
-  namespace: openshift-gitops-operator
-spec: {}

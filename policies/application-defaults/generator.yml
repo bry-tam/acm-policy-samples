@@ -14,7 +14,7 @@ placementBindingDefaults:
 policies:
   - name: default-block-all-networkpolicy
     namespaceSelector:
-      exclude: 
+      exclude:
         - kube-*
         - openshift*
         - open-*
