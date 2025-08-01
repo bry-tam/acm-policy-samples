@@ -58,14 +58,14 @@ policies:
         name: stackrox-central-services
 
       - path: central/consolelink.yml
-        name: acs-consoleline
+        name: acs-consolelink
 
       - path: health/central/central-status.yml
         name: acs-central-status
         remediationAction: InformOnly
         severity: high
         extraDependencies:
-          - name: acs-central
+          - name: stackrox-central-services
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
@@ -91,13 +91,13 @@ policies:
       - path: central/init-bundle/job.yml
         name: create-cluster-init-job
         extraDependencies:
-          - name: acs-central-init-bundle
+          - name: create-cluster-init-serviceaccount
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-central-init-bundle2
+          - name: create-cluster-init-role
             kind: ConfigurationPolicy
             compliance: "Compliant"
-          - name: acs-central-init-bundle3
+          - name: create-cluster-init-rolebinding
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
