@@ -9,6 +9,19 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - cert-manager
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: cert-manager-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "cert-manager-binding"
 
@@ -18,17 +31,25 @@ policies:
     manifests:
       - path: namespace.yml
         name: cert-manger-operator-namespace
+
+      - path: trusted-ca-configmap.yml
+        name: trusted-ca-configmap
+
       - path: operatorpolicy.yml
+
       - path: health/cert-manager-status.yml
         name: cert-manager-status
         remediationAction: InformOnly
 
       - path: monitoring/namespace.yml
         name: cert-manager-namespace
+
       - path: monitoring/role.yml
         name: cert-manager-monitor-role
+
       - path: monitoring/rolebinding.yml
         name: cert-manager-monitor-rolebinding
+
       - path: monitoring/servicemonitor.yml
         name: cert-manager-monitor-servicemonitor
 
@@ -40,6 +61,7 @@ policies:
     manifests:
       - path: ca-clusterissuer/ca-clusterissuer-secret.yml
         name: ca-clusterissuer-secret
+
       - path: ca-clusterissuer/ca-clusterissuer.yml
         name: ca-clusterissuer
         extraDependencies:
