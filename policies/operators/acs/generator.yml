@@ -116,11 +116,11 @@ policies:
 
       - path: central/init-bundle/expired-sensor-tls.yml
         remediationAction: InformOnly
-        name: expired-sensor-tls
+        name: acs-cert-sensor-tls
 
       - path: sensor/securedcluster.yml
         extraDependencies:
-          - name: expired-sensor-tls
+          - name: acs-cert-sensor-tls
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
