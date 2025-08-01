@@ -6,3 +6,4 @@ metadata:
   labels:
     cluster.open-cluster-management.io/clusterset: default
     acm-hub: active
+    clusterobservability: enabled
