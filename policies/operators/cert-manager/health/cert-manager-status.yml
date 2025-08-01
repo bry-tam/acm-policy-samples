@@ -20,4 +20,6 @@ object-templates-raw: |
             {{- $_ := set $c "status" "True" }}
           - {{ $c | toRawJson | toLiteral }}
           {{- end }}
+  {{- else }}
+    {{- fail "There are zero deployments in cert-manager namespace."}}
   {{- end }}
