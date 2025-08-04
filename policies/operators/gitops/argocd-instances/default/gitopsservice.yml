@@ -4,7 +4,7 @@ kind: GitopsService
 metadata:
   name: cluster
 spec:
-  runOnInfra: '{{ hasNodesWithExactRoles "infra" }}'
+  runOnInfra: '{{ hasNodesWithExactRoles "infra" | toLiteral }}'
   tolerations:
     - key: node-role.kubernetes.io/infra
       operator: Exists
