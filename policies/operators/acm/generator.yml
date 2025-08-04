@@ -18,7 +18,7 @@ policyDefaults:
     - "NIST SP 800-53"
 
   policyLabels:
-    policy_group.name: acm-operator
+    policy_gen.name: acm-operator
 
   severity: medium
 
@@ -41,13 +41,6 @@ policies:
     manifests:
       - path: multiclusterhub.yml
         name: acm-operator-multiclusterhub
-
-      - path: uiplugin.yml
-        name: acm-alert-ui
-        extraDependencies:
-          - name: cluster-observability-operator
-            kind: Policy
-            compliance: "Compliant"
 
 policySets:
   - name: acm-operator
