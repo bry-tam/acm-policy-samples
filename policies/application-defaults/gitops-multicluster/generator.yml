@@ -43,9 +43,6 @@ policies:
     consolidateManifests: true
     policySets:
       - gitops-team-scooter
-    dependencies:
-      - name: multi-cluster-gitops-hub
-        compliance: "Compliant"
     manifests:
       - path: argocd-instances/team-scooter/
         name: scooter-argo
