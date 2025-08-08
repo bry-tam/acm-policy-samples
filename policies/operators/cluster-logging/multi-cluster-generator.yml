@@ -30,7 +30,7 @@ policies:
     description: "Configures Cluster Logging to forward logs to Loki deployed on the ACM hub"
     remediationAction: enforce
     hubTemplateOptions:
-      serviceAccountName: hub-template-processor
+      serviceAccountName: logging-hub-serviceaccount
     dependencies:
       - name: "cluster-logging-operator"
         compliance: "Compliant"

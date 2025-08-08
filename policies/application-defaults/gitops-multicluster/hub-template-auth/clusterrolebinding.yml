@@ -1,0 +1,13 @@
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: argo-mulitcluster-hub-auth
+subjects:
+  - kind: ServiceAccount
+    name: argo-mulitcluster-hub-serviceaccount
+    namespace: bry-tam-policies
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-mulitcluster-hub-auth
