@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: workload-availability-operator
+    description: "Installs Fence Agent, Self Node Remediation, Node Healthcheck, and Machine Deletion Operators"
     manifests:
       - path: namespace.yml
       - path: fence-agent-operatorpolicy.yml
@@ -42,6 +43,7 @@ policies:
       - path: machine-deletion-operatorpolicy.yml
 
   - name: workload-availability-remediation
+    description: "Configures example node remediation using Self Node Remediation or Fence Agent Operator"
     dependencies:
       - name: workload-availability-operator
         compliance: "Compliant"

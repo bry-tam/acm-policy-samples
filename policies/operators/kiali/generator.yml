@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: kiali-operator
+    description: "Installs Kiali Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml

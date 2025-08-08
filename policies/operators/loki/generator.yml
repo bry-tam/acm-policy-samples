@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: loki-operator
+    description: "Installs Loki Operator"
     manifests:
       - path: namespace.yml
         name: loki-namespace

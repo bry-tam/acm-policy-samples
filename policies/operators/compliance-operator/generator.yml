@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: compliance-operator
+    description: "Installs the Compliance Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
@@ -35,6 +36,7 @@ policies:
       - path: operatorpolicy.yml
 
   - name: compliance-operator-example
+    description: "Configures an example scan using the nerc-cip profile"
     remediationAction: enforce
     manifests:
       - path: example-scan/scansetting.yml

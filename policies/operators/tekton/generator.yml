@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: tekton-operator
+    description: "Install Pipelines Operator"
     manifests:
       - path: namespace.yml
         name: tkn-namespace
@@ -34,6 +35,7 @@ policies:
       - path: operatorpolicy.yml
 
   - name: tekton-rh-auth
+    description: "Copies global pull-secret to every namespace labeled for teketon use"
     namespaceSelector:
       matchLabels:
         tekton.rh-reg-auth: true
@@ -45,6 +47,7 @@ policies:
         name: pipeline-pull-secret
 
   - name: tekton-configure
+    description: "Configures Tekton and TektonChains"
     dependencies:
       - name: "tekton-operator"
         compliance: "Compliant"
@@ -56,6 +59,7 @@ policies:
         name: tekton-config
 
   - name: tekton-operator-status
+    description: "Monitors health of Tekton instance"
     remediationAction: inform
     dependencies:
       - name: "tekton-operator"

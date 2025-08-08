@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: tempo-operator
+    description: "Installs Tempo Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml

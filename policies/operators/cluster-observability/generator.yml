@@ -22,12 +22,12 @@ policyDefaults:
 
   severity: medium
 
-
 placementBindingDefaults:
   name: "cluster-observability-binding"
 
 policies:
   - name: cluster-observability-operator
+    description: "Installs the Cluster Observability Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml

@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: network-observability-operator
+    description: "Install Network Observability Operator"
     manifests:
       - path: namespace.yml
         name: netobserv-namespace
@@ -34,6 +35,7 @@ policies:
       - path: operatorpolicy.yml
 
   - name: network-observability-configure
+    description: "Configured loki storage, Lokistack and flowcollector"
     dependencies:
       - name: network-observability-operator
         compliance: "Compliant"
@@ -79,6 +81,7 @@ policies:
         name: netobserv-console-plugin
 
   - name: network-observability-status
+    description: "Monitor NetObserv operator health"
     remediationAction: InformOnly
     dependencies:
       - name: "network-observability-configure"

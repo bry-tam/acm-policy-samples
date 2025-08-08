@@ -28,6 +28,7 @@ placementBindingDefaults:
 
 policies:
   - name: cluster-logging-operator
+    description: "Installs Cluster Logging Operator"
     remediationAction: enforce
     dependencies:
       - name: "prepare-logging-migration"
@@ -48,6 +49,7 @@ policies:
         name: log-collector-serviceaccount
 
   - name: cluster-logging-configure
+    description: "Configures Loki storage, LokiStack, and ClusterLogForwarder"
     remediationAction: enforce
     dependencies:
       - name: "cluster-logging-operator"
@@ -101,6 +103,7 @@ policies:
         name: logfile-metrics-exporter
 
   - name: logging-operator-status
+    description: "Monitors health of ClusterLogging deployment"
     remediationAction: InformOnly
     dependencies:
       - name: cluster-logging-configure

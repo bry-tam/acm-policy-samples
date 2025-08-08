@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: talm-operator
+    description: "Installs TALM Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml

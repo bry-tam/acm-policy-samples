@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: odf-operator
+    description: "Installs ODF Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
@@ -34,8 +35,8 @@ policies:
 
       - path: operatorpolicy.yml
 
-
   - name: odf-configure
+    description: "Configures ODF, only multi-object-gateway is deployed"
     remediationAction: enforce
     dependencies:
       - name: "odf-operator"
@@ -51,6 +52,7 @@ policies:
         name: storagecluster
 
   - name: odf-operator-status
+    description: "Monitors health of ODF deployment"
     remediationAction: inform
     dependencies:
       - name: "odf-configure"
@@ -63,4 +65,3 @@ policySets:
   - name: odf-operator
     placement:
       placementName: "ft-storage--odf"
-

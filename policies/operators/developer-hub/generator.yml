@@ -27,10 +27,12 @@ placementBindingDefaults:
 
 policies:
   - name: developer-hub-operator
+    description: "Installs Developer Hub Operator"
     manifests:
       - path: operatorpolicy.yml
 
   - name: developer-hub-acm-msa
+    description: "Creates ManagedServiceAccount for configuring managed clusters in DevHub"
     policySets:
       - developer-hub-acm
     dependencies:
@@ -41,6 +43,7 @@ policies:
         name: rhdh-msa
 
   - name: developer-hub-configure
+    description: "Configures developer hub instance"
     remediationAction: enforce
     hubTemplateOptions:
       serviceAccountName: rhdh-hub-serviceaccount

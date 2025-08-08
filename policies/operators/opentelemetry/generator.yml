@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: opentelemetry-operator
+    description: "Install OpenTelemetry Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml

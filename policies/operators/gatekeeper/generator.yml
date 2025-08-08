@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: gatekeeper-operator
+    description: "Installs Gatekeeper Operator"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
@@ -35,6 +36,7 @@ policies:
       - path: operatorpolicy.yml
 
   - name: gatekeeper-instance
+    description: "Configures Gatekeeper instance and monitoring, along with custom syncdata policy"
     remediationAction: enforce
     manifests:
       - path: gatekeeper.yml

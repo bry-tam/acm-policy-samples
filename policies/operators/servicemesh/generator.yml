@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: servicemesh-operator
+    description: "Install ServiceMesh Operator"
     manifests:
       - path: namespace.yml
         name: mesh-operator-namespace
@@ -34,6 +35,7 @@ policies:
       - path: operatorpolicy.yml
 
   - name: servicemesh-controlplane
+    description: "Configure ServiceMesh Control Plane including Kiali, Tempo, OpenTelemetry and Console Plugins"
     dependencies:
       - name: "servicemesh-operator"
         compliance: "Compliant"
@@ -114,6 +116,7 @@ policies:
 
 
   - name: servicemesh-ingress
+    description: "Configure ServiceMesh IngressGateway"
     dependencies:
       - name: "servicemesh-controlplane"
         compliance: "Compliant"

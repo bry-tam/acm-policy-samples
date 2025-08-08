@@ -27,6 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: cert-manager-operator
+    description: "Installs cert-manager operator and monitoring"
     remediationAction: enforce
     manifests:
       - path: namespace.yml
@@ -54,6 +55,7 @@ policies:
         name: cert-manager-monitor-servicemonitor
 
   - name: cert-manager-clusterissuer
+    description: "Deploys example CA based ClusterIssuer"
     remediationAction: enforce
     dependencies:
       - name: 	cert-manager-operator

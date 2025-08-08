@@ -17,3 +17,4 @@ Documentation: [latest](https://docs.redhat.com/en/documentation/red_hat_openshi
   - Deploys a standalone MultiCloud Object Gateway.
     - To deploy full ODF ceph/rook based storage update the StorageCluster appropriately.
     - Storage backend is configured for AWS based deployments.
+  - `StorageSystem` is no longer needed in 4.19+.  Will only deploy in older versions.
