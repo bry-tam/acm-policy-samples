@@ -7,4 +7,3 @@ generators:
   - ./verify-deprecatedapi/generator.yml
   - ./max-iamclusterbindings/generator.yml
   - ./max-devspaces/generator.yml
-
