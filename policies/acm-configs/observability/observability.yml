@@ -12,6 +12,7 @@ spec:
   observabilityAddonSpec:
     enableMetrics: true
     interval: 300
+
   storageConfig:
     metricObjectStorage:
       name: thanos-object-storage
