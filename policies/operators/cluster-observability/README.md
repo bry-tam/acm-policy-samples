@@ -11,4 +11,4 @@ Documentation: [latest](https://docs.redhat.com/en/documentation/openshift_conta
 
 ---
 **Notes:**
-  - Additional implementation notes
+  -
