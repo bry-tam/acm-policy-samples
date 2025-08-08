@@ -9,11 +9,25 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - ansible-automation-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: aap-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "ansible-automation-binding"
 
 policies:
   - name: ansible-automation-operator
+    description: "Deploys AAP Operator"
     manifests:
       - path: namespace.yml
         name: aap-namespace
@@ -21,6 +35,7 @@ policies:
       - path: operatorpolicy.yml
 
   - name: ansible-automation-configure
+    description: "Configures s3 storage and AAP components"
     dependencies:
       - name: "ansible-automation-operator"
         compliance: "Compliant"
@@ -46,6 +61,7 @@ policies:
             compliance: "Compliant"
 
   - name: ansible-automation-status
+    description: "Validates the health of the AAP instance"
     remediationAction: InformOnly
     dependencies:
       - name: ansible-automation-configure
@@ -57,4 +73,3 @@ policySets:
   - name: ansible-automation-operator
     placement:
       placementName: "ft-ansible-automation--enabled"
-

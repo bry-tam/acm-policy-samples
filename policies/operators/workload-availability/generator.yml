@@ -9,6 +9,19 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - workload-availability-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: workload-availability-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "workload-availability-binding"
 

@@ -10,6 +10,18 @@ policyDefaults:
   policySets:
     - tempo-operator
 
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: tempo-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "tempo-binding"
 

@@ -10,6 +10,18 @@ policyDefaults:
   policySets:
     - opentelemetry-operator
 
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: opentelemetry-operator
+
+  severity: medium
+
 placementBindingDefaults:
   name: "opentelemetry-binding"
 

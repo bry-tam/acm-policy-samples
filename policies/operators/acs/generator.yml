@@ -21,7 +21,7 @@ policyDefaults:
     - "NIST SP 800-53"
 
   policyLabels:
-    policy_group.name: acs-operator
+    policy_gen.name: acs-operator
 
   severity: medium
 

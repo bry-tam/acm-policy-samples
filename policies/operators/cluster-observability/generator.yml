@@ -9,6 +9,20 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - cluster-observability-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: cluster-observability-operator
+
+  severity: medium
+
+
 placementBindingDefaults:
   name: "cluster-observability-binding"
 
