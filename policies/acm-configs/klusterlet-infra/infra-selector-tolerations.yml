@@ -39,7 +39,7 @@ object-templates-raw: |
       spec:
         configs:
           - group: addon.open-cluster-management.io
-            name: infra-deploy-config
+            name: {{ ($hasInfra | ternary "infra" "worker") }}-deploy-config
             namespace: open-cluster-management-hub
             resource: addondeploymentconfigs
     {{- end }}

@@ -20,9 +20,13 @@ policies:
       - path: infra-selector-tolerations.yml
         name: infra-selector-tolerations
 
-      - path: addondeploymentconfig.yml
+      - path: infra-addondeploymentconfig.yml
         name: infra-deploy-config
-        complianceType: mustonlyhave
+        complianceType: musthave
+
+      - path: worker-addondeploymentconfig.yml
+        name: worker-deploy-config
+        complianceType: musthave
 
 policySets:
   - name: acm-klusterlet-infra
