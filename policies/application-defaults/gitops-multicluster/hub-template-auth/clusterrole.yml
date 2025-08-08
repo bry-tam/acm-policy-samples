@@ -9,9 +9,9 @@ rules:
       - 'cluster.open-cluster-management.io'
       - ''
     resources:
-      - ManagedCluster
-      - ManagedServiceAccount
-      - Secret
+      - managedclusters
+      - managedserviceaccounts
+      - secrets
     verbs:
       - get
       - watch
