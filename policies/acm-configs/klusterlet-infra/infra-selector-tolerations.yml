@@ -29,7 +29,7 @@ object-templates-raw: |
 
     {{/* ##  Gather all ClusterManagementAddOn ## */}}
     {{- range $mca := (lookup "addon.open-cluster-management.io/v1alpha1" "ManagedClusterAddOn" $mc.metadata.name "").items }}
-  - complianceType: musthave
+  - complianceType: mustonlyhave
     objectDefinition:
       apiVersion: addon.open-cluster-management.io/v1alpha1
       kind: ManagedClusterAddOn
@@ -42,5 +42,6 @@ object-templates-raw: |
             name: {{ ($hasInfra | ternary "infra" "worker") }}-deploy-config
             namespace: open-cluster-management-hub
             resource: addondeploymentconfigs
+        installNamespace: {{ $mca.spec.installNamespace }}
     {{- end }}
   {{- end }}
