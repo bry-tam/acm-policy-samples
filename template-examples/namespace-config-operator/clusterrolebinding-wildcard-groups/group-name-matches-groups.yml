@@ -1,0 +1,30 @@
+---
+object-templates-raw: |
+  {{- $clusterEnv := fromClusterClaim "env" }}
+  {{- $groupNameRegex := (printf "^ocp-%s-.*-view$" $clusterEnv)}}
+  {{- $matchedGroups := list }}
+
+  {{- range $gp := (lookup "user.openshift.io/v1" "Group" "" "").items }}
+    {{- if regexMatch $groupNameRegex $gp.metadata.name }}
+      {{- $matchedGroups = append $matchedGroups $gp.metadata.name }}
+    {{- end }}
+  {{- end }}
+
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: cluster-view-deployer-edit
+      roleRef:
+        kind: ClusterRole
+        apiGroup: rbac.authorization.k8s.io
+        name: namespace-config-operator-cluster-reader-custom
+      subjects:
+  {{- range $mg := $matchedGroups }}
+      - kind: Group
+        apiGroup: rbac.authorization.k8s.io
+        name: {{ $mg }}
+  {{- else }}
+        []
+  {{- end }}

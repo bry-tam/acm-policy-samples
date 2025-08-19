@@ -1,0 +1,22 @@
+---
+object-templates-raw: |
+  {{- $clusterEnv := fromClusterClaim "env" }}
+
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: cluster-view-deployer-edit
+      roleRef:
+        kind: ClusterRole
+        apiGroup: rbac.authorization.k8s.io
+        name: namespace-config-operator-cluster-reader-custom
+      subjects:
+  {{- range $ns := (lookup "v1" "Namespace" "" "" "deployer=edit").items }}
+      - kind: Group
+        apiGroup: rbac.authorization.k8s.io
+        name: 'ocp-{{ $clusterEnv }}-{{ $ns.metadata.name }}-view'
+  {{- else }}
+        []
+  {{- end }}
