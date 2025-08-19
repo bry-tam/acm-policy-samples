@@ -36,6 +36,7 @@ Key differences:
   1. The prefix ocp-dev is replaced with the value from the "env" `ClusterClaim`.  This would allow the single policy to have different groups based on the environment designation of the cluster.
   2. The subjects list will remove any namespace that no longer exists, or is not labeled as expected.
   3. In the event the namespace lookup returns nothing the subject is configured with an empty list.
+
 Second option, [group-name-matches-groups.yml](group-name-matches-groups.yml) creates a single `ClusterRoleVinding` based on the name of the groups in the cluster.  Unlike the previous example this would evaluate the name of the group to a RegEx which would allow for wildcard naming as specified in the RFE.  This is included separately since it doesn't match the behavior of the example `NamespaceConfig`.
 Key differences:
   1. The prefix ocp-dev is replaced with the value from the "env" `ClusterClaim`.  This would allow the single policy to have different groups based on the environment designation of the cluster.
