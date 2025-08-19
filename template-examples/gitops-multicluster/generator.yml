@@ -1,0 +1,88 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-multi-cluster-gitops
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: multi-cluster-gitops
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "multi-cluster-gitops-binding"
+
+policies:
+  - name: multi-cluster-gitops-hub
+    description: "Configures ManagedServiceAccount and permissions for each app team to deploy and managed their application from a single argo to all ManagedClusters"
+    policySets:
+      - multi-cluster-gitops-hub
+    policyLabels:
+      policy_gen.name: multi-cluster-gitops
+      policy.name: multi-cluster-gitops-hub
+    pruneObjectBehavior: DeleteIfCreated
+    dependencies:
+      - name: "gitops-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: argocd-instances/team-scooter/managedserviceaccount.yml
+        name: scooter-msa
+
+      - path: argocd-instances/team-scooter/cluster-secrets.yml
+        name: scooter-cluster-secrets
+
+      - path: argocd-instances/team-fozzie/managedserviceaccount.yml
+        name: fozzie-msa
+
+      - path: argocd-instances/team-fozzie/cluster-secrets.yml
+        name: fozzie-cluster-secrets
+
+
+
+  - name: multi-cluster-gitops-scooter
+    description: "Deploy an instance of Argo for Team Scooter"
+    consolidateManifests: true
+    policySets:
+      - gitops-team-scooter
+    manifests:
+      - path: argocd-instances/team-scooter/
+        name: scooter-argo
+
+      - path: argocd-instances/team-scooter/propagate-cluster-secrets.yml
+        name: scooter-argo-clusters
+
+  - name: multi-cluster-gitops-fozzie
+    description: "Deploy an instance of Argo for Team Fozzie Bear"
+    consolidateManifests: true
+    policySets:
+      - gitops-team-fozzie
+    manifests:
+      - path: argocd-instances/team-fozzie/
+        name: fozzie-argo
+
+      - path: argocd-instances/team-fozzie/propagate-cluster-secrets.yml
+        name: fozzie-argo-clusters
+
+policySets:
+  - name: gitops-team-scooter
+    placement:
+      placementName: "ft-scooter--enabled"
+
+  - name: gitops-team-fozzie
+    placement:
+      placementName: "ft-fozzie--enabled"
+
+  - name: multi-cluster-gitops-hub
+    placement:
+      placementName: "env-bound-hub-placement"
