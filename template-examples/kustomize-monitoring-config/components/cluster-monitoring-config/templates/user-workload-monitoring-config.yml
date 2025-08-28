@@ -1,0 +1,96 @@
+---
+{{- if .Values.clusterMonitoring.enableUserWorkload }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-workload-monitoring-config
+  namespace: openshift-user-workload-monitoring
+data:
+  config.yaml: |
+    prometheus:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.userMonitoring.prometheus.resources }}
+      resources:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.clusterMonitoring.prometheusK8s.acmObservability.enabled }}
+      additionalAlertmanagerConfigs:
+      - apiVersion: v2
+        bearerToken:
+          key: token
+          name: observability-alertmanager-accessor
+        scheme: https
+        staticConfigs:
+        - https://{{ .Values.clusterMonitoring.prometheusK8s.acmObservability.alertmanager_url }}
+        tlsConfig:
+          ca:
+            key: service-ca.crt
+            name: hub-alertmanager-router-ca
+          insecureSkipVerify: false
+    {{- end }}
+      externalLabels:
+        instance_name: {{ .Values.cluster.name }}
+        managed_cluster: {{ .Values.cluster.clusterId }}
+        product: {{ .Values.cluster.product }}
+    {{- with .Values.userMonitoring.prometheus.externalLabels }}
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.userMonitoring.prometheus.retention }}
+      retention: {{ . }}
+    {{- end }}
+    {{- with .Values.userMonitoring.prometheus.retentionSize }}
+      retentionSize: {{ . }}
+    {{- end }}
+    {{- if .Values.userMonitoring.prometheus.storage.enabled }}
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: {{ .Values.userMonitoring.prometheus.storage.size }}
+          storageClassName: {{ .Values.userMonitoring.prometheus.storage.storageClassName }}
+    {{- end }}
+
+    thanosRuler:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.userMonitoring.thanosRuler.resources }}
+      resources:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.userMonitoring.thanosRuler.retention }}
+      retention: {{ . }}
+    {{- end }}
+    {{- if .Values.userMonitoring.thanosRuler.storage.enabled }}
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: {{ .Values.userMonitoring.thanosRuler.storage.size }}
+          storageClassName: {{ .Values.userMonitoring.thanosRuler.storage.storageClassName }}
+    {{- end }}
+
+    {{- if or .Values.nodeSelector .Values.tolerations }}
+    prometheusOperator:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- end }}
+{{- end }}
