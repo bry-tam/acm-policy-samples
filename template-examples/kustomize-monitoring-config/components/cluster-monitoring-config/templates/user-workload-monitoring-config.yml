@@ -46,7 +46,7 @@ data:
     {{- end }}
     {{- with .Values.tolerations }}
       tolerations:
-        {{- toYaml . | nindent 8 }}
+      {{- toYaml . | nindent 6 }}
     {{- end }}
     {{- if .Values.userMonitoring.prometheus.storage.enabled }}
       volumeClaimTemplate:
@@ -57,6 +57,17 @@ data:
               storage: {{ .Values.userMonitoring.prometheus.storage.size }}
           storageClassName: {{ .Values.userMonitoring.prometheus.storage.storageClassName }}
         status: {}
+    {{- end }}
+    {{- if or .Values.nodeSelector .Values.tolerations }}
+    prometheusOperator:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
     {{- end }}
     thanosRuler:
     {{- with .Values.nodeSelector }}
@@ -72,7 +83,7 @@ data:
     {{- end }}
     {{- with .Values.tolerations }}
       tolerations:
-        {{- toYaml . | nindent 8 }}
+      {{- toYaml . | nindent 6 }}
     {{- end }}
     {{- if .Values.userMonitoring.thanosRuler.storage.enabled }}
       volumeClaimTemplate:
