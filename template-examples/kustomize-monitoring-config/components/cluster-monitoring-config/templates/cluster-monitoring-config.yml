@@ -1,0 +1,146 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    alertmanagerMain:
+      enableUserAlertmanagerConfig: {{ .Values.clusterMonitoring.alertmanagerMain.enableUserAlertmanagerConfig }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.clusterMonitoring.alertmanagerMain.resources }}
+      resources:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.clusterMonitoring.alertmanagerMain.storage.enabled }}
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: {{ .Values.clusterMonitoring.alertmanagerMain.storage.size }}
+          storageClassName: {{ .Values.clusterMonitoring.alertmanagerMain.storage.storageClassName }}
+    {{- end }}
+
+    enableUserWorkload: {{ .Values.clusterMonitoring.enableUserWorkload }}
+
+    nodeExporter:
+      collectors:
+        buddyinfo: {}
+        cpufreq: {}
+        ksmd: {}
+        mountstats: {}
+        netclass: {}
+        netdev: {}
+        processes: {}
+        systemd: {}
+        tcpstat: {}
+
+    prometheusK8s:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.clusterMonitoring.alertmanagerMain.resources }}
+      resources:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.clusterMonitoring.prometheusK8s.acmObservability.enabled }}
+      additionalAlertmanagerConfigs:
+      - apiVersion: v2
+        bearerToken:
+          key: token
+          name: observability-alertmanager-accessor
+        scheme: https
+        staticConfigs:
+        - https://{{ .Values.clusterMonitoring.prometheusK8s.acmObservability.alertmanager_url }}
+        tlsConfig:
+          ca:
+            key: service-ca.crt
+            name: hub-alertmanager-router-ca
+          insecureSkipVerify: false
+    {{- end }}
+      externalLabels:
+        instance_name: {{ .Values.cluster.name }}
+        managed_cluster: {{ .Values.cluster.clusterId }}
+        product: {{ .Values.cluster.product }}
+    {{- with .Values.clusterMonitoring.prometheusK8s.externalLabels }}
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.clusterMonitoring.prometheusK8s.retention }}
+      retention: {{ . }}
+    {{- end }}
+    {{- with .Values.clusterMonitoring.prometheusK8s.retentionSize }}
+      retentionSize: {{ . }}
+    {{- end }}
+    {{- if .Values.clusterMonitoring.prometheusK8s.storage.enabled }}
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: {{ .Values.clusterMonitoring.prometheusK8s.storage.size }}
+          storageClassName: {{ .Values.clusterMonitoring.prometheusK8s.storage.storageClassName }}
+    {{- end }}
+
+    {{- if or .Values.nodeSelector .Values.tolerations }}
+    prometheusOperator:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+    kubeStateMetrics:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+    openshiftStateMetrics:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+    telemeterClient:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+    thanosQuerier:
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- end }}

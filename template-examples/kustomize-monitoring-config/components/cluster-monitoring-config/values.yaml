@@ -1,0 +1,60 @@
+---
+# Default values for cluster-monitoring-config.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+cluster:
+  name: cluster-a
+  product: openshift
+  clusterId:: cluster-uid
+
+nodeSelector: {}
+
+tolerations: []
+
+clusterMonitoring:
+  alertmanagerMain:
+    enableUserAlertmanagerConfig: false
+    storage:
+      enabled: false
+      size: 10Gi
+      storageClassName: gp3-csi
+    resources: {}
+
+  enableUserWorkload: false
+
+  prometheusK8s:
+    storage:
+      enabled: false
+      size: 10Gi
+      storageClassName: gp3-csi
+    acmObservability:
+      enabled: false
+      alertmanager_url: ""
+    externalLabels: {}
+    resources: {}
+    retention: 15d
+    retentionSize: ""
+
+userMonitoring:
+  prometheus:
+    storage:
+      enabled: false
+      size: 10Gi
+      storageClassName: gp3-csi
+    externalLabels: {}
+    resources: {}
+    retention: 15d
+    retentionSize: ""
+
+  thanosRuler:
+    storage:
+      enabled: false
+      size: 10Gi
+      storageClassName: gp3-csi
+    resources: {}
+    retention: 15d
+
+
+nameOverride: ""
+fullnameOverride: ""

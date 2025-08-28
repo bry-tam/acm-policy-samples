@@ -1,0 +1,5 @@
+---
+cluster:
+  name: ocpad
+  product: openshift
+  clusterId: ba28cf5c-395d-42ca-b708-29c34360db4a

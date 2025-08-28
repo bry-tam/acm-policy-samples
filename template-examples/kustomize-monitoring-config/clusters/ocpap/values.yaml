@@ -1,0 +1,82 @@
+---
+cluster:
+  name: ocpap
+  product: openshift
+  clusterId: 5694a5c1-9a08-401d-b5d8-2285d7245757
+
+nodeSelector:
+  node-role.kubernetes.io/infra: ""
+
+tolerations:
+  - key: node-role.kubernetes.io/infra
+    operator: Exists
+
+clusterMonitoring:
+  alertmanagerMain:
+    enableUserAlertmanagerConfig: true
+    storage:
+      enabled: true
+      size: 10Gi
+      storageClassName: gp3-csi
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  enableUserWorkload: true
+
+  prometheusK8s:
+    storage:
+      enabled: true
+      size: 10Gi
+      storageClassName: gp3-csi
+    acmObservability:
+      enabled: true
+      alertmanager_url: alertmanager-main-open-cluster-management-observability.apps.vst.bry.tamlab.rdu2.redhat.com
+    externalLabels:
+      datacenter: aws-east-us1
+    resources:
+      limits:
+        cpu: 4
+        memory: 12Gi
+      requests:
+        cpu: 2
+        memory: 8Gi
+    retention: 15d
+    retentionSize: 100Gi
+
+
+userMonitoring:
+  prometheus:
+    storage:
+      enabled: true
+      size: 150Gi
+      storageClassName: gp3-csi
+    externalLabels:
+      datacenter: aws-east-us2
+    resources:
+      limits:
+        cpu: 2
+        memory: 8Gi
+      requests:
+        cpu: 1
+        memory: 6Gi
+    retention: 10d
+    retentionSize: 50Gi
+
+  thanosRuler:
+    storage:
+      enabled: true
+      size: 10Gi
+      storageClassName: gp3-csi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    retention: 10d
