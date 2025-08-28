@@ -28,7 +28,7 @@ data:
           name: observability-alertmanager-accessor
         scheme: https
         staticConfigs:
-        - https://{{ .Values.clusterMonitoring.prometheusK8s.acmObservability.alertmanager_url }}
+        - {{ .Values.clusterMonitoring.prometheusK8s.acmObservability.alertmanager_url }}
         tlsConfig:
           ca:
             key: service-ca.crt
