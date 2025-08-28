@@ -8,18 +8,6 @@ metadata:
 data:
   config.yaml: |
     prometheus:
-    {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.userMonitoring.prometheus.resources }}
-      resources:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
     {{- if .Values.clusterMonitoring.prometheusK8s.acmObservability.enabled }}
       additionalAlertmanagerConfigs:
       - apiVersion: v2
@@ -36,10 +24,18 @@ data:
           insecureSkipVerify: false
     {{- end }}
       externalLabels:
+    {{- with .Values.userMonitoring.prometheus.externalLabels }}
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
         instance_name: {{ .Values.cluster.name }}
         managed_cluster: {{ .Values.cluster.clusterId }}
         product: {{ .Values.cluster.product }}
-    {{- with .Values.userMonitoring.prometheus.externalLabels }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+        {{- with .Values.userMonitoring.prometheus.resources }}
+      resources:
         {{- toYaml . | nindent 8 }}
     {{- end }}
     {{- with .Values.userMonitoring.prometheus.retention }}
@@ -48,22 +44,23 @@ data:
     {{- with .Values.userMonitoring.prometheus.retentionSize }}
       retentionSize: {{ . }}
     {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
     {{- if .Values.userMonitoring.prometheus.storage.enabled }}
       volumeClaimTemplate:
+        metadata: {}
         spec:
           resources:
             requests:
               storage: {{ .Values.userMonitoring.prometheus.storage.size }}
           storageClassName: {{ .Values.userMonitoring.prometheus.storage.storageClassName }}
+        status: {}
     {{- end }}
-
     thanosRuler:
     {{- with .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
     {{- with .Values.userMonitoring.thanosRuler.resources }}
@@ -73,24 +70,18 @@ data:
     {{- with .Values.userMonitoring.thanosRuler.retention }}
       retention: {{ . }}
     {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
     {{- if .Values.userMonitoring.thanosRuler.storage.enabled }}
       volumeClaimTemplate:
+        metadata: {}
         spec:
           resources:
             requests:
               storage: {{ .Values.userMonitoring.thanosRuler.storage.size }}
           storageClassName: {{ .Values.userMonitoring.thanosRuler.storage.storageClassName }}
-    {{- end }}
-
-    {{- if or .Values.nodeSelector .Values.tolerations }}
-    prometheusOperator:
-    {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
+        status: {}
     {{- end }}
 {{- end }}
