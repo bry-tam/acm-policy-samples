@@ -52,7 +52,7 @@ data:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- with .Values.clusterMonitoring.alertmanagerMain.resources }}
+    {{- with .Values.clusterMonitoring.prometheusK8s.resources }}
       resources:
         {{- toYaml . | nindent 8 }}
     {{- end }}
