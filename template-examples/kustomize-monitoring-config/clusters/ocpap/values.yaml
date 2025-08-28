@@ -1,7 +1,7 @@
 ---
 cluster:
-  name: local-cluster
-  product: openshift
+  name: acm
+  product: OpenShift
   clusterId: 716ef6a5-9d44-4291-8821-3eaca71040d6
 
 nodeSelector:
@@ -31,7 +31,7 @@ clusterMonitoring:
   prometheusK8s:
     storage:
       enabled: true
-      size: 10Gi
+      size: 100Gi
       storageClassName: gp3-csi
     acmObservability:
       enabled: true
@@ -46,7 +46,7 @@ clusterMonitoring:
         cpu: 2
         memory: 8Gi
     retention: 15d
-    retentionSize: 100Gi
+    retentionSize: 100GB
 
 
 userMonitoring:
@@ -65,7 +65,7 @@ userMonitoring:
         cpu: 1
         memory: 6Gi
     retention: 10d
-    retentionSize: 50Gi
+    retentionSize: 50GB
 
   thanosRuler:
     storage:
