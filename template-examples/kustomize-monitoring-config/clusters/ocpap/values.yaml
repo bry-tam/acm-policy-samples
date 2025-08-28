@@ -40,10 +40,10 @@ clusterMonitoring:
       datacenter: aws-east-us1
     resources:
       limits:
-        cpu: 4
+        cpu: "4"
         memory: 12Gi
       requests:
-        cpu: 2
+        cpu: "2"
         memory: 8Gi
     retention: 15d
     retentionSize: 100GB
@@ -59,10 +59,10 @@ userMonitoring:
       datacenter: aws-east-us2
     resources:
       limits:
-        cpu: 2
+        cpu: "2"
         memory: 8Gi
       requests:
-        cpu: 1
+        cpu: "1"
         memory: 6Gi
     retention: 10d
     retentionSize: 50GB
