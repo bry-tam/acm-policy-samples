@@ -1,8 +1,8 @@
 ---
 cluster:
-  name: ocpap
+  name: local-cluster
   product: openshift
-  clusterId: 5694a5c1-9a08-401d-b5d8-2285d7245757
+  clusterId: 716ef6a5-9d44-4291-8821-3eaca71040d6
 
 nodeSelector:
   node-role.kubernetes.io/infra: ""
@@ -35,7 +35,7 @@ clusterMonitoring:
       storageClassName: gp3-csi
     acmObservability:
       enabled: true
-      alertmanager_url: alertmanager-main-open-cluster-management-observability.apps.vst.bry.tamlab.rdu2.redhat.com
+      alertmanager_url: alertmanager-open-cluster-management-observability.apps.acm.sandbox1139.opentlc.com
     externalLabels:
       datacenter: aws-east-us1
     resources:
