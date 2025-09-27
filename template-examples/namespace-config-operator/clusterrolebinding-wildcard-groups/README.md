@@ -1,4 +1,4 @@
-# ClusterRileBinding Wildcard Groups/Subjects
+# ClusterRoleBinding Wildcard Groups/Subjects
 This example is based on [RFE-6477](https://issues.redhat.com/browse/RFE-6477).
 
 The request is to use a label selector on `Namespaces` within a cluster, and generate a `CusterRoleBinding` where the name of the subjects are some prefix - namespace - suffix.  In the `NamespaceConfig` it would be something like `ocp-dev-{{ .Name }}-view`.  The problem created by this is when there are thousands of application namespaces, NCO creates thousands of `ClusterRoleBindings` with one subject each all referencing the same role.
