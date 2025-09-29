@@ -62,6 +62,7 @@ This doc gives a listing of all policies in the repo along with a brief descript
   | [Compliance Operator](../policies/operators/compliance-operator/)                 | Deploys the Compliance Operator and example `ScanSetting` and `ScanSettingBinding` to use an extended profile |
   | [Developer Hub Operator](../policies/operators/developer-hub/)                    | Deploys Developer Hub and connects all managed clusters |
   | [Distributed Tracing (Tempo) Operator](../policies/operators/tempo/)              | Deploys Tempo Operator |
+  | [External Secrets Operator (community)](../policies/operators/external-secrets/)  | Deploys the community release of the External Secrets Operator |
   | [Gatekeeper Operator](../policies/operators/gatekeeper/)                          | Deploys Gatekeeper Operator and configures `Gatekeeper` |
   | [OpenShift Cluster Logging Operator](../policies/operators/cluster-logging/)      | Deploys Cluster Logging Operator and configures `LokiStack`. |
   | [OpenShift Cluster Observability Operator](../policies/operators/)                | Deploys Cluster Observability Operator |

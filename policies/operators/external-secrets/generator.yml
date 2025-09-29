@@ -1,0 +1,44 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-eso
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - external-secrets-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: external-secrets-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "external-secrets-binding"
+
+policies:
+  - name: external-secrets-operator
+    description: "Installs external-secrets Operator"
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+        name: eso-namespace
+
+      - path: operatorpolicy.yml
+
+      - path: operatorconfig.yml
+        name: eso-operatorconfig
+
+policySets:
+  - name: external-secrets-operator
+    placement:
+      placementName: "ft-eso--enabled"
