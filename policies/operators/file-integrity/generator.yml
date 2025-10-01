@@ -1,0 +1,47 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-fio
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - file-integrity-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: file-integrity-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "file-integrity-binding"
+
+policies:
+  - name: file-integrity-operator
+    description: "Installs file-integrity Operator"
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+        name: fio-namespace
+
+      - path: operatorpolicy.yml
+
+      - path: fileintegrity.yml
+        name: fio-fileintegrity
+
+      - path: fileintegritynodestatus-cleaner.yml
+        name: fio-nodestatus-cleaner
+
+policySets:
+  - name: file-integrity-operator
+    placement:
+      placementName: "ft-fio--enabled"
