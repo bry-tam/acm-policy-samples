@@ -1,0 +1,13 @@
+---
+apiVersion: fileintegrity.openshift.io/v1alpha1
+kind: FileIntegrity
+metadata:
+  name: cluster
+  namespace: openshift-file-integrity
+spec:
+  config:
+    gracePeriod: 900
+    maxBackups: 5
+  debug: false
+  tolerations:
+    - operator: Exists

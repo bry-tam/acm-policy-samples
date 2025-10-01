@@ -63,6 +63,7 @@ This doc gives a listing of all policies in the repo along with a brief descript
   | [Developer Hub Operator](../policies/operators/developer-hub/)                    | Deploys Developer Hub and connects all managed clusters |
   | [Distributed Tracing (Tempo) Operator](../policies/operators/tempo/)              | Deploys Tempo Operator |
   | [External Secrets Operator (community)](../policies/operators/external-secrets/)  | Deploys the community release of the External Secrets Operator |
+  | [File Integrity Operator](../policies/operators/file-integrity/)                  | Deploys the File Integrity Operator and configuration to scan all nodes |
   | [Gatekeeper Operator](../policies/operators/gatekeeper/)                          | Deploys Gatekeeper Operator and configures `Gatekeeper` |
   | [OpenShift Cluster Logging Operator](../policies/operators/cluster-logging/)      | Deploys Cluster Logging Operator and configures `LokiStack`. |
   | [OpenShift Cluster Observability Operator](../policies/operators/)                | Deploys Cluster Observability Operator |
