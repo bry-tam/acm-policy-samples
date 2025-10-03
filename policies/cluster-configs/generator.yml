@@ -105,6 +105,8 @@ policies:
       - cluster-configs-infra
     manifests:
       - path: machinesets/infra-machineset.yml
+        name: create-infra-machineset
+
       - path: machineconfigpools/infra.yml
 
   - name: storage-nodes
@@ -115,6 +117,8 @@ policies:
       - cluster-configs-storage
     manifests:
       - path: machinesets/infra-storage-machineset.yml
+        name: create-storage-machineset
+
       - path: machineconfigpools/storage.yml
 
   - name: cluster-autoscaling
