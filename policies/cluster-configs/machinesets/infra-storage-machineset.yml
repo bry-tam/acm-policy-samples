@@ -1,55 +1,78 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: create-storage-machineset
-spec:
-  remediationAction: enforce
-  severity: low
-  object-templates-raw: |
-    {{/* ##  Specify the parameters needed to create the MachineSet  ## */}}
-    {{- $machineset_role := "storage" }}
-    {{- $infrastructure := (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status }}
-    {{- $region := $infrastructure.platformStatus.aws.region }}
-    {{- $zones := list (printf "%sa" $region)
-                        (printf "%sb" $region)
-                        (printf "%sc" $region) }}
-    {{- $infrastructure_id := $infrastructure.infrastructureName }}
-    {{- $worker_ms := (index (lookup "machine.openshift.io/v1beta1" "MachineSet" "openshift-machine-api" "").items 0) }}
+object-templates-raw: |
+  {{/* ##  Specify the parameters needed to create the MachineSet  ## */}}
+  {{- $machineset_role := "storage" }}
+  {{- $instance_type := "c6gn.8xlarge" }}
+  {{- $volume_size := "200" }}
 
-    {{/* ##  Generate the MachineSet for each zone as specified  ## */}}
-    {{- range $zone := $zones }}
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: machine.openshift.io/v1beta1
-        kind: MachineSet
-        metadata:
-          labels:
+  {{- $infrastructure := (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status }}
+  {{- $region := $infrastructure.platformStatus.aws.region }}
+  {{- $zones := list (printf "%sa" $region)
+                      (printf "%sb" $region)
+                      (printf "%sc" $region) }}
+  {{- $infrastructure_id := $infrastructure.infrastructureName }}
+  {{- $worker_ms := (index (lookup "machine.openshift.io/v1beta1" "MachineSet" "openshift-machine-api" "").items 0) }}
+
+
+  {{/* ##  Generate the MachineSet for each zone as specified  ## */}}
+  {{- range $zone := $zones }}
+    {{/* ##  Generate the providerSpec specific to our environment. Use the existing worker_ms to get static details ## */}}
+    ## override the providerSpec specific to this MachineSet
+    {{- $ps_raw := `
+    value:
+      placement:
+        availabilityZone: %[1]s
+        region: %[1]s
+      instanceType: %[3]s
+      blockDevices:
+        - ebs:
+            encrypted: true
+            iops: 2000
+            kmsKey:
+              arn: ''
+            volumeSize: %[4]s
+            volumeType: io1
+      subnet:
+        filters:
+          - name: 'tag:Name'
+            values:
+              - %[2]s-subnet-private-%[1]s
+    `  }}
+    {{- $merged_ps := merge ((printf $ps_raw $zone $infrastructure_id $instance_type $volume_size) | fromYaml) $worker_ms.spec.template.spec.providerSpec }}
+
+
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: machine.openshift.io/v1beta1
+      kind: MachineSet
+      metadata:
+        labels:
+          machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
+        name: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }}
+        namespace: openshift-machine-api
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
             machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
-          name: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }}
-          namespace: openshift-machine-api
-        spec:
-          replicas: 1
-          selector:
-            matchLabels:
+            machine.openshift.io/cluster-api-machineset: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }}
+        template:
+          metadata:
+            labels:
               machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
+              machine.openshift.io/cluster-api-machine-role: {{ $machineset_role }}
+              machine.openshift.io/cluster-api-machine-type: {{ $machineset_role }}
               machine.openshift.io/cluster-api-machineset: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }}
-          template:
+          spec:
             metadata:
               labels:
-                machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
-                machine.openshift.io/cluster-api-machine-role: {{ $machineset_role }}
-                machine.openshift.io/cluster-api-machine-type: {{ $machineset_role }}
-                machine.openshift.io/cluster-api-machineset: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }}
-            spec:
-              metadata:
-                labels:
-                  node-role.kubernetes.io/{{ $machineset_role }}: ""
-                  node-role.kubernetes.io/infra: ""
-                  cluster.ocs.openshift.io/openshift-storage: ""
-              taints:
-                - key: node.ocs.openshift.io/storage
-                  effect: NoSchedule
-                  value: 'true'
-              providerSpec: '{{ $worker_ms.spec.template.spec.providerSpec | toRawJson | toLiteral }}'
-    {{- end }}
+                node-role.kubernetes.io/{{ $machineset_role }}: ""
+                node-role.kubernetes.io/infra: ""
+                cluster.ocs.openshift.io/openshift-storage: ""
+            taints:
+              - key: node.ocs.openshift.io/storage
+                effect: NoSchedule
+                value: 'true'
+            providerSpec: '{{ $merged_ps | toRawJson | toLiteral }}'
+  {{- end }}
