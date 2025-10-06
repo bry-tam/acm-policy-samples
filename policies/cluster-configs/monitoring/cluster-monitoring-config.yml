@@ -9,16 +9,8 @@ spec:
   object-templates-raw: |
     {{- $obsHubInfoSecret := (lookup "v1" "Secret" (eq (fromClusterClaim "name") "local-cluster" | ternary "open-cluster-management-observability" "open-cluster-management-addon-observability") "hub-info-secret") }}
 
-    {{/* ##  check if managed cluster is self-hosted or ARO/ROSA ## */}}
-    {{- $isSelfHosted := (not (eq (fromClusterClaim "product.open-cluster-management.io") "ARO" "ROSA")) }}
-
     - complianceType: musthave
       objectDefinition:
-    {{/* ##  set the nodeSelector and toleration if infra nodes exist.    ## */}}
-    {{/* ##  tolerations are passed to mustFromJson to validate input  ## */}}
-    {{- $nodeSelector := printf "node-role.kubernetes.io/%s" (hasNodesWithExactRoles "infra" | ternary "infra" "worker") }}
-    {{- $nodeTolerations := mustFromJson "[{\"operator\":\"Exists\",\"key\":\"node-role.kubernetes.io/infra\"}]" }}
-
         apiVersion: v1
         kind: ConfigMap
         metadata:
@@ -29,16 +21,16 @@ spec:
             alertmanagerMain:
               enableUserAlertmanagerConfig: true
               nodeSelector:
-                {{ $nodeSelector }}: ""
-              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
-            {{- if $isSelfHosted }}
+                node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+              tolerations:
+                - operator: Exists
+                  key: node-role.kubernetes.io/infra
               volumeClaimTemplate:
                 spec:
                   resources:
                     requests:
                       storage: 10Gi
                   storageClassName: gp3-csi
-            {{- end }}
 
             enableUserWorkload: true
 
@@ -56,8 +48,10 @@ spec:
 
             prometheusK8s:
               nodeSelector:
-                {{ $nodeSelector }}: ""
-              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
+                node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+              tolerations:
+                - operator: Exists
+                  key: node-role.kubernetes.io/infra
 
     {{- if not (empty $obsHubInfoSecret ) }}
       {{- $hubInfo := (index $obsHubInfoSecret.data "hub-info.yaml") | base64dec }}
@@ -83,7 +77,6 @@ spec:
                   insecureSkipVerify: false
     {{- end }}
               externalLabels:
-                customalertlabel: "on"
                 instance_name: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
                 managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
                 product: {{ fromClusterClaim "product.open-cluster-management.io" }}
@@ -92,8 +85,7 @@ spec:
                   cpu: 200m
                   memory: 2Gi
 
-            {{- if $isSelfHosted }}
-              retention: 24h
+              retention: 7d
               retentionSize: 100GB
 
               volumeClaimTemplate:
@@ -102,30 +94,14 @@ spec:
                     requests:
                       storage: 100Gi
                   storageClassName: gp3-csi
-            {{- end }}
+
 
     {{/* ##  group all remaining components together since the only config is for infra nodes  ## */}}
-            prometheusOperator:
+    {{- range $key := (list "prometheusOperator" "kubeStateMetrics" "openshiftStateMetrics" "telemeterClient" "thanosQuerier")}}
+            {{ $key }}:
               nodeSelector:
-                {{ $nodeSelector }}: ""
-              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
-
-            kubeStateMetrics:
-              nodeSelector:
-                {{ $nodeSelector }}: ""
-              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
-
-            openshiftStateMetrics:
-              nodeSelector:
-                {{ $nodeSelector }}: ""
-              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
-
-            telemeterClient:
-              nodeSelector:
-                {{ $nodeSelector }}: ""
-              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
-
-            thanosQuerier:
-              nodeSelector:
-                {{ $nodeSelector }}: ""
-              tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
+                node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+              tolerations:
+                - operator: Exists
+                  key: node-role.kubernetes.io/infra
+    {{- end }}
