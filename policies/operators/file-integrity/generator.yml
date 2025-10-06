@@ -41,6 +41,9 @@ policies:
       - path: fileintegritynodestatus-cleaner.yml
         name: fio-nodestatus-cleaner
 
+      - path: health/fileintegritynodestatus-failed.yml
+        name: fileintegritynodestatus-failed
+        remediationAction: InformOnly
 policySets:
   - name: file-integrity-operator
     placement:

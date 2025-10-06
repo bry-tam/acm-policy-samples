@@ -10,7 +10,8 @@ object-templates-raw: |
   {{- end }}
 
   {{- range $fins := (lookup "fileintegrity.openshift.io/v1alpha1" "FileIntegrityNodeStatus" "" "").items }}
-    {{ if not (has $fins.nodeName $ndNames) }}
+    {{- if and (has $fins.nodeName $ndNames)
+              (eq $fins.lastResult.condition "Failed") }}
   - complianceType: mustnothave
     objectDefinition:
       apiVersion: fileintegrity.openshift.io/v1alpha1
@@ -18,5 +19,13 @@ object-templates-raw: |
       metadata:
         name: {{ $fins.metadata.name }}
         namespace: {{ $fins.metadata.namespace }}
+
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: {{ $fins.lastResult.resultConfigMapName }}
+        namespace: {{ $fins.lastResult.resultConfigMapNamespace }}
     {{- end }}
   {{- end }}
