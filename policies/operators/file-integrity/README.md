@@ -13,3 +13,4 @@ Documentation: [latest](https://docs.redhat.com/en/documentation/openshift_conta
 **Notes:**
   - Configures default `FileIntegrity` resource to scan all nodes, regardless of taints
   - Includes policy to remove `FileIntegrityNodeStatus` for nodes that don't exist.
+  - Includes health policy that will alert when `FileIntegrityNodeStatus` has last scan result Failed

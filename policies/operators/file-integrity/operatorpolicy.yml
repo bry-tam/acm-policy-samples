@@ -20,9 +20,10 @@ spec:
   subscription:
     channel: stable
     name: file-integrity-operator
-    namespace: file-integrity-operator
+    namespace: openshift-file-integrity
     source: redhat-operators
     sourceNamespace: openshift-marketplace
   operatorGroup:
+    name: file-integrity-operator
     targetNamespaces:
     - openshift-file-integrity
