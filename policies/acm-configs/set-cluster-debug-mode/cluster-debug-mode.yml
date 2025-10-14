@@ -1,0 +1,50 @@
+---
+object-templates-raw: |
+  {{/* ##  Get all of the ManagedClusters except the hub.  You cannot debug the hub cluster ## */}}
+  {{- range $mc := (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "" "" "local-cluster!=true").items }}
+    {{/* ##  Determine if the debug label is set and if there is an expiration date/time set ## */}}
+    {{- $debug_enabled := (eq "enabled" (dig "labels" "cluster-debug-mode" "NOTSET" $mc.metadata)) }}
+    {{- $has_expiration := (ne "NOTSET" (dig "annotations" "cluster-debug-expires" "NOTSET" $mc.metadata)) }}
+    {{- $is_expired := (and ($has_expiration)
+                            (or (eq "expired" (index $mc.metadata.annotations "cluster-debug-expires"))
+                                (now.After (toDate "2006-1-2T15:04:05Z-07:00" (index $mc.metadata.annotations "cluster-debug-expires")))
+                            )
+                       ) }}
+
+    {{/* ##  if debug is enabled and expiration has not been set format a 2 hour expiration annotation ## */}}
+    {{- if and $debug_enabled (not $has_expiration) }}
+      {{- $_ := set $mc.metadata.annotations "cluster-debug-expires" (printf "%d-%02d-%02dT%02d:%02d:%02dZ+00:00" now.UTC.Year
+                                                                                                                  now.UTC.Month
+                                                                                                                  now.UTC.Day
+                                                                                                                  (add now.UTC.Hour 2)
+                                                                                                                  now.UTC.Minute
+                                                                                                                  now.UTC.Second)  }}
+
+    {{/* ##  if debug is enabled and expiration has been set and debug is expired, mark debug mode label as expired ## */}}
+    {{- else if and ($debug_enabled)  ($is_expired) }}
+        {{- $_ := set $mc.metadata.labels "cluster-debug-mode" "expired" }}
+
+    {{/* ##  debug is not enabled, either because it was removed or expired.  remove annotation ## */}}
+    {{- else if not $debug_enabled }}
+      {{- $_ := unset $mc.metadata.annotations "cluster-debug-expires" }}
+    {{- end }}
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: agent.open-cluster-management.io/v1
+      kind: KlusterletAddonConfig
+      metadata:
+        name: {{ $mc.metadata.name }}
+        namespace: {{ $mc.metadata.name }}
+      spec:
+        policyController:
+          enabled: {{ (and (not $debug_enabled) (not $is_expired)) }}
+
+
+  - complianceType: musthave
+    metadataComplianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: cluster.open-cluster-management.io/v1
+      kind: ManagedCluster
+      metadata: '{{ $mc.metadata | toRawJson | toLiteral }}'
+  {{- end }}

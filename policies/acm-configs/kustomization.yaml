@@ -10,3 +10,4 @@ resources:
   - ./managedserviceaccount/
   - ./klusterlet-infra/
   - ./kubeadmin-config-trustca/
+  - ./set-cluster-debug-mode/
