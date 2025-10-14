@@ -1,0 +1,45 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-debug-cluster
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - acm-debug-cluster
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: acm-debugcluster
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "acm-debug-cluster-binding"
+
+policies:
+  - name: acm-cluster-debug-mode
+    description: "Manages disabling Governance Policies to enable debugging cluster conditions"
+    manifests:
+      - path: cluster-debug-mode.yml
+        name: set-cluster-debug
+
+  - name: cluster-is-debug
+    description: "Indicates any clusters that are in debug mode.  Disable debug label on ManagedCluster to restore compliance"
+    remediationAction: InformOnly
+    manifests:
+      - path: health/managedcluster-debug.yml
+        name: managedcluster-debug
+
+policySets:
+  - name: acm-debug-cluster
+    placement:
+      placementName: "env-bound-hub-placement"

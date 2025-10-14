@@ -1,0 +1,25 @@
+---
+object-templates-raw: |
+  {{/* ##  Get all of the ManagedClusters except the hub which are in debug mode.  You cannot debug the hub cluster ## */}}
+  {{- range $mc := (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "" "" "local-cluster!=true" "cluster-debug-mode=enabled").items }}
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: agent.open-cluster-management.io/v1
+      kind: KlusterletAddonConfig
+      metadata:
+        name: {{ $mc.metadata.name }}
+        namespace: {{ $mc.metadata.name }}
+      spec:
+        policyController:
+          enabled: true
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: cluster.open-cluster-management.io/v1
+      kind: ManagedCluster
+      metadata:
+        labels:
+          cluster-debug-mode: disabled
+        name: {{ $mc.metadata.name }}
+  {{- end }}

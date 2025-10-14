@@ -19,6 +19,7 @@ This doc gives a listing of all policies in the repo along with a brief descript
   | Policy                                                                            | Description   |
   |--------                                                                           |-------------  |
   | [ACM Observability](../policies/acm-configs/observability/)                       | Configures ACM Observability with ODF Storage. |
+  | [Debug OPC Cluster](../policies/acm-configs/set-cluster-debug-mode/)              | Allows adding a label to the `ManagedCluster` to enable a debug mode.  During this condition the ACM ConfigurationPolicies and OperatorPolicies will not be enforced on the cluster.  Defaults to a 2 hour timelimlit' |
   | [Ensure Placement Tolerations](../policies/acm-configs/ensure-placement-toleration/) | Ensures all `Placement`s have proper tolerations configured. |
   | [Feature Flag Placements](../policies/acm-configs/feature-flags-placement/)       | Creates `Placements` based on naming convention to allow PolicyGenerator to specify a `Placement` that doesn't exist.  Naming creates a placement with the label specification determined by the name format. |
   | [Klusterlet Infa NodeSelector](../policies/acm-configs/klusterlet-infra/)         | Moves ACM components deployed on `ManagedClusters` to infra nodes if the clusters have infra nodes that don't include any other role labels. |
