@@ -19,5 +19,9 @@ Documentation: None
     - Add ManagedCluster as nonComplient until label is removed.
   - Removing the `cluster-debug-mode: enabled` label will perform the following actions
     - Enable KlusterletAddonConfig `spec.policyController.enabled: true`
-    - Leave the annotation for expiration date/time.  This is done so if it is re-enabled the time is not extended.
+    - Remove the annotation for expiration date/time.
     - Expect ManagedCluster would then report as compliant
+  - If the debug period expires the policy will perform the following:
+    - Set `cluster-debug-mode` label to a value of expired
+    - Enable KlusterletAddonConfig `spec.policyController.enabled: true`
+    - On next evaluation the "removed label" rules will apply which will remove the annotation for the expiration time.
