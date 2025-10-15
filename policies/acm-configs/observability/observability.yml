@@ -4,14 +4,7 @@ kind: MultiClusterObservability
 metadata:
   name: observability
 spec:
-  capabilities:
-    platform:
-      analytics:
-        incidentDetection:
-          enabled: true
-  observabilityAddonSpec:
-    enableMetrics: true
-    interval: 300
+  observabilityAddonSpec: {}
 
   storageConfig:
     metricObjectStorage:
@@ -19,3 +12,9 @@ spec:
       key: thanos.yaml
       tlsSecretName: noobaa-cert
       tlsSecretMountPath: /etc/minio/certs
+
+  nodeSelector:
+    node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+  tolerations:
+  - operator: Exists
+    key: node-role.kubernetes.io/infra
