@@ -2,7 +2,7 @@
 object-templates-raw: |
   {{/* ##  Specify the parameters needed to create the MachineSet  ## */}}
   {{- $machineset_role := "infra" }}
-  {{- $instance_type := "c6gn.8xlarge" }}
+  {{- $instance_type := "c6i.8xlarge" }}
   {{- $volume_size := "200" }}
 
   {{- $infrastructure := (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status }}
@@ -22,7 +22,6 @@ object-templates-raw: |
     value:
       placement:
         availabilityZone: %[1]s
-        region: %[1]s
       instanceType: %[3]s
       blockDevices:
         - ebs:
@@ -38,8 +37,9 @@ object-templates-raw: |
             values:
               - %[2]s-subnet-private-%[1]s
     `  }}
+    {{- $_ := unset $worker_ms.spec.template.spec.providerSpec.value "blockDevices" }}
+    {{- $_ := unset $worker_ms.spec.template.spec.providerSpec.value.subnet "filters" }}
     {{- $merged_ps := merge ((printf $ps_raw $zone $infrastructure_id $instance_type $volume_size) | fromYaml) $worker_ms.spec.template.spec.providerSpec }}
-
 
   - complianceType: musthave
     objectDefinition:
