@@ -1,0 +1,28 @@
+---
+object-templates-raw: |
+  {{/* ##  Gather all ClusterDeployments from the hub cluster ## */}}
+
+  {{- range $cd := (lookup "hive.openshift.io/v1" "ClusterDeployment" "" "").items }}
+
+    {{- if not (eq "NOTFOUND" (dig "adminPasswordSecretRef" "name" "NOTFOUND" $cd.spec.clusterMetadata)) }}
+
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: {{ $cd.spec.clusterMetadata.adminPasswordSecretRef.name }}
+        namespace: {{ $cd.metadata.namespace }}
+
+      {{ $_ := unset $cd.spec.clusterMetadata "adminPasswordSecretRef" }}
+  - complianceType: musthave
+    recreateOption: IfRequired
+    objectDefinition:
+      apiVersion: hive.openshift.io/v1
+      kind: ClusterDeployment
+      metadata:
+        name: {{ $cd.metadata.name }}
+        namespace: {{ $cd.metadata.namespace }}
+      spec: '{{ $cd.spec | toRawJson | toLiteral }}'
+    {{- end }}
+  {{- end }}

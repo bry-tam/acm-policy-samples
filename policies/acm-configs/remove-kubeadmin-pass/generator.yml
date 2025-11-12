@@ -1,0 +1,26 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-remove-kubeadmin
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  pruneObjectBehavior: DeleteIfCreated
+  policySets:
+    - acm-remove-kubeadmin
+
+placementBindingDefaults:
+  name: "acm-remove-kubeadmin-binding"
+
+policies:
+  - name: acm-remove-kubeadmin
+    remediationAction: enforce
+    manifests:
+      - path: remove-kubeadmin.yml
+        name: remove-kubeadmin
+
+policySets:
+  - name: acm-remove-kubeadmin
+    placement:
+      placementName: "env-bound-hub-placement"

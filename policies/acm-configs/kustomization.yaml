@@ -11,3 +11,4 @@ resources:
   - ./klusterlet-infra/
   - ./kubeadmin-config-trustca/
   - ./set-cluster-debug-mode/
+  - ./remove-kubeadmin-pass
