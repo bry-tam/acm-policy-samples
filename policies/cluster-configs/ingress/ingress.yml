@@ -31,5 +31,5 @@ spec:
               matchLabels:
                 {{ $nodeSelector }}: ""
             tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
-          replicas: {{ (len (getNodesWithExactRoles "infra").items | default 2) | toInt }}
+          replicas: {{ (ge (len (getNodesWithExactRoles "infra").items) 3 | ternary 3 (len (getNodesWithExactRoles "infra").items)  | default 2) | toInt }}
 
