@@ -1,0 +1,29 @@
+---
+apiVersion: compliance.openshift.io/v1alpha1
+autoApplyRemediations: false
+autoUpdateRemediations: false
+kind: ScanSetting
+maxRetryOnTimeout: 3
+metadata:
+  name: ocp4-cis
+  namespace: openshift-compliance
+rawResultStorage:
+  nodeSelector:
+    node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+  storageClassName: gp3-csi
+  pvAccessModes:
+  - ReadWriteOnce
+  rotation: 3
+  size: 1Gi
+  tolerations:
+  - operator: Exists
+    key: node-role.kubernetes.io/infra
+roles:
+  - master
+  - worker
+scanTolerations:
+- operator: Exists
+schedule: 0 */1 * * *
+showNotApplicable: false
+strictNodeScan: true
+timeout: 30m
