@@ -45,6 +45,12 @@ policies:
       - path: example-scan/scansettingbinding.yml
         name: compliance-scansettingbinding
 
+      - path: example-scan/scansetting-cis.yml
+        name: compliance-scansetting-cis
+
+      - path: example-scan/scansettingbinding-cis.yml
+        name: compliance-scansettingbinding-cis
+
 policySets:
   - name: compliance-operator
     placement:
