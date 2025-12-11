@@ -1,0 +1,22 @@
+---
+object-templates-raw: |
+  {{- range $c := (index (lookup "v1" "Pod" "openshift-kube-scheduler" "" "app=openshift-kube-scheduler") 0).spec.containers }}
+    {{- if eq $c.name "kube-scheduler" }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: operator.openshift.io/v1
+      kind: SecondaryScheduler
+      metadata:
+        ## This must be named cluster
+        name: cluster
+        namespace: openshift-secondary-scheduler-operator
+      spec:
+        logLevel: Normal
+        operatorLogLevel: Normal
+        managementState: Managed
+        schedulerConfig: scheduler-noderesourcesfit-disabled
+        schedulerImage: "{{ $c.image }}"
+
+      {{- break }}
+    {{- end }}
+  {{- end }}

@@ -1,0 +1,47 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-secondaryscheduler
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - secondary-scheduler-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: secondary-scheduler-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "secondary-scheduler-binding"
+
+policies:
+  - name: secondary-scheduler-operator
+    description: "Install Secondary Scheduler Operator"
+    remediationAction: enforce
+    manifests:
+      - path: namespace.yml
+        name: secondaryscheduler-namespace
+
+      - path: operatorpolicy.yml
+
+      - path: ./example/configmap.yml
+        name: example-schedule-config
+
+      - path: ./example/secondaryscheduler.yml
+        name: secondary-scheduler
+
+policySets:
+  - name: secondary-scheduler-operator
+    placement:
+      placementName: "ft-secondaryscheduler--enabled"
