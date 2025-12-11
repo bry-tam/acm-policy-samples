@@ -25,3 +25,4 @@ resources:
   - ./compliance-operator/
   - ./external-secrets/
   - ./file-integrity/
+  - ./secondary-scheduler
