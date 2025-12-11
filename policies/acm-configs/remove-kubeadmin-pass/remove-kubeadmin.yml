@@ -1,9 +1,7 @@
 ---
 object-templates-raw: |
   {{/* ##  Gather all ClusterDeployments from the hub cluster ## */}}
-
   {{- range $cd := (lookup "hive.openshift.io/v1" "ClusterDeployment" "" "").items }}
-
     {{- if not (eq "NOTFOUND" (dig "adminPasswordSecretRef" "name" "NOTFOUND" $cd.spec.clusterMetadata)) }}
 
   - complianceType: mustnothave
@@ -14,15 +12,23 @@ object-templates-raw: |
         name: {{ $cd.spec.clusterMetadata.adminPasswordSecretRef.name }}
         namespace: {{ $cd.metadata.namespace }}
 
-      {{ $_ := unset $cd.spec.clusterMetadata "adminPasswordSecretRef" }}
-  - complianceType: musthave
-    recreateOption: IfRequired
+      {{- $recreateOption := "IfRequired" }}
+      {{- if and $cd.spec.preserveOnDelete $cd.spec.installed }}
+        {{- $_ := unset $cd.spec.clusterMetadata "adminPasswordSecretRef" }}
+        {{- $recreateOption = "Always" }}
+      {{- else }}
+        {{- $_ := set $cd.spec "preserveOnDelete" true }}
+      {{- end }}
+  - complianceType: mustonlyhave
+    recreateOption: {{ $recreateOption }}
     objectDefinition:
       apiVersion: hive.openshift.io/v1
       kind: ClusterDeployment
       metadata:
         name: {{ $cd.metadata.name }}
         namespace: {{ $cd.metadata.namespace }}
+        annotations: '{{ $cd.metadata.annotations | toRawJson | toLiteral }}'
+        labels: '{{ $cd.metadata.labels | toRawJson | toLiteral }}'
       spec: '{{ $cd.spec | toRawJson | toLiteral }}'
     {{- end }}
   {{- end }}

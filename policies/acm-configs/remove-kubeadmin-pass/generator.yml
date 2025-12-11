@@ -6,7 +6,6 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
-  pruneObjectBehavior: DeleteIfCreated
   policySets:
     - acm-remove-kubeadmin
 
