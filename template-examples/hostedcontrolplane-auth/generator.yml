@@ -1,0 +1,35 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-hcp-auth
+policyDefaults:
+  namespace: policies
+  remediationAction: enforce
+  copyPolicyMetadata: false
+
+  placement:
+    labelSelector:
+      matchExpressions:
+        - key: feature.open-cluster-management.io/addon-hypershift-addon
+          operator: In
+          values:
+            - available
+placementBindingDefaults:
+  name: "hcp-auth-binding"
+
+policies:
+  - name: hcp-auth
+    namespaceSelector:
+      exclude:
+        - "open*"
+        - "kube*"
+        - "default"
+      include:
+        - "*"
+    objectSelector:
+      matchExpressions:
+        - key: fake
+          operator: NotExists
+    manifests:
+      - path: hostedcluster.yml
