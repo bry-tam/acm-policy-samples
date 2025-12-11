@@ -1,0 +1,27 @@
+---
+apiVersion: hypershift.openshift.io/v1beta1
+kind: HostedCluster
+spec:
+  configuration:
+    oauth:
+      identityProviders:
+        - mappingMethod: claim
+          name: redhat-sso
+          openID:
+            ca:
+              name: ''
+            claims:
+              email:
+                - email
+              name:
+                - name
+              preferredUsername:
+                - email
+            clientID: 3123412345.apps.googleusercontent.com
+            clientSecret:
+              name: goog-auth
+            extraScopes:
+              - profile
+              - email
+            issuer: 'https://accounts.google.com'
+          type: OpenID
