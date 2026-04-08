@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: '{{hub .ManagedClusterName hub}}'
+  namespace: default
+data: '{{hub copyConfigMapData "" .ManagedClusterName hub}}'

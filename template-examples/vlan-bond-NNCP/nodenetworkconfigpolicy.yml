@@ -1,0 +1,64 @@
+---
+object-templates-raw: |
+  ## Get the cluster specific ConfigMap to read network data out of
+  {{- $cluster_config := (lookup "v1" "ConfigMap" "default" "{{hub .ManagedClusterName hub}}").data }}
+
+  ## loop on the nodes in the cluster
+  {{- range $node := (getNodesWithExactRoles "worker").items }}
+     ## IF node not in ConfigMap move to next
+    {{- if not (hasKey $cluster_config $node.metadata.name) }}
+      {{- continue }}
+    {{- end }}
+
+    {{- $nd_name := $node.metadata.name }}
+    {{- $nd_config := (index $cluster_config $nd_name) | fromYaml }}
+
+    {{- range $nd_network := $nd_config.nodeNetworks }}
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: nmstate.io/v1
+      kind: NodeNetworkConfigurationPolicy
+      metadata:
+        name: {{ printf "%s-%s" $nd_network.name $nd_name }}
+      spec:
+        nodeSelector:
+          kubernetes.io/hostname: {{ $nd_name }}
+        desiredState:
+          interfaces:
+            ## Define physical interfaces identified by MAC address
+            {{- range $if := $nd_network.ethernets }}
+            - name: {{ $if.name }}
+              type: ethernet
+              state: up
+              identifier: mac-address
+              mac-address: "{{ $if.macAddress }}"
+            {{- end }}
+
+
+            ## Configure the Bond interface
+            {{- $bd := (index $nd_network.bonds 0) }}
+            - name: {{ $bd.name }}
+              type: bond
+              state: up
+              link-aggregation:
+                mode: {{ $bd.mode }}
+                port:
+                {{- range $if := $nd_network.ethernets }}
+                  - {{ $if.name }}
+                {{- end }}
+
+            ## Configure the VLAN on top of the bond and assign the static IPv4
+            {{- $vn := (index $nd_network.vlans 0) }}
+            - name: {{ printf "%s.%v" $bd.name $vn.id }}
+              type: vlan
+              state: up
+              vlan:
+                base-iface: {{ $bd.name }}
+                id: {{ $vn.id }}
+              ipv4:
+                enabled: true
+                dhcp: false
+                address: {{ $vn.address | toRawJson | toLiteral }}
+
+    {{- end }}
+  {{- end }}

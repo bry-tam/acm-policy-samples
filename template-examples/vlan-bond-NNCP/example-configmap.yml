@@ -1,0 +1,176 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-cluster
+  namespace: acm-policies
+data:
+  NODE01: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a1:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a1:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.12
+                prefix-length: 24
+
+  NODE02: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a2:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a2:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.13
+                prefix-length: 24
+
+  NODE03: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a3:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a3:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.14
+                prefix-length: 24
+
+  NODE04: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a4:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a4:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.15
+                prefix-length: 24
+
+  NODE05: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a5:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a5:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.16
+                prefix-length: 24
+
+  NODE06: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a6:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a6:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.17
+                prefix-length: 24
+
+  NODE07: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a7:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a7:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.18
+                prefix-length: 24
+
+  NODE08: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a8:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a8:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.19
+                prefix-length: 24
+
+  NODE09: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:a9:01"
+          - name: port2
+            macAddress: "00:50:56:b1:a9:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.20
+                prefix-length: 24
+
+  NODE10: |
+      nodeNetworks:
+        - name: bond-vlan40-storage
+          ethernets:
+          - name: port1
+            macAddress: "00:50:56:b1:aa:01"
+          - name: port2
+            macAddress: "00:50:56:b1:aa:02"
+          bonds:
+          - name: bond0
+            mode: "802.3ad"
+          vlans:
+          - id: 40
+            address:
+              - ip: 192.168.1.21
+                prefix-length: 24

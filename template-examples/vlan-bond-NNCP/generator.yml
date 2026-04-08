@@ -1,0 +1,24 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: policy-generator-nncp
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  placement:
+    placementName: openshift-all
+
+placementBindingDefaults:
+  name: "acm-observe-binding"
+
+policies:
+  - name: create-nncp-workers
+    remediationAction: enforce
+    manifests:
+      - path: configmap.yml
+        name: copy-configmap
+
+      - path: nodenetworkconfigpolicy.yml
+        name: gen-nncp
