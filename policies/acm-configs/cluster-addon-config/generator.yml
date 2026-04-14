@@ -1,0 +1,30 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-addon-config
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - acm-addon-config
+
+placementBindingDefaults:
+  name: "acm-addon-config-binding"
+
+policies:
+  - name: acm-addon-config
+    remediationAction: enforce
+    manifests:
+      - path: addondeploymentconfig.yml
+        name: addon-deployment-config
+        complianceType: mustonlyhave
+
+      - path: clustermanagementaddon.yml
+        name: cluster-management-addon
+
+policySets:
+  - name: acm-addon-config
+    placement:
+      placementName: "env-bound-hub-placement"

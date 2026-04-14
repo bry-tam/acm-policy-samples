@@ -26,6 +26,6 @@ spec:
               bucket: {{ $objBucket.spec.endpoint.bucketName }}
               encrypt: false
               region: us-east-1
-              regionEndpoint: https://{{ $objBucket.spec.endpoint.bucketHost }}:{{ $objBucket.spec.endpoint.bucketPort }}
+              regionEndpoint: https://{{ (lookup "route.openshift.io/v1" "Route" "openshift-storage" "s3").spec.host }}
               trustedCA:
                 name: image-registry-s3-bundle

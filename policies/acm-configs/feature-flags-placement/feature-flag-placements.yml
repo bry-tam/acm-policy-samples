@@ -23,13 +23,9 @@ object-templates-raw: |
           - requiredClusterSelector:
               labelSelector:
                 matchExpressions:
-                  - key: vendor
-                    operator: In
-                    values:
-                      - OpenShift
                   - key: {{ $feature._0 }}
-                    operator: {{ (empty $feature._1) | ternary "Exists" "In" }}
-      {{- if not (empty $feature._1) }}
+                    operator: {{ (eq "exists" $feature._1) | ternary "Exists" "In" }}
+      {{- if not (eq "exists" $feature._1) }}
                     values:
                       - {{ $feature._1 }}
       {{- end }}

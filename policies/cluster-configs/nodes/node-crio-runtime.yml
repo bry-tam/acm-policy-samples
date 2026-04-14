@@ -1,0 +1,12 @@
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: ContainerRuntimeConfig
+metadata:
+  name: crio-default-runtime
+spec:
+  containerRuntimeConfig:
+    defaultRuntime: crun
+  machineConfigPoolSelector:
+    matchExpressions:
+      - key: machineconfiguration.openshift.io/mco-built-in
+        operator: Exists

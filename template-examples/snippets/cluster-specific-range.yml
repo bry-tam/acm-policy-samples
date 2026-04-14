@@ -1,0 +1,40 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: cluster-monitoring-view-access-role-bindings
+  namespace: default
+spec:
+  copyPolicyMetadata: false
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: example-role-cluster-monitoring-view-configs-policy
+        spec:
+          remediationAction: inform
+          severity: medium
+          object-templates-raw: |
+            {{hub- $data := (fromConfigMap "" (index .ManagedClusterLabels "cluster.open-cluster-management.io/clusterset") $.PolicyMetadata.name | fromYaml) hub}}
+            - complianceType: mustonlyhave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: ClusterRoleBinding
+                metadata:
+                  labels:
+                    org: example
+                  name: example-role-cluster-monitoring-view
+                roleRef:
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: ClusterRole
+                  name: cluster-monitoring-view
+                subjects:
+            {{hub- range $view_role := $data hub}}
+                - apiGroup: rbac.authorization.k8s.io
+                  kind: Group
+                  name: {{hub $view_role hub}}
+            {{hub else hub}}
+                  []
+            {{hub- end hub}}

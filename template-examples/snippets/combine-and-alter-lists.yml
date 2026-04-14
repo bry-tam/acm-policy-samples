@@ -1,0 +1,48 @@
+---
+object-templates-raw: |
+  {{- $nncp_configs := concat (lookup "nmstate.io/v1" "NodeNetworkConfigurationPolicy" "" "static-routes-app-test-metallb-bgp").spec.desiredState.routes.config
+                              (lookup "nmstate.io/v1" "NodeNetworkConfigurationPolicy" "" "static-routes-app-app-metallb-bgp").spec.desiredState.routes.config
+                              (lookup "nmstate.io/v1" "NodeNetworkConfigurationPolicy" "" "static-routes-app-tmp-metallb-bgp").spec.desiredState.routes.config
+  }}
+
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: nmstate.io/v1
+      kind: NodeNetworkConfigurationPolicy
+      metadata:
+        name: node-nncp-policy
+      spec:
+        nodeSelector:
+          kubernetes.io/hostname: node.org.com
+        desiredState:
+          routes:
+            config:
+              - destination: '{{ fromConfigMap "openshift-config" "cluster-info" "odf_subnet" }}'
+                next-hop-interface: odf-shim
+
+            {{- range $i := $nncp_configs }}
+              {{- if $i.state }}
+                {{- $_ := set $i "state" "absent" }}
+              {{- end }}
+              - {{ $i | toRawJson | toLiteral }}
+            {{- end }}
+
+          interfaces:
+          - name: bond1
+            description: bond1
+            type: bond
+            state: up
+            ipv4:
+              enabled: false
+            ipv6:
+              enabled: false
+            link-aggregation:
+              mode: 802.3ad
+              options:
+                miimon: "100"
+                lacp_rate: "slow"
+                xmit_hash_policy: "layer2"
+              port:
+              - ens1fXnpY
+              - ens1fXnpY
+            mtu: 8900

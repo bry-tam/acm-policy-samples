@@ -45,4 +45,4 @@ policies:
 policySets:
   - name: acm-operator
     placement:
-      placementName: "ft-acm-hub"
+      placementName: "ft-acm-hub--exists"

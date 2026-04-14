@@ -4,5 +4,5 @@ kind: ConfigMap
 metadata:
   labels:
     config.openshift.io/inject-trusted-cabundle: 'true'
-  name: image-registry-s3-bundle
-  namespace: openshift-config
+  name: cluster-root-ca-bundle
+  namespace: openshift-gitops

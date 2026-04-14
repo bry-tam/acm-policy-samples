@@ -22,11 +22,11 @@ policies:
 
       - path: infra-addondeploymentconfig.yml
         name: infra-deploy-config
-        complianceType: musthave
+        complianceType: mustonlyhave
 
       - path: worker-addondeploymentconfig.yml
         name: worker-deploy-config
-        complianceType: musthave
+        complianceType: mustonlyhave
 
 policySets:
   - name: acm-klusterlet-infra

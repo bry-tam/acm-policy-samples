@@ -4,6 +4,7 @@ Installs the ServiceMesh Operator.
 ## Dependencies
   - [OpenTelemetry Operator](../opentelemetry/)
   - [Tempo Operator](../tempo/)
+  - [Cluster Observability Operator](../cluster-observability/)
   - s3 Storage - Current configuration showcases using [ODF Operator](../data-foundation/)
   - [Kiali Operator](../kiali/)
 

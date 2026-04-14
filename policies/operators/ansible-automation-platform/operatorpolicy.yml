@@ -18,7 +18,7 @@ spec:
   severity: critical
   upgradeApproval: Automatic
   subscription:
-    channel: stable-2.5
+    channel: stable-2.6
     name: ansible-automation-platform-operator
     namespace: ansible-automation-platform
     source: redhat-operators

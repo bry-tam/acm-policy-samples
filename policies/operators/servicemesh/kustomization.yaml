@@ -22,3 +22,7 @@ patchesJson6902:
     - op: add
       path: /spec/policies/-
       value: 'tempo-operator'
+
+    - op: add
+      path: /spec/policies/-
+      value: 'cluster-observability-operator'

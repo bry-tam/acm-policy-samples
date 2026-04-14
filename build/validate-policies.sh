@@ -66,6 +66,10 @@ if [ ! -d schemas ]; then
   curl -s -o crd-schema.py https://raw.githubusercontent.com/yannh/$KUBECONFORM/$KC_VERSION/scripts/openapi2jsonschema.py
   chmod a+x crd-schema.py
 
+  # curl -s -o requirements.txt https://raw.githubusercontent.com/yannh/$KUBECONFORM/$KC_VERSION/scripts/requirements.txt
+  # python3 -m ensurepip --upgrade
+  # python3 -m pip install -r ./requirements.txt
+
   echo "Converting CRDs to Schemas"
   ./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_placementbindings.yaml
   ./crd-schema.py https://raw.githubusercontent.com/${OCM_REPOSITORY_OWNER}/governance-policy-propagator/main/deploy/crds/policy.open-cluster-management.io_policies.yaml
