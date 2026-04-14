@@ -45,9 +45,8 @@ policies:
       - path: console.yml
         name: odf-console
 
-      # commented out until bug https://issues.redhat.com/browse/ACM-23563
-      # - path: storagesystem.yml
-      #   name: storagesystem
+      - path: storagesystem.yml
+        name: storagesystem
 
       - path: storagecluster.yml
         name: storagecluster

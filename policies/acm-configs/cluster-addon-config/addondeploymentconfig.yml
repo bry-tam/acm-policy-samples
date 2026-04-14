@@ -1,0 +1,21 @@
+---
+apiVersion: addon.open-cluster-management.io/v1alpha1
+kind: AddOnDeploymentConfig
+metadata:
+  name: clusteraddon-resource-config
+  namespace: open-cluster-management-hub
+spec:
+  agentInstallNamespace: open-cluster-management-agent-addon
+  resourceRequirements:
+  - containerID: "deployments:governance-policy-framework:governance-policy-framework-addon"
+    resources:
+      requests:
+        memory: 512Mi
+      limits:
+        memory: 1024Mi
+  - containerID: "deployments:config-policy-controller:config-policy-controller"
+    resources:
+      requests:
+        memory: 512Mi
+      limits:
+        memory: 1024Mi

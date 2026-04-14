@@ -11,8 +11,7 @@ policyDefaults:
   categories: []
   controls: []
   standards: []
-  customMessage:
-    noncompliant: "{{.DefaultMessage}} - diff: '{{ .Policy.status.relatedObjects[0].properties.diff }}'"
+
   policySets:
     - cluster-configs
 placementBindingDefaults:
@@ -89,18 +88,39 @@ policies:
     manifests:
       - path: etcd-backup/
 
+  ### Should only use one of the cluster-monitoring-config or the -mcoa.
+  ### This is dependent on how observability is configured
+  ### Both are included to give example how to configure the cluster.
   - name: ocp-monitoring
     manifests:
-      - path: monitoring/
+      - path: monitoring/cluster-monitoring-config.yml
+        name: cluster-monitoring-config
+        remediationAction: InformOnly
+
+      - path: monitoring/user-workload-monitoring-config.yml
+        name: user-workload-monitoring-config
+        remediationAction: InformOnly
+
+      - path: monitoring/cluster-monitoring-config-mcoa.yml
+        name: cluster-monitoring-config-mcoa
+        remediationAction: Enforce
+
+      - path: monitoring/user-workload-monitoring-config-mcoa.yml
+        name: user-workload-monitoring-config-mcoa
+        remediationAction: Enforce
 
   - name: node-kubeletconfigs
     manifests:
       - path: kubeletconfig/
 
+  - name: node-runtimes
+    manifests:
+      - path: nodes/node-cluster.yml
+        name: node-cgroups
+      - path: nodes/node-crio-runtime.yml
+        name: node-crio-runtime
+
   - name: infra-nodes
-    # dependencies:
-    #   - name: etcd-encryption
-    #     compliance: "Compliant"
     policySets:
       - cluster-configs-infra
     manifests:
@@ -110,9 +130,6 @@ policies:
       - path: machineconfigpools/infra.yml
 
   - name: storage-nodes
-    # dependencies:
-    #   - name: etcd-encryption
-    #     compliance: "Compliant"
     policySets:
       - cluster-configs-storage
     manifests:

@@ -6,7 +6,6 @@ metadata:
   namespace: istio-system
 spec:
   deployment:
-    istio_namespace: istio-system
     logger:
       log_level: debug
 
@@ -18,9 +17,6 @@ spec:
       thanos_proxy:
         enabled: true
       url: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
-
-    istio:
-      ingress_gateway_namespace: istio-ingress
 
     tracing:
       enabled: true

@@ -1,17 +1,5 @@
 ---
 object-templates-raw: |
-  {{- $isLocalCluster := (ne "" "{{hub index $.ManagedClusterLabels "local-cluster" hub}}") }}
-  {{- $obsEnabled := false }}
-  {{- $hubInfo := "" }}
-  {{- $secretSuffix := ""}}
-
-  {{- $obsHubInfoSecret := (lookup "v1" "Secret" ($isLocalCluster | ternary "open-cluster-management-observability" "open-cluster-management-addon-observability") "hub-info-secret") }}
-  {{- if $obsHubInfoSecret }}
-    {{- $obsEnabled = true }}
-    {{- $hubInfo = (index $obsHubInfoSecret.data "hub-info.yaml") | base64dec | fromYaml }}
-    {{- $secretSuffix = (printf "-%s" (index $hubInfo "hub-cluster-id")) }}
-  {{- end }}
-
   - complianceType: musthave
     objectDefinition:
       apiVersion: v1
@@ -56,21 +44,22 @@ object-templates-raw: |
               - operator: Exists
                 key: node-role.kubernetes.io/infra
 
-  {{- if $obsEnabled }}
+  {{hub- $ManagedClusterAnnotations := (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "" $.ManagedClusterName).metadata.annotations hub}}
+  {{hub- if not (empty (index $ManagedClusterAnnotations "hub-cluster-id")) hub}}
             additionalAlertmanagerConfigs:
             - apiVersion: v2
               bearerToken:
                 key: token
-                name: observability-alertmanager-accessor{{ $secretSuffix }}
+                name: 'observability-alertmanager-accessor-{{hub index $ManagedClusterAnnotations "hub-cluster-id" hub}}'
               scheme: https
               staticConfigs:
-              - {{ trimAll "/" (printf "alertmanager-open-cluster-management-observability.%s" (regexFind "apps.*?/" (index $hubInfo "observatorium-api-endpoint"))) }}
+              - {{hub index $ManagedClusterAnnotations "hub-alertmanager-url" hub}}
               tlsConfig:
                 ca:
                   key: service-ca.crt
-                  name: hub-alertmanager-router-ca{{ $secretSuffix }}
+                  name: 'hub-alertmanager-router-ca-{{hub index $ManagedClusterAnnotations "hub-cluster-id" hub}}'
                 insecureSkipVerify: false
-  {{- end }}
+  {{hub- end hub}}
             externalLabels:
               instance_name: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
               managed_cluster: {{ fromClusterClaim "id.openshift.io" }}

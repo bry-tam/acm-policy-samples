@@ -60,6 +60,9 @@ policies:
       - path: controlplane/istiocni.yml
         name: istio-cni
 
+      - path: controlplane/istiorevisiontag-default.yml
+        name: istiorevisiontag-default
+
       - path: tracing/namespace.yml
         name: tracing-namespace
 
@@ -74,6 +77,9 @@ policies:
 
       - path: tracing/opentelemetrycollector.yml
         name: otel-collector
+
+      - path: tracing/serviceaccount.yml
+        name: otel-serviceaccount
 
       - path: tracing/opentelemetry-rolebinding.yml
         name: otel-collector-rolebinding
@@ -92,6 +98,9 @@ policies:
 
       - path: tracing/tempostack.yml
         name: tracing-ossm-tempostack
+
+      - path: tracing/uiplugin.yml
+        name: tracing-uiplugin
 
       - path: controlplane/kiali-clusterrolebinding.yml
         name: kiali-clusterrolebinding

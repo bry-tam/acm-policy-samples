@@ -73,6 +73,9 @@ policies:
       - path: argocd-policygenerator.yml
         name: argo-policygenerator
 
+      - path: cluster-root-ca-configmap.yml
+        name: cluster-root-ca-configmap
+
       - path: applicationset-config/managedclustersetbinding.yml
         name: applicationset-clusterbinding
 
@@ -94,4 +97,4 @@ policySets:
 
   - name: gitops-acm-hub
     placement:
-      placementName: "ft-acm-hub"
+      placementName: "ft-acm-hub--exists"

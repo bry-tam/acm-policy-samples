@@ -1,10 +1,5 @@
 ---
 object-templates-raw: |
-  {{/* ##  Set Infra identifiers ## */}}
-  {{- $infraNodeSelector := "\"node-role.kubernetes.io/infra\": \"\"" }}
-  {{- $workerNodeSelector := "\"node-role.kubernetes.io/worker\": \"\"" }}
-  {{- $infraTolerationKey := "node-role.kubernetes.io/infra" }}
-
   {{/* ##  Gather all ManagedClusters using the ManagedClusterInfo object since this has node info ## */}}
   {{- range $mc := (lookup "internal.open-cluster-management.io/v1beta1" "ManagedClusterInfo" "" "").items }}
 
@@ -23,8 +18,8 @@ object-templates-raw: |
       kind: ManagedCluster
       metadata:
         annotations:
-          open-cluster-management/nodeSelector: '{{ printf "{%s}" ($hasInfra | ternary $infraNodeSelector $workerNodeSelector) }}'
-          open-cluster-management/tolerations: '[{"key":"{{ $infraTolerationKey }}","operator":"Exists"}]'
+          open-cluster-management/nodeSelector: '{"node-role.kubernetes.io/{{ $hasInfra | ternary "infra" "worker" }}":""}'
+          open-cluster-management/tolerations: '[{"key":"node-role.kubernetes.io/infra","operator":"Exists"}]'
         name: {{ $mc.metadata.name }}
 
     {{/* ##  Gather all ClusterManagementAddOn ## */}}

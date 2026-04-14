@@ -38,4 +38,4 @@ policies:
 policySets:
   - name: talm-operator
     placement:
-      placementName: "ft-acm-hub"
+      placementName: "ft-acm-hub--exists"

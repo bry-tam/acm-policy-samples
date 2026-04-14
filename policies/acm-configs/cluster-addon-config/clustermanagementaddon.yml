@@ -1,0 +1,22 @@
+---
+object-templates-raw: |
+  {{- range $cma := (lookup "addon.open-cluster-management.io/v1alpha1" "ClusterManagementAddOn" "" "").items }}
+    {{- if eq $cma.metadata.name "governance-policy-framework" "config-policy-controller" }}
+
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: addon.open-cluster-management.io/v1alpha1
+      kind: ClusterManagementAddOn
+      metadata:
+        name: {{ $cma.metadata.name }}
+      spec:
+        addOnMeta: '{{ $cma.spec.addOnMeta | toRawJson | toLiteral }}'
+        installStrategy: '{{ $cma.spec.installStrategy | toRawJson | toLiteral }}'
+        supportedConfigs:
+          - group: addon.open-cluster-management.io
+            resource: addondeploymentconfigs
+            defaultConfig:
+              name: clusteraddon-resource-config
+              namespace: open-cluster-management-hub
+    {{- end }}
+  {{- end }}

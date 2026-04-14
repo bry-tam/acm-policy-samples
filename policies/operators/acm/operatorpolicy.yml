@@ -18,7 +18,7 @@ spec:
   severity: critical
   upgradeApproval: Automatic
   subscription:
-    channel: release-2.14
+    channel: release-2.15
     name: advanced-cluster-management
     namespace: open-cluster-management
     source: redhat-operators

@@ -25,6 +25,12 @@ spec:
     volumeMounts:
     - mountPath: /etc/kustomize/plugin/policy.open-cluster-management.io/v1/policygenerator
       name: policy-generator
+    - mountPath: /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+      subPath: ca-bundle.crt
+      name: cluster-root-ca-bundle
     volumes:
     - emptyDir: {}
       name: policy-generator
+    - configMap:
+        name: cluster-root-ca-bundle
+      name: cluster-root-ca-bundle

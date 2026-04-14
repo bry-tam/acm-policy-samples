@@ -5,6 +5,7 @@ metadata:
   name: infra-deploy-config
   namespace: open-cluster-management-hub
 spec:
+  agentInstallNamespace: open-cluster-management-agent-addon
   nodePlacement:
     nodeSelector:
       node-role.kubernetes.io/infra: ""

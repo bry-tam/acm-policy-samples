@@ -1,0 +1,7 @@
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  annotations:
+    hub-alertmanager-url: '{{ (lookup "route.openshift.io/v1" "Route" "open-cluster-management-observability" "alertmanager").spec.host }}'
+    hub-cluster-id: '{{hub $.ManagedClusterLabels.clusterID | replace "-" "" | trunc 19 hub}}'

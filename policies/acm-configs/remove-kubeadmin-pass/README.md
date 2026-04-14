@@ -1,6 +1,9 @@
 # ACM Remove kubeadmin password
 Policy removes the kubeadmin password and reference from `ClusterDeployment`
 
+## DO NOT USE
+This policy causes unintended consequences when the reference is removed form the ClusterDeployment.
+
 ## Dependencies
   - None
 

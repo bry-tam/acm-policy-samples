@@ -14,7 +14,7 @@ object-templates-raw: |
       status:
         conditions:
         {{- range $c := $loki.status.conditions }}
-          {{- if eq $c.type "Pending" }}
+          {{- if eq $c.type "Pending" "Failed" }}
             {{- $_ := set $c "status" "False" }}
           {{- else }}
             {{- $_ := set $c "status" "True" }}

@@ -3,8 +3,23 @@ apiVersion: observability.open-cluster-management.io/v1beta2
 kind: MultiClusterObservability
 metadata:
   name: observability
+  annotations:
+    mco-disable-alerting: 'true'
+
 spec:
   observabilityAddonSpec: {}
+
+  ## to enable MCOA set the below to true and remove the annotation above.
+  ## Note this should not be done before 2.15.1 release has verified to fix MCOA
+  capabilities:
+    platform:
+      metrics:
+        default:
+          enabled: '{{hub default false (not (empty (index $.ManagedClusterLabels "observability-mcoa"))) | toRawJson | toBool hub}}'
+    userWorkloads:
+      metrics:
+        default:
+          enabled: '{{hub default false (not (empty (index $.ManagedClusterLabels "observability-mcoa"))) | toRawJson | toBool hub}}'
 
   storageConfig:
     metricObjectStorage:
