@@ -8,6 +8,7 @@ data:
   NODE01: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:a1:01"
@@ -15,7 +16,7 @@ data:
             macAddress: "00:50:56:b1:a1:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:
@@ -25,6 +26,7 @@ data:
   NODE02: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:a2:01"
@@ -32,7 +34,7 @@ data:
             macAddress: "00:50:56:b1:a2:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:
@@ -42,6 +44,7 @@ data:
   NODE03: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:a3:01"
@@ -49,7 +52,7 @@ data:
             macAddress: "00:50:56:b1:a3:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:
@@ -59,6 +62,7 @@ data:
   NODE04: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:a4:01"
@@ -66,7 +70,7 @@ data:
             macAddress: "00:50:56:b1:a4:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:
@@ -76,6 +80,7 @@ data:
   NODE05: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:a5:01"
@@ -83,7 +88,7 @@ data:
             macAddress: "00:50:56:b1:a5:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:
@@ -93,6 +98,7 @@ data:
   NODE06: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:a6:01"
@@ -100,7 +106,7 @@ data:
             macAddress: "00:50:56:b1:a6:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:
@@ -110,6 +116,7 @@ data:
   NODE07: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:a7:01"
@@ -117,7 +124,7 @@ data:
             macAddress: "00:50:56:b1:a7:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:
@@ -127,6 +134,7 @@ data:
   NODE08: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:a8:01"
@@ -134,7 +142,7 @@ data:
             macAddress: "00:50:56:b1:a8:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:
@@ -144,6 +152,7 @@ data:
   NODE09: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:a9:01"
@@ -151,7 +160,7 @@ data:
             macAddress: "00:50:56:b1:a9:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:
@@ -161,6 +170,7 @@ data:
   NODE10: |
       nodeNetworks:
         - name: bond-vlan40-storage
+          mtu: 9000
           ethernets:
           - name: port1
             macAddress: "00:50:56:b1:aa:01"
@@ -168,7 +178,7 @@ data:
             macAddress: "00:50:56:b1:aa:02"
           bonds:
           - name: bond0
-            mode: "802.3ad"
+            mode: "active-backup"
           vlans:
           - id: 40
             address:

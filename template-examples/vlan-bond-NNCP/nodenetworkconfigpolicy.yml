@@ -14,6 +14,8 @@ object-templates-raw: |
     {{- $nd_config := (index $cluster_config $nd_name) | fromYaml }}
 
     {{- range $nd_network := $nd_config.nodeNetworks }}
+    {{- $mtu := default 1500 $nd_network.mtu }}
+
   - complianceType: mustonlyhave
     objectDefinition:
       apiVersion: nmstate.io/v1
@@ -30,6 +32,7 @@ object-templates-raw: |
             - name: {{ $if.name }}
               type: ethernet
               state: up
+              mtu: {{ $mtu }}
               identifier: mac-address
               mac-address: "{{ $if.macAddress }}"
             {{- end }}
@@ -40,6 +43,7 @@ object-templates-raw: |
             - name: {{ $bd.name }}
               type: bond
               state: up
+              mtu: {{ $mtu }}
               link-aggregation:
                 mode: {{ $bd.mode }}
                 port:
@@ -52,6 +56,7 @@ object-templates-raw: |
             - name: {{ printf "%s.%v" $bd.name $vn.id }}
               type: vlan
               state: up
+              mtu: {{ $mtu }}
               vlan:
                 base-iface: {{ $bd.name }}
                 id: {{ $vn.id }}
