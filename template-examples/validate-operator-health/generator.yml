@@ -1,0 +1,51 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-validate-operator-health
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: inform
+  consolidateManifests: false
+  policySets:
+    - validate-operator-health
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: validate-operator-health
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "validate-operator-health-binding"
+
+policies:
+  - name: compliance-operator-health
+    description: "Validates the Compliance Operator subscription state and deployment health"
+    remediationAction: inform
+    dependencies:
+      - name: compliance-operator
+        compliance: Compliant
+    manifests:
+      - path: subscription-check.yml
+        name: compliance-sub-check
+        remediationAction: InformOnly
+
+      - path: csv-version-check.yml
+        name: compliance-csv-version-check
+        remediationAction: InformOnly
+
+      - path: deployment-health.yml
+        name: compliance-deployment-health
+        remediationAction: InformOnly
+
+policySets:
+  - name: validate-operator-health
+    placement:
+      placementName: "ft-compliance--enabled"

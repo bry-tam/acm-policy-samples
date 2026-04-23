@@ -1,0 +1,59 @@
+---
+object-templates-raw: |
+  {{/* Package name of the operator — single definition used throughout */}}
+  {{- $operatorName := "compliance-operator" }}
+
+  {{/* Look up all Subscriptions in openshift-compliance and find the one whose
+       spec.name matches the package name. */}}
+  {{- $sub := dict }}
+  {{- range $s := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-compliance" "").items }}
+    {{- if eq $s.spec.name $operatorName }}
+      {{- $sub = $s }}
+    {{- end }}
+  {{- end }}
+
+  {{- if not $sub.metadata }}
+    {{- fail (printf "No Subscription found in openshift-compliance with spec.name=%s" $operatorName) }}
+  {{- end }}
+
+  {{/* Get currentCSV from the Subscription and look up the ClusterServiceVersion.
+       currentCSV reflects what OLM is actively running, making it the authoritative
+       source for the deployment list via spec.install.spec.deployments. */}}
+  {{- $currentCSV := (dig "status" "currentCSV" "" $sub) }}
+  {{- if not $currentCSV }}
+    {{- fail (printf "currentCSV is not set on the Subscription for %s" $operatorName) }}
+  {{- end }}
+
+  {{- $csv := (lookup "operators.coreos.com/v1alpha1" "ClusterServiceVersion" "openshift-compliance" $currentCSV) }}
+  {{- if not $csv.metadata }}
+    {{- fail (printf "ClusterServiceVersion %s not found in openshift-compliance" $currentCSV) }}
+  {{- end }}
+
+  {{/* Range over deployments declared in the CSV install strategy. This scopes the
+       check to exactly what the operator owns rather than everything in the namespace.
+       Each deployment is validated for replica health, condition status, and the
+       olm.owner label which OLM stamps on every resource it manages. */}}
+  {{- range $depSpec := $csv.spec.install.spec.deployments }}
+    {{- $dep := (lookup "apps/v1" "Deployment" "openshift-compliance" $depSpec.name) }}
+  - complianceType: musthave
+    objectDefinition:
+      kind: Deployment
+      apiVersion: apps/v1
+      metadata:
+        name: {{ $depSpec.name }}
+        namespace: openshift-compliance
+        labels:
+          olm.owner: {{ $currentCSV }}
+      status:
+        replicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        updatedReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        readyReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        availableReplicas: '{{ $dep.spec.replicas | default 1 | toInt }}'
+        conditions:
+          {{- range $c := $dep.status.conditions }}
+            {{- $_ := set $c "status" "True" }}
+          - {{ $c | toRawJson | toLiteral }}
+          {{- end }}
+  {{- else }}
+    {{- fail (printf "No deployments declared in CSV spec.install.spec.deployments for %s" $currentCSV) }}
+  {{- end }}

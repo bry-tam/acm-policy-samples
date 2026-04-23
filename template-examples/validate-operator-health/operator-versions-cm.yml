@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: operator-versions
+  namespace: bry-tam-policies
+data:
+  compliance-operator: "1.9.0"

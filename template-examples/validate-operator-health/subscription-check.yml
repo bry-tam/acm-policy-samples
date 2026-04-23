@@ -1,0 +1,36 @@
+---
+object-templates-raw: |
+  {{/* Package name of the operator — single definition used throughout */}}
+  {{- $operatorName := "compliance-operator" }}
+
+  {{/* Look up all Subscriptions in openshift-compliance and find the one whose
+       spec.name matches the package name. The Subscription metadata.name is not
+       guaranteed to match the package name, so we search by spec.name instead. */}}
+  {{- $sub := dict }}
+  {{- range $s := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-compliance" "").items }}
+    {{- if eq $s.spec.name $operatorName }}
+      {{- $sub = $s }}
+    {{- end }}
+  {{- end }}
+
+  {{- if not $sub.metadata }}
+    {{- fail (printf "No Subscription found in openshift-compliance with spec.name=%s" $operatorName) }}
+  {{- end }}
+
+  {{/* Validate the Subscription spec matches expected configuration and status.state
+       is AtLatestKnown — OLM has confirmed the latest available CSV in the channel
+       is installed with no pending upgrades or installation errors. */}}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: '{{ $sub.metadata.name }}'
+        namespace: openshift-compliance
+      spec:
+        channel: stable
+        name: {{ $operatorName }}
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+      status:
+        state: AtLatestKnown

@@ -1,0 +1,36 @@
+---
+object-templates-raw: |
+  {{/* Package name of the operator — single definition used throughout */}}
+  {{- $operatorName := "compliance-operator" }}
+
+  {{/* Look up all Subscriptions in openshift-compliance and find the one whose
+       spec.name matches the package name. */}}
+  {{- $sub := dict }}
+  {{- range $s := (lookup "operators.coreos.com/v1alpha1" "Subscription" "openshift-compliance" "").items }}
+    {{- if eq $s.spec.name $operatorName }}
+      {{- $sub = $s }}
+    {{- end }}
+  {{- end }}
+
+  {{- $csvName := (dig "status" "installedCSV" "" $sub) }}
+  {{- if not $csvName }}
+    {{- fail (printf "installedCSV is not set on the Subscription for %s - operator may not be fully installed" $operatorName) }}
+  {{- end }}
+
+  {{/* Validate the ClusterServiceVersion version matches the expected value defined
+       in the operator-versions ConfigMap on the hub, and that the CSV has fully
+       reconciled to Succeeded phase. The hub-side template ({{hub ... hub}}) is
+       evaluated on the ACM hub before the policy is sent to managed clusters.
+       To update the baseline after an upgrade, change the value in the ConfigMap —
+       no policy regeneration required. */}}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: ClusterServiceVersion
+      metadata:
+        name: {{ $csvName }}
+        namespace: openshift-compliance
+      spec:
+        version: '{{hub fromConfigMap "bry-tam-policies" "operator-versions" "compliance-operator" hub}}'
+      status:
+        phase: Succeeded
