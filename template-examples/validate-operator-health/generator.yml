@@ -5,7 +5,6 @@ metadata:
   name: gen-validate-operator-health
 policyDefaults:
   namespace: bry-tam-policies
-  remediationAction: inform
   consolidateManifests: false
   policySets:
     - validate-operator-health
@@ -28,10 +27,6 @@ placementBindingDefaults:
 policies:
   - name: compliance-operator-health
     description: "Validates the Compliance Operator subscription state and deployment health"
-    remediationAction: inform
-    dependencies:
-      - name: compliance-operator
-        compliance: Compliant
     manifests:
       - path: subscription-check.yml
         name: compliance-sub-check
