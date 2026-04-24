@@ -22,6 +22,8 @@ object-templates-raw: |
       kind: NodeNetworkConfigurationPolicy
       metadata:
         name: {{ printf "%s-%s" $nd_network.name $nd_name }}
+        labels:
+          nncp.generated-interface/type: bond
       spec:
         nodeSelector:
           kubernetes.io/hostname: {{ $nd_name }}
@@ -52,6 +54,8 @@ object-templates-raw: |
                 {{- end }}
 
             ## Configure the VLAN on top of the bond and assign the static IPv4
+            ## Only rendered when vlans are defined in the node config
+            {{- if $nd_network.vlans }}
             {{- $vn := (index $nd_network.vlans 0) }}
             - name: {{ printf "%s.%v" $bd.name $vn.id }}
               type: vlan
@@ -64,6 +68,24 @@ object-templates-raw: |
                 enabled: true
                 dhcp: false
                 address: {{ $vn.address | toRawJson | toLiteral }}
+            {{- end }}
+
+            ## Configure bridges when defined in the node config
+            ## ovs-bridge type additionally sets allow-extra-patch-ports: true
+            {{- if $nd_network.bridges }}
+            {{- $br := (index $nd_network.bridges 0) }}
+            - name: {{ $br.name }}
+              type: {{ $br.type }}
+              state: up
+              bridge:
+              {{- if eq $br.type "ovs-bridge" }}
+                allow-extra-patch-ports: true
+              {{- end }}
+                options:
+                  stp: false
+                port:
+                  - name: {{ $bd.name }}
+            {{- end }}
 
     {{- end }}
   {{- end }}
