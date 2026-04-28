@@ -1,0 +1,26 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-vm-udn-vlan
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policyLabels:
+    policy_gen.name: vm-udn-vlan
+
+placementBindingDefaults:
+  name: "vm-udn-vlan-binding"
+
+policies:
+  - name: vm-udn-vlan
+    description: "For each Localnet ClusterUserDefinedNetwork, creates an NMState NodeNetworkConfigurationPolicy to map the localnet to br-vmdata on worker nodes, and creates a primary Layer2 UserDefinedNetwork in every opted-in namespace."
+    manifests:
+      - path: cudn-localnet-vlan.yml
+        name: vm-udn-localnet-vlan-config
+
+policySets:
+  - name: vm-udn-vlan
+    placement:
+      placementName: "env-bound-nohub-placement"

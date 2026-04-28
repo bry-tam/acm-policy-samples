@@ -1,0 +1,60 @@
+---
+object-templates-raw: |
+  {{- range $cudn := (lookup "k8s.ovn.org/v1" "ClusterUserDefinedNetwork" "" "").items }}
+    {{- if ne $cudn.spec.network.topology "Localnet" }}
+      {{- continue }}
+    {{- end }}
+
+    {{- $selectors := list }}
+    ## add the primary selector to force only namespace that have it must already exist
+    {{- $selectors = append $selectors "k8s.ovn.org/primary-user-defined-network" }}
+
+    {{- if $cudn.spec.namespaceSelector.matchLabels }}
+      {{- range $k, $v := $cudn.spec.namespaceSelector.matchLabels }}
+        {{- $selectors = append $selectors (printf "%s=%s" $k ($v | default "")) }}
+      {{- end }}
+    {{- end }}
+    {{- if $cudn.spec.namespaceSelector.matchExpressions }}
+      {{- range $expr := $cudn.spec.namespaceSelector.matchExpressions }}
+        {{- if eq $expr.operator "Exists" }}
+          {{- $selectors = append $selectors $expr.key }}
+        {{- else if eq $expr.operator "NotExists" }}
+          {{- $selectors = append $selectors (printf "!%s" $expr.key) }}
+        {{- else }}
+          {{- $selectors = append $selectors (printf "%s %s (%s)" $expr.key ($expr.operator | lower) (join "," $expr.values)) }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: nmstate.io/v1
+      kind: NodeNetworkConfigurationPolicy
+      metadata:
+        name: {{ printf "vmdata-localnet-%v" $cudn.spec.network.localnet.vlan.access.id }}
+      spec:
+        desiredState:
+          ovn:
+            bridge-mappings:
+              - localnet: {{ $cudn.spec.network.localnet.physicalNetworkName }}
+                bridge: br-vmdata
+                state: present
+        nodeSelector:
+          node-role.kubernetes.io/worker: ""
+
+    {{- range $ns := (lookup "v1" "Namespace" "" "" (join "," $selectors)).items }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: k8s.ovn.org/v1
+      kind: UserDefinedNetwork
+      metadata:
+        name: {{ printf "%s-udn-primary" $cudn.metadata.name }}
+        namespace: {{ $ns.metadata.name }}
+      spec:
+        topology: Layer2
+        layer2:
+          role: Primary
+          subnets:
+            - "192.168.0.0/24"
+    {{- end }}
+  {{- end }}
