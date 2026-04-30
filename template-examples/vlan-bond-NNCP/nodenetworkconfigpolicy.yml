@@ -47,6 +47,8 @@ object-templates-raw: |
               state: {{ default "up" $bd.state }}
               mtu: {{ $mtu }}
               link-aggregation:
+                options:
+                  fail_over_mac: active
                 mode: {{ $bd.mode }}
                 port:
                 {{- range $if := $nd_network.ethernets }}
@@ -86,7 +88,8 @@ object-templates-raw: |
                 options:
                   stp: false
                 port:
-                  - name: {{ $bd.name }}
+              {{- $port_name := default $bd.name $br.port }}
+                  - name: {{ $port_name }}
             {{- end }}
 
     {{- end }}
