@@ -1,0 +1,32 @@
+---
+object-templates-raw: |
+  {{/* Variables - update for your environment */}}
+  {{- $pkgName := "metallb-operator" }}
+  {{- $opNamespace := "metallb-system" }}
+
+  {{/* Loop over all Subscriptions in the operator namespace.
+       Remove any where spec.name matches the expected package name but
+       metadata.name does not — these are incorrectly named subscriptions. */}}
+  {{- range $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" $opNamespace "").items }}
+    {{- if and (eq $sub.spec.name $pkgName) (ne $sub.metadata.name $pkgName) }}
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: {{ $sub.metadata.name }}
+        namespace: {{ $opNamespace }}
+
+      {{- range $csv := (lookup "operators.coreos.com/v1alpha1" "ClusterServiceVersion" $opNamespace "").items }}
+        {{- if hasPrefix $pkgName $csv.metadata.name }}
+  - complianceType: mustnothave
+    objectDefinition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: ClusterServiceVersion
+      metadata:
+        name: {{ $csv.metadata.name }}
+        namespace: {{ $opNamespace }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}

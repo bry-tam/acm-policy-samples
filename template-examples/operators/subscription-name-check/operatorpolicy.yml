@@ -1,0 +1,30 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: metallb-operator-install
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: None
+  subscription:
+    channel: stable
+    name: metallb-operator
+    namespace: metallb-system
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    startingCSV: metallb-operator.v4.19.0-202604072219
+  operatorGroup:
+    name: metallb-operator
+  versions:
+    - metallb-operator.v4.19.0-202604072219

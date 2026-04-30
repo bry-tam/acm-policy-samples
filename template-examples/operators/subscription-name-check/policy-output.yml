@@ -1,0 +1,121 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/description: Installs MetalLB Operator
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  labels:
+    policy_gen.name: metallb-sub-namecheck
+  name: metallb-operator
+  namespace: acm-policies
+spec:
+  dependencies:
+  - apiVersion: policy.open-cluster-management.io/v1
+    compliance: Compliant
+    kind: Policy
+    name: metallb-sub-namecheck
+    namespace: acm-policies
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1beta1
+      kind: OperatorPolicy
+      metadata:
+        name: metallb-operator-install
+      spec:
+        complianceConfig:
+          catalogSourceUnhealthy: NonCompliant
+          deploymentsUnavailable: NonCompliant
+          upgradesAvailable: Compliant
+        complianceType: musthave
+        operatorGroup:
+          name: metallb-operator
+        remediationAction: enforce
+        removalBehavior:
+          clusterServiceVersions: Delete
+          customResourceDefinitions: Delete
+          operatorGroups: DeleteIfUnused
+          subscriptions: Delete
+        severity: critical
+        subscription:
+          channel: stable
+          name: metallb-operator
+          namespace: metallb-system
+          source: redhat-operators
+          sourceNamespace: openshift-marketplace
+          startingCSV: metallb-operator.v4.19.0-202604072219
+        upgradeApproval: Automatic
+        versions:
+        - metallb-operator.v4.19.0-202604072219
+  remediationAction: enforce
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/description: Removes OLM Subscriptions where
+      metadata.name does not match the package name (spec.name)
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+  labels:
+    policy_gen.name: metallb-sub-namecheck
+  name: metallb-sub-namecheck
+  namespace: acm-policies
+spec:
+  disabled: false
+  policy-templates:
+  - objectDefinition:
+      apiVersion: policy.open-cluster-management.io/v1
+      kind: ConfigurationPolicy
+      metadata:
+        name: metallb-sub-name-check
+      spec:
+        object-templates-raw: |
+          {{/* Variables - update for your environment */}}
+          {{- $pkgName := "metallb-operator" }}
+          {{- $opNamespace := "metallb-system" }}
+
+          {{/* Loop over all Subscriptions in the operator namespace.
+               Remove any where spec.name matches the expected package name but
+               metadata.name does not — these are incorrectly named subscriptions. */}}
+          {{- range $sub := (lookup "operators.coreos.com/v1alpha1" "Subscription" $opNamespace "").items }}
+            {{- if and (eq $sub.spec.name $pkgName) (ne $sub.metadata.name $pkgName) }}
+          - complianceType: mustnothave
+            objectDefinition:
+              apiVersion: operators.coreos.com/v1alpha1
+              kind: Subscription
+              metadata:
+                name: {{ $sub.metadata.name }}
+                namespace: {{ $opNamespace }}
+
+              {{- range $csv := (lookup "operators.coreos.com/v1alpha1" "ClusterServiceVersion" $opNamespace "").items }}
+                {{- if hasPrefix $pkgName $csv.metadata.name }}
+          - complianceType: mustnothave
+            objectDefinition:
+              apiVersion: operators.coreos.com/v1alpha1
+              kind: ClusterServiceVersion
+              metadata:
+                name: {{ $csv.metadata.name }}
+                namespace: {{ $opNamespace }}
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+        remediationAction: enforce
+        severity: medium
+  remediationAction: enforce
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: PolicySet
+metadata:
+  name: metallb-operator
+  namespace: acm-policies
+spec:
+  description: ""
+  policies:
+  - metallb-operator
+  - metallb-sub-namecheck
