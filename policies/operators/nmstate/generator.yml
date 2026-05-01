@@ -1,0 +1,45 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-nmstate
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - nmstate-operator
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: nmstate-operator
+  severity: critical
+
+placementBindingDefaults:
+  name: "nmstate-binding"
+
+policies:
+  - name: nmstate-operator
+    description: "Installs the Kubernetes NMState operator into the openshift-nmstate namespace for declarative node network configuration management."
+    manifests:
+      - path: namespace.yml
+        name: nmstate-namespace
+
+      - path: operatorpolicy.yml
+
+      - path: nmstate.yml
+        name: nmstate-instance
+        extraDependencies:
+          - name: nmstate-operator-install
+            kind: OperatorPolicy
+            apiVersion: policy.open-cluster-management.io/v1beta1
+            compliance: Compliant
+
+policySets:
+  - name: nmstate-operator
+    placement:
+      placementName: "ft-nmstate--enabled"

@@ -21,6 +21,7 @@ resources:
   - ./metallb/
   - ./migration-toolkit/
   - ./network-observability/
+  - ./nmstate/
   - ./opentelemetry/
   - ./portworx/
   - ./secondary-scheduler/
