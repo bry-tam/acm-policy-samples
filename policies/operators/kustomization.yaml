@@ -11,6 +11,7 @@ resources:
   - ./cluster-observability/
   - ./compliance-operator/
   - ./data-foundation/
+  - ./descheduler/
   - ./developer-hub/
   - ./external-secrets/
   - ./file-integrity/
