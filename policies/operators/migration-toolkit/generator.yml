@@ -1,0 +1,46 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-migration-toolkit
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - migration-toolkit
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: migration-toolkit
+  severity: critical
+
+placementBindingDefaults:
+  name: "migration-toolkit-binding"
+
+policies:
+  - name: migration-toolkit-for-virtualization
+    description: "Installs the Migration Toolkit for Virtualization operator into the openshift-mtv namespace with cluster monitoring enabled, and deploys a ForkliftController instance after the operator is compliant."
+    manifests:
+      - path: namespace.yml
+        name: openshift-mtv-namespace
+
+      - path: operatorpolicy.yml
+        name: install-mtv-operator
+
+      - path: forkliftcontroller.yml
+        name: forklift-controller
+        extraDependencies:
+          - name: install-mtv-operator
+            kind: OperatorPolicy
+            apiVersion: policy.open-cluster-management.io/v1beta1
+            compliance: "Compliant"
+
+policySets:
+  - name: migration-toolkit
+    placement:
+      placementName: "ft-ocp-virt--enabled"

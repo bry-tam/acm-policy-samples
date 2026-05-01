@@ -34,6 +34,7 @@ policies:
         name: eso-namespace
 
       - path: operatorpolicy.yml
+        name: eso-operator-install
 
       - path: operatorconfig.yml
         name: eso-operatorconfig

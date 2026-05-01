@@ -1,0 +1,38 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-cluster-autoscaling
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - cluster-autoscaling
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: cluster-autoscaling
+  severity: low
+
+placementBindingDefaults:
+  name: "cluster-autoscaling-binding"
+
+policies:
+  - name: cluster-autoscaling
+    description: "Configures ClusterAutoscaler and creates MachineAutoscalers for MachineSets labeled with min/max replica counts"
+    manifests:
+      - path: clusterautoscaler.yml
+        name: default-clusterautoscaler
+      - path: machineautoscaler.yml
+        name: machineset-autoscaler
+        pruneObjectBehavior: DeleteIfCreated
+
+policySets:
+  - name: cluster-autoscaling
+    placement:
+      placementName: "ft-autoscaling--enabled"

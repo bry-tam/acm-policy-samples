@@ -1,0 +1,47 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-apiserver-cert
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - cluster-configs-apiserver-cert
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: apiserver-cert
+  severity: high
+
+placementBindingDefaults:
+  name: "apiserver-cert-binding"
+
+policies:
+  - name: apiserver-certificate
+    description: "Provisions a cert-manager Certificate for the API server and configures the named certificate reference"
+    dependencies:
+      - name: cert-manager-clusterissuer
+        compliance: "Compliant"
+    manifests:
+      - path: certificate.yml
+        name: apiserver-certificate
+      - path: cert-ready.yml
+        name: apiserver-cert-ready
+        remediationAction: InformOnly
+      - path: apiserver.yml
+        name: apiserver-named-certs
+        extraDependencies:
+          - name: apiserver-cert-ready
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: cluster-configs-apiserver-cert
+    placement:
+      placementName: "env-bound-placement"

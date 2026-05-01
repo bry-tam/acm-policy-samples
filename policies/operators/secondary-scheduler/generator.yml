@@ -34,6 +34,7 @@ policies:
         name: secondaryscheduler-namespace
 
       - path: operatorpolicy.yml
+        name: secondary-scheduler-operator-install
 
       - path: ./example/configmap.yml
         name: example-schedule-config

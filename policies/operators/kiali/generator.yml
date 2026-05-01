@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-kikali
+  name: gen-policy-kiali
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
@@ -34,6 +34,7 @@ policies:
         name: kiali-namespace
 
       - path: operatorpolicy.yml
+        name: kiali-operator-install
 
 policySets:
   - name: kiali-operator

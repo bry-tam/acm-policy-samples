@@ -1,0 +1,47 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-machinesets
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: machinesets
+  severity: low
+
+placementBindingDefaults:
+  name: "machinesets-binding"
+
+policies:
+  - name: infra-machineset
+    description: "Creates infra MachineSet resources across availability zones for nodes with the infra role"
+    policySets:
+      - cluster-configs-infra-machinesets
+    manifests:
+      - path: infra-machineset.yml
+        name: create-infra-machineset
+
+  - name: storage-machineset
+    description: "Creates storage MachineSet resources across availability zones for nodes with the infra and storage roles"
+    policySets:
+      - cluster-configs-storage-machinesets
+    manifests:
+      - path: infra-storage-machineset.yml
+        name: create-storage-machineset
+
+policySets:
+  - name: cluster-configs-infra-machinesets
+    placement:
+      placementName: "ft-inframachines--enabled"
+
+  - name: cluster-configs-storage-machinesets
+    placement:
+      placementName: "ft-storage--odf"

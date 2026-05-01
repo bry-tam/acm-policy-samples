@@ -43,6 +43,7 @@ policies:
         name: stackrox-namespace
 
       - path: operatorpolicy.yml
+        name: advanced-cluster-secutity-operator-install
 
 
   - name: acs-central
@@ -119,6 +120,7 @@ policies:
         name: acs-cert-sensor-tls
 
       - path: sensor/securedcluster.yml
+        name: stackrox-secured-cluster-services
         extraDependencies:
           - name: acs-cert-sensor-tls
             kind: ConfigurationPolicy

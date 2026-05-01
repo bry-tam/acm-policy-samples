@@ -1,5 +1,8 @@
+---
 # OpenShift GitOps Operator
-Installs the OpenShift GitOps operator and example instances of ArgoCD.
+
+## Description
+Deploys the OpenShift GitOps Operator and configures multiple `ArgoCD` instances using kustomize overlays to demonstrate a reusable base pattern. On the hub, also configures the PolicyGenerator plugin in the ArgoCD repo server and creates `ManagedClusterSetBinding` resources to enable multi-cluster `ApplicationSet` targeting.
 
 ## Dependencies
   - None
@@ -9,13 +12,22 @@ ACM Minimal Version: 2.12
 
 Documentation: [latest](https://docs.redhat.com/en/documentation/red_hat_openshift_gitops/latest)
 
----
-**Notes:**
-  - Includes policy to migrate from openshift-operators namespace in GitOps 1.9 to openshift-gitops-operator in GitOps 1.10
-  - For ACM clusters will:
-    - Add the PolicyGenerator to the repo server component
-    - Add a Placement and GitOpsCluster to openshift-gitops namespace to enable use of ApplicationSets from ACM
-  - Enables notifications but does not configure any notifications
-  - Demonstrates using kustomize to create multiple ArgoCD instances.  The "default" configures openshift-gitops instance that is deployed by operator to be HA along with other settings.  Dev instances shows adding a namespace bound Argo instance.  Kustomize with the policies allows reusing most of the config for each instance to have a standard configuration that the instance can override.
-  - Configures Argo to use annotations for resource tracking.
-  - Adds a ConsoleLink for each instance named after the namespace it is configured in.
+Notes:
+  - Configures ArgoCD to use annotation-based resource tracking
+  - Enables notifications on all instances but does not configure notification destinations
+  - A `ConsoleLink` is created for each ArgoCD instance, named after its namespace
+  - `argo-server-host.yml` uses `object-templates-raw` to iterate all `ArgoCD` instances and patch the server host to match the cluster route
+
+## Implementation Details
+
+**`gitops-operator`** — creates the `openshift-gitops-operator` and `openshift-gitops` namespaces and installs the `OperatorPolicy`.
+
+**`gitops-instances`** — depends on `gitops-operator`. Uses `consolidateManifests: true` and kustomize overlays to deploy two `ArgoCD` instances from a shared `base/`:
+  - `default` overlay (`openshift-gitops` namespace): patches the cluster-scoped instance for HA, adds an admin `ClusterRoleBinding`, and configures `GitOpsService` to expose the instance for `ApplicationSet` use
+  - `dev` overlay (`argocd-dev` namespace): adds a namespace-scoped instance with a `RolloutManager` for progressive delivery
+
+  After both instances are deployed, `argo-server-host.yml` reads each instance's `Route` and updates the ArgoCD server host annotation accordingly.
+
+**`gitops-acm-policygenerator`** — hub-only (`gitops-acm-hub` PolicySet, placement `ft-acm-hub--exists`). Depends on `gitops-instances`. Patches the ArgoCD repo server with the ACM `PolicyGenerator` plugin, injects the cluster root CA `ConfigMap`, and uses `object-templates-raw` to create a `ManagedClusterSetBinding` for every `ManagedClusterSet` in `openshift-gitops`, enabling `ApplicationSet` generators to target managed clusters.
+
+**`gitops-instance-status`** — depends on `gitops-instances`, runs `inform`. Uses `object-templates-raw` to enumerate all `ArgoCD` instances and verify each is in a healthy phase.

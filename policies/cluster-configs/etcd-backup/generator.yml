@@ -1,0 +1,49 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-etcd-backup
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - cluster-configs-etcd-backup
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: etcd-backup
+  severity: high
+  configurationPolicyAnnotations:
+    policy.open-cluster-management.io/disable-templates: "true"
+
+placementBindingDefaults:
+  name: "etcd-backup-binding"
+
+policies:
+  - name: etcd-backup
+    description: "Deploys an automated etcd backup CronJob writing snapshots to a PersistentVolumeClaim"
+    manifests:
+      - path: namespace.yml
+        name: etcd-namespace
+      - path: serviceaccount.yml
+        name: etcd-serviceaccount
+      - path: role.yml
+        name: etcd-role
+      - path: rolebinding.yml
+        name: etcd-rolebinding
+      - path: persistentvolumeclaim.yml
+        name: etcd-pvc
+      - path: configmap.yml
+        name: etcd-configmap
+      - path: cronjob.yml
+        name: etcd-cronjob
+
+policySets:
+  - name: cluster-configs-etcd-backup
+    placement:
+      placementName: "env-bound-placement"

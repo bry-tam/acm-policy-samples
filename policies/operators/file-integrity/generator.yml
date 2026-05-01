@@ -34,6 +34,7 @@ policies:
         name: fio-namespace
 
       - path: operatorpolicy.yml
+        name: fio-operator-install
 
       - path: fileintegrity.yml
         name: fio-fileintegrity

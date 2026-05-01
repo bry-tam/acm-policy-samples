@@ -18,7 +18,7 @@ spec:
   severity: critical
   upgradeApproval: Automatic
   subscription:
-    channel: rhacs-4.7
+    channel: rhacs-4.10
     name: rhacs-operator
     namespace: rhacs-operator
     source: redhat-operators

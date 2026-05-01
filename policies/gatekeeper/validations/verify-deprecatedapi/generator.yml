@@ -2,60 +2,76 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gk-policy-generator-depricatedapis
+  name: gk-policy-generator-verifydeprecatedapi
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
   informGatekeeperPolicies: false
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-8 System Component Inventory"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: verify-deprecatedapi
+  severity: high
   policySets:
-    - gp-valid-apidepreication
+    - gp-valid-verifydeprecatedapi
+
 placementBindingDefaults:
-  name: "gp-valid-apidepreication-binding"
+  name: "gp-valid-verifydeprecatedapi-binding"
 
 policies:
-  - name: gp-valid-apidepreication
+  - name: gp-valid-verifydeprecatedapi
+    description: "Deploys a Gatekeeper ConstraintTemplate and per-Kubernetes-version Constraints that block use of deprecated APIs at admission time"
     remediationAction: enforce
     dependencies:
       - name: "gatekeeper-instance"
         compliance: "Compliant"
     manifests:
       - path: verify-deprecatedapi/constrainttemplate.yml
+        name: verifydeprecatedapi-constrainttemplate
       - path: verify-deprecatedapi/verifydeprecatedapi-1.16.yml
+        name: verifydeprecatedapi-1.16
         # extraDependencies:
         #   - name: verifydeprecatedapi
         #     apiVersion: templates.gatekeeper.sh/v1beta1
         #     kind: ConstraintTemplate
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.22.yml
+        name: verifydeprecatedapi-1.22
         # extraDependencies:
         #   - name: verifydeprecatedapi
-        #     kind: ConfigurationPolicy
+        #     kind: ConstraintTemplate
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.25.yml
+        name: verifydeprecatedapi-1.25
         # extraDependencies:
         #   - name: verifydeprecatedapi
-        #     kind: ConfigurationPolicy
+        #     kind: ConstraintTemplate
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.26.yml
+        name: verifydeprecatedapi-1.26
         # extraDependencies:
         #   - name: verifydeprecatedapi
-        #     kind: ConfigurationPolicy
+        #     kind: ConstraintTemplate
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.27.yml
+        name: verifydeprecatedapi-1.27
         # extraDependencies:
         #   - name: verifydeprecatedapi
-        #     kind: ConfigurationPolicy
+        #     kind: ConstraintTemplate
         #     compliance: "Compliant"
       - path: verify-deprecatedapi/verifydeprecatedapi-1.29.yml
+        name: verifydeprecatedapi-1.29
         # extraDependencies:
         #   - name: verifydeprecatedapi
-        #     kind: ConfigurationPolicy
+        #     kind: ConstraintTemplate
         #     compliance: "Compliant"
 
-
 policySets:
-  - name: gp-valid-apidepreication
+  - name: gp-valid-verifydeprecatedapi
     placement:
-      placementName: "env-bound-placement"
-
+      placementName: "ft-verify-dep-api--enabled"

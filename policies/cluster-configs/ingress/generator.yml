@@ -1,0 +1,53 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-ingress
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - cluster-configs-ingress
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: ingress
+  severity: medium
+
+placementBindingDefaults:
+  name: "ingress-binding"
+
+policies:
+  - name: ocp-ingress-infra
+    description: "Configures the default IngressController node placement and replica count based on available infra nodes"
+    manifests:
+      - path: ingress.yml
+        name: ingressoperator-default
+
+  - name: ingress-certificate
+    description: "Issues a cert-manager Certificate for the default ingress domain and applies it to the IngressController"
+    dependencies:
+      - name: cert-manager-clusterissuer
+        compliance: "Compliant"
+    manifests:
+      - path: certificate.yml
+        name: ingress-certificate
+      - path: cert-ready.yml
+        name: ingress-cert-ready
+        remediationAction: InformOnly
+      - path: ingress-cert.yml
+        name: ingress-default-certs
+        extraDependencies:
+          - name: ingress-cert-ready
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: cluster-configs-ingress
+    placement:
+      placementName: "env-bound-placement"

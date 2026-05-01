@@ -33,6 +33,7 @@ policies:
         name: aap-namespace
 
       - path: operatorpolicy.yml
+        name: ansible-operator-install
 
   - name: ansible-automation-configure
     description: "Configures s3 storage and AAP components"
@@ -68,6 +69,7 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: health/ansible-automation-status.yml
+        name: ansible-automation-status
 
 policySets:
   - name: ansible-automation-operator

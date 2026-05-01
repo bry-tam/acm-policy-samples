@@ -18,17 +18,11 @@ spec:
   severity: critical
   upgradeApproval: Automatic
   subscription:
-    channel: release-2.15
+    channel: release-2.16
     name: advanced-cluster-management
     namespace: open-cluster-management
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-    config:
-      nodeSelector:
-        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
-      tolerations:
-        - operator: Exists
-          key: node-role.kubernetes.io/infra
   operatorGroup:
     name: open-cluster-management
     targetNamespaces:

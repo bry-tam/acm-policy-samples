@@ -1,0 +1,37 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-kubeletconfig
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - cluster-configs-kubelet
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: kubeletconfig
+  severity: low
+
+placementBindingDefaults:
+  name: "kubeletconfig-binding"
+
+policies:
+  - name: node-kubeletconfigs
+    description: "Applies KubeletConfig resources to enable auto-sized resource reservations on master and worker node pools"
+    manifests:
+      - path: master.yml
+        name: master-kubelet
+      - path: worker.yml
+        name: worker-kubelet
+
+policySets:
+  - name: cluster-configs-kubelet
+    placement:
+      placementName: "env-bound-placement"

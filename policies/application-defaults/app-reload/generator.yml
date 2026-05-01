@@ -1,0 +1,42 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-app-reload
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - app-reload
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: app-reload
+  severity: low
+
+placementBindingDefaults:
+  name: "app-reload-binding"
+
+policies:
+  - name: app-resource-tracker
+    description: "Monitors labeled Deployments and restarts them when a watched ConfigMap or Secret changes"
+    ignorePending: true
+    manifests:
+      - path: reload-tracker-configmap.yml
+        name: app-reload-tracker
+      - path: reload-tracker-deployment.yml
+        name: tracker-app-reload
+        extraDependencies:
+          - name: app-reload-tracker
+            kind: ConfigurationPolicy
+            compliance: "NonCompliant"
+
+policySets:
+  - name: app-reload
+    placement:
+      placementName: "ft-app--reload"

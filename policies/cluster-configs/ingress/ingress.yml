@@ -1,35 +1,27 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: ingressoperator-default
-spec:
-  remediationAction: enforce
-  severity: low
-  object-templates-raw: |
-    {{/* ##  set the nodeSelector and toleration if infra nodes exist.    ## */}}
-    {{/* ##  tolerations are passed to mustFromJson to validate input  ## */}}
-    {{- $nodeSelector := "node-role.kubernetes.io/worker" }}
-    {{- $nodeTolerations := mustFromJson "[]" }}
+object-templates-raw: |
+  {{/* ##  set the nodeSelector and toleration if infra nodes exist.    ## */}}
+  {{/* ##  tolerations are passed to mustFromJson to validate input  ## */}}
+  {{- $nodeSelector := "node-role.kubernetes.io/worker" }}
+  {{- $nodeTolerations := mustFromJson "[]" }}
 
-    {{- if (hasNodesWithExactRoles "infra") }}
-      {{- $nodeSelector = "node-role.kubernetes.io/infra" }}
-      {{- $nodeTolerations = mustFromJson "[{\"operator\":\"Exists\",\"key\":\"node-role.kubernetes.io/infra\"}]" }}
-    {{- end }}
+  {{- if (hasNodesWithExactRoles "infra") }}
+    {{- $nodeSelector = "node-role.kubernetes.io/infra" }}
+    {{- $nodeTolerations = mustFromJson "[{\"operator\":\"Exists\",\"key\":\"node-role.kubernetes.io/infra\"}]" }}
+  {{- end }}
 
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: operator.openshift.io/v1
-        kind: IngressController
-        metadata:
-          name: default
-          namespace: openshift-ingress-operator
-        spec:
-          httpEmptyRequestsPolicy: Respond
-          nodePlacement:
-            nodeSelector:
-              matchLabels:
-                {{ $nodeSelector }}: ""
-            tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
-          replicas: {{ (ge (len (getNodesWithExactRoles "infra").items) 3 | ternary 3 (len (getNodesWithExactRoles "infra").items)  | default 2) | toInt }}
-
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: operator.openshift.io/v1
+      kind: IngressController
+      metadata:
+        name: default
+        namespace: openshift-ingress-operator
+      spec:
+        httpEmptyRequestsPolicy: Respond
+        nodePlacement:
+          nodeSelector:
+            matchLabels:
+              {{ $nodeSelector }}: ""
+          tolerations: '{{ $nodeTolerations | toRawJson | toLiteral }}'
+        replicas: {{ (ge (len (getNodesWithExactRoles "infra").items) 3 | ternary 3 (len (getNodesWithExactRoles "infra").items)  | default 2) | toInt }}

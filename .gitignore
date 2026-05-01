@@ -1,4 +1,7 @@
 
+.claude/settings.local.json
+.claude/worktrees/
+
 # exclude all .html files
 !*.html
 !**/*.html

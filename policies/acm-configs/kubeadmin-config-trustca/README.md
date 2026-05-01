@@ -1,26 +1,35 @@
-# kubeadmin Secret Configure CA Trust
-The `acm-kubeadmin-trustca` Policy will perform an automatic update of the CA in the admin kubeconfig secrets.
+#  Kubeadmin Secret Configure CA Trust
 
-When the cluster is created through Hive the kubeconfig contains the CA for the initial cluster certificates. This is typically
-replaced with a corporate based certificate chain. In such environments it would also be expected for the trustedCA to be configured
-in the cluster proxy.
-
-When the api.cluster.domain.com certificate is replaced the generated kubeconfig in ACM no longer trusts the managed cluster endpoint.
-This results in the hub no longer able to perform functions like scaling MachinePools.
-
-This policy will use the CA configured in the cluster proxy and replace the "certificate-authority-data" found in the kubeconfig-admin secrets.
-There is a delay of 12 hours so that new clusters so that ACM can perform initial management as needed before and during day-2 configuration policies being
-applied.
+## Description
+Automatically updates the `certificate-authority-data` in Hive-managed kubeconfig secrets to use the
+corporate CA bundle configured in the cluster proxy. Required when the initial cluster API certificate
+is replaced with a corporate certificate chain, which causes the Hive-generated kubeconfig to stop
+trusting the managed cluster endpoint.
 
 ## Dependencies
-  - Root trust CA configured in cluster proxy
-  - When the root trust CA is updated/replaced both the old and new certificate will be included in the ConfigMap
+  - Corporate root CA configured as `trustedCA` in the hub cluster `Proxy` object
+  - The CA ConfigMap must exist in `openshift-config` and contain a `ca-bundle.crt` key
 
 ## Details
 ACM Minimal Version: 2.12
 
 Documentation: [Knowledgebase](https://access.redhat.com/solutions/7076376)
 
----
-**Notes:**
-  -
+Notes:
+  - Deployed to hub only; acts on all Hive `Secret` resources with label `hive.openshift.io/secret-type=kubeconfig`
+  - Skips secrets newer than 12 hours to allow initial day-2 configuration to complete before updating
+  - Updates both the `kubeconfig` and `raw-kubeconfig` keys in each secret
+  - When the root CA is rotated, include both old and new certificates in the ConfigMap to avoid
+    a window where neither kubeconfig is trusted
+
+## Implementation Details
+The template:
+
+1. Reads the hub `Proxy` object to find the `trustedCA` ConfigMap name
+2. Loads the CA bundle from `openshift-config/<trustedCA-name>` using `fromConfigMap`
+3. Iterates all Hive kubeconfig secrets, skipping any created less than 12 hours ago
+4. For each eligible secret, decodes the kubeconfig, replaces the `certificate-authority-data`
+   value with the new base64-encoded CA bundle, and emits a `musthave` patch
+
+The 12-hour delay ensures ACM can complete initial cluster provisioning and day-2 configuration
+before the API certificate replacement makes the original kubeconfig untrusted.

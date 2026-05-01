@@ -18,7 +18,7 @@ spec:
   severity: critical
   upgradeApproval: Automatic
   subscription:
-    channel: gitops-1.19
+    channel: gitops-1.20
     config:
       env:
         - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES

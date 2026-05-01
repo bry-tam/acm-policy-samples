@@ -1,24 +1,43 @@
-## Introduction
-This Gatekeeper Policy is intended to match the behavior of the deprecated ACM IAMPolicy Controller.  It will allow an administrator to monitor and alert if `ClusterRoleBindings` with the specified `ClusterRole` exceed the maximum number of users.  In the case where a Group is specified in the `ClusterRoleBinding` the number of users in the group are counted.  ServiceAccounts are ignored.
+#  Max IAM Cluster Bindings
 
-## Prerequisites
-The Policy makes use of sync data from the cluster to have knowledge of the existing `ClusterRoleBindings` and `Groups`.  To make this data available create a `Config` in the Gatekeeper Operator namespace, this is `openshift-gatekeeper-system` by default.
+## Description
+Deploys a Gatekeeper `ConstraintTemplate` and `Constraint` that enforce a maximum number of
+users bound to a specified `ClusterRole` across all `ClusterRoleBindings`. Users within
+`Group` subjects are expanded and counted individually. `ServiceAccount` subjects are ignored.
+This replaces the behavior of the deprecated ACM `IAMPolicy` controller.
 
-The config needs to be named "config", there can only be one.  To avoid dealing with arrays and merge issues, in this sample repo the sync config is managed with the operator in [../../../operators/gatekeeper/sync-configmap.yml](../../../operators/gatekeeper/sync-configmap.yml).  Below is an example of the sync config required for this Policy.  Note you should also enable the `auditFromCache` in the gatekeeper instance.
+## Dependencies
+  - [Gatekeeper Operator](../../../operators/gatekeeper/) — the `gatekeeper-instance` policy
+    must be Compliant before this policy runs
 
-```
-apiVersion: config.gatekeeper.sh/v1alpha1
-kind: Config
-metadata:
-  name: config
-  namespace: "openshift-gatekeeper-system"
-spec:
-  sync:
-    syncOnly:
-      - group: "rbac.authorization.k8s.io"
-        version: "v1"
-        kind: "ClusterRoleBinding"
-      - group: "user.openshift.io"
-        version: "v1"
-        kind: "Group"
-```
+## Details
+ACM Minimal Version: 2.12
+
+Documentation: [latest](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/latest/html-single/governance/index#gatekeeper-policy-overview)
+
+Notes:
+  - Applied to clusters labeled `iam-maxbindings=enabled` via `ft-iam-maxbindings--enabled`
+  - Gatekeeper must have `ClusterRoleBinding` and `Group` sync data available; the sync
+    `Config` is managed by the Gatekeeper Operator policy at
+    [../../../operators/gatekeeper/sync-configmap.yml](../../../operators/gatekeeper/sync-configmap.yml)
+  - `informGatekeeperPolicies: false` keeps ACM from wrapping the Gatekeeper resources in
+    an additional ConfigurationPolicy audit layer
+  - The `ignoreClusterRoleBindings` parameter accepts a list of `ClusterRoleBinding` names
+    to exclude from the count (e.g. system-managed bindings)
+
+## Implementation Details
+**`maxiamclusterbindings-constrainttemplate`** — installs the `MaxIAMClusterBindings`
+`ConstraintTemplate` with a Rego policy and a shared `lib.helpers` library. On each admission
+request for a `ClusterRoleBinding`, the policy:
+1. Collects all existing `ClusterRoleBindings` that reference the target `ClusterRole` from
+   Gatekeeper's sync cache, excluding the binding under review and any names in
+   `ignoreClusterRoleBindings`
+2. Expands `Group` subjects to their member user names using the synced `Group` inventory
+3. Unions the existing subject set with the subjects from the incoming request
+4. Denies the request when the total unique user count exceeds `maxClusterRoleBindingUsers`
+
+**`max-cluster-admins`** — installs the `MaxIAMClusterBindings` `Constraint` targeting
+`rbac.authorization.k8s.io/v1 ClusterRoleBinding` resources. Default configuration:
+  - `clusterRole: cluster-admin`
+  - `maxClusterRoleBindingUsers: 10`
+  - `ignoreClusterRoleBindings: ["iam-max-groups"]`

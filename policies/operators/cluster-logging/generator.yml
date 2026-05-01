@@ -38,6 +38,7 @@ policies:
         name: log-op-namespace
 
       - path: operatorpolicy.yml
+        name: clusterlogging-operator-install
 
       - path: clusterrole.yml
         name: log-collector-writer-clusterrole

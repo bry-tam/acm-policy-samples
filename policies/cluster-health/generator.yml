@@ -6,23 +6,39 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: inform
-  ## turn off the default compliance annotations
-  categories: []
-  controls: []
-  standards: []
+  consolidateManifests: false
+  categories:
+    - "CA Security Assessment and Authorization"
+  controls:
+    - "CA-7 Continuous Monitoring"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: cluster-health
+  severity: high
   policySets:
     - cluster-health
+
 placementBindingDefaults:
-  name: "cluster-helath-binding"
+  name: "cluster-health-binding"
 
 policies:
   - name: cluster-health-eval
+    description: "Validates cluster health by checking version, ClusterOperators, MachineConfigPools, and node status"
     remediationAction: enforce
     manifests:
       - path: clusterversion.yml
+        name: cluster-version-status
+        remediationAction: InformOnly
       - path: clusteroperator.yml
+        name: cluster-operator-status
+        remediationAction: InformOnly
       - path: machineconfigpool.yml
+        name: machine-config-pool-status
+        remediationAction: InformOnly
       - path: node.yml
+        name: node-status
+        remediationAction: InformOnly
 
 policySets:
   - name: cluster-health

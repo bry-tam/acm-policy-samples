@@ -1,0 +1,32 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: portworx-operator-install
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: Automatic
+  operatorGroup:
+    name: portworx-og
+    targetNamespaces:
+      - portworx
+  subscription:
+    channel: stable
+    name: portworx-certified
+    namespace: portworx
+    source: certified-operators
+    sourceNamespace: openshift-marketplace
+    startingCSV: portworx-operator.v25.6.1
+  versions:
+    - portworx-operator.v25.6.1

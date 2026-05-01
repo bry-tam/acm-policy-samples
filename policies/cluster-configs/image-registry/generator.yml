@@ -9,37 +9,50 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - image-registry
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: image-registry
+  severity: high
+
 placementBindingDefaults:
   name: "image-registry-binding"
 
 policies:
   - name: image-registry-config
+    description: "Configures the OpenShift image registry to use ODF S3 object storage via NooBaa"
     remediationAction: enforce
     manifests:
       - path: objectbucketclaim.yml
+        name: image-registry-config
         extraDependencies:
           - name: odf-operator-status
             kind: Policy
             compliance: "Compliant"
       - path: registry-s3-access-secret.yml
+        name: registry-s3-access-secret
         extraDependencies:
           - name: image-registry-config
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: image-registry-s3-bundle-configmap.yml
+        name: image-registry-s3-bundle
         extraDependencies:
           - name: image-registry-config
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: imageregistry-config.yml
+        name: imageregistry-config
         extraDependencies:
           - name: registry-s3-access-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
-
 policySets:
   - name: image-registry
     placement:
       placementName: "ft-storage--odf"
-

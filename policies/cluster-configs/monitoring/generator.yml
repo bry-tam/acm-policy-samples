@@ -1,0 +1,52 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-monitoring
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: monitoring
+  severity: low
+  policySets:
+    - cluster-configs-monitoring
+
+placementBindingDefaults:
+  name: "monitoring-binding"
+
+policies:
+  - name: ocp-monitoring
+    description: "Configures cluster monitoring and user-workload monitoring; MCOA variant forwards alerts to the observability hub alertmanager"
+    manifests:
+      ### Should only use one of the cluster-monitoring-config or the -mcoa.
+      ### This is dependent on how observability is configured.
+      ### Both are included to give an example of how to configure the cluster.
+
+      ## MCOA variant — use when MCOA observability is configured:
+      - path: cluster-monitoring-config-mcoa.yml
+        name: cluster-monitoring-config-mcoa
+        remediationAction: Enforce
+      - path: user-workload-monitoring-config-mcoa.yml
+        name: user-workload-monitoring-config-mcoa
+        remediationAction: Enforce
+
+      ## Non-MCOA variant — swap in when MCOA is not in use:
+      # - path: cluster-monitoring-config.yml
+      #   name: cluster-monitoring-config
+      #   remediationAction: InformOnly
+      # - path: user-workload-monitoring-config.yml
+      #   name: user-workload-monitoring-config
+      #   remediationAction: InformOnly
+
+policySets:
+  - name: cluster-configs-monitoring
+    placement:
+      placementName: "env-bound-placement"

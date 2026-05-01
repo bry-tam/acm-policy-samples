@@ -1,0 +1,37 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-cluster-proxy
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - cluster-configs-proxy
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: cluster-proxy
+  severity: medium
+
+placementBindingDefaults:
+  name: "cluster-proxy-binding"
+
+policies:
+  - name: cluster-proxy
+    description: "Configures the cluster-wide HTTP proxy and trusted CA bundle"
+    manifests:
+      - path: example-root-ca.yml
+        name: proxy-ca-configmap
+      - path: proxy.yml
+        name: cluster-proxy
+
+policySets:
+  - name: cluster-configs-proxy
+    placement:
+      placementName: "env-bound-placement"

@@ -34,6 +34,7 @@ policies:
         name: coo-namespace
 
       - path: operatorpolicy.yml
+        name: cluster-observability-operator-install
 
       - path: health/cluster-observability-status.yml
         name: cluster-observability-status

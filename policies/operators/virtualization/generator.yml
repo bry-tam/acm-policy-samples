@@ -1,0 +1,46 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-virtualization
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - virtualization
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: virtualization
+  severity: critical
+
+placementBindingDefaults:
+  name: "virtualization-binding"
+
+policies:
+  - name: openshift-virtualization
+    description: "Installs the OpenShift Virtualization operator into the openshift-cnv namespace with cluster monitoring enabled, and configures a HyperConverged instance with live migration on bond3.999."
+    manifests:
+      - path: namespace.yml
+        name: openshift-cnv-namespace
+
+      - path: operatorpolicy.yml
+        name: install-openshift-virtualization
+
+      - path: hyperconverged.yml
+        name: openshift-virtualization-hyperconverged
+        extraDependencies:
+          - name: install-openshift-virtualization
+            kind: OperatorPolicy
+            apiVersion: policy.open-cluster-management.io/v1beta1
+            compliance: "Compliant"
+
+policySets:
+  - name: virtualization
+    placement:
+      placementName: "ft-ocp-virt--enabled"

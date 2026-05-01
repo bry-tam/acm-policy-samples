@@ -2,21 +2,29 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-generator
+  name: gen-policy-clustervalidations
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
-  ## turn off the default compliance annotations
-  categories: []
-  controls: []
-  standards: []
+  consolidateManifests: false
+  categories:
+    - "CA Security Assessment and Authorization"
+  controls:
+    - "CA-7 Continuous Monitoring"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: cluster-validations
+  severity: medium
   policySets:
     - cluster-validations
+
 placementBindingDefaults:
   name: "cluster-validations-binding"
 
 policies:
   - name: operator-lifecycle-status
+    description: "Detects failed OLM InstallPlans, Subscriptions, and bundle unpacking Jobs across operator namespaces"
     remediationAction: inform
     namespaceSelector:
       include:
@@ -27,14 +35,24 @@ policies:
         - kube-*
         - default
     manifests:
-      - path: olm/health/
+      - path: olm/health/failed-installplan.yml
+        name: olm-failed-installplan
+        complianceType: mustnothave
+      - path: olm/health/failed-subscription.yml
+        name: olm-failed-subscription
+        complianceType: mustnothave
+      - path: olm/health/failed-job.yml
+        name: olm-failed-job
         complianceType: mustnothave
 
   - name: validate-cluster-security
+    description: "Validates cluster security configuration — currently checks that FIPS mode is not enabled"
     remediationAction: enforce
     manifests:
-      - path: security-configuration/
-        complianceType: musthave
+      - path: security-configuration/ensure-fips.yml
+        name: check-fips-enabled
+        remediationAction: InformOnly
+
 policySets:
   - name: cluster-validations
     placement:

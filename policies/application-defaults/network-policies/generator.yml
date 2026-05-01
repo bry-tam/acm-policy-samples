@@ -1,0 +1,46 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-network-policies
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - application-defaults-network-policies
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: app-default-network-policies
+placementBindingDefaults:
+  name: "app-defaults-network-policies-binding"
+
+policies:
+  - name: default-block-all-networkpolicy
+    namespaceSelector:
+      exclude:
+        - kube-*
+        - openshift*
+        - open-*
+        - default*
+        - multicluster-engine
+        - hive
+        - stackrox
+        - "*-operator"
+      include:
+        - "*"
+    remediationAction: inform
+    manifests:
+      - path: block-all-networkpolicy.yml
+        name: default-block-all-networkpolicy
+        complianceType: musthave
+
+policySets:
+  - name: application-defaults-network-policies
+    placement:
+      placementName: "ft-app-networkpolicies--enabled"

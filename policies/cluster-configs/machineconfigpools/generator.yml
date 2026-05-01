@@ -1,0 +1,47 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-machineconfigpools
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: machineconfigpools
+  severity: low
+
+placementBindingDefaults:
+  name: "machineconfigpools-binding"
+
+policies:
+  - name: infra-machineconfigpool
+    description: "Creates the infra MachineConfigPool targeting nodes with the infra role but not the storage role"
+    policySets:
+      - cluster-configs-infra-mcp
+    manifests:
+      - path: infra.yml
+        name: infra-machineconfigpool
+
+  - name: storage-machineconfigpool
+    description: "Creates the storage MachineConfigPool targeting nodes with both the infra and storage roles"
+    policySets:
+      - cluster-configs-storage-mcp
+    manifests:
+      - path: storage.yml
+        name: storage-machineconfigpool
+
+policySets:
+  - name: cluster-configs-infra-mcp
+    placement:
+      placementName: "ft-inframachines--enabled"
+
+  - name: cluster-configs-storage-mcp
+    placement:
+      placementName: "ft-storage--odf"
