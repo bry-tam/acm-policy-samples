@@ -2,30 +2,41 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-generator
+  name: gen-policy-clusterversion
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: inform
-  ## turn off the default compliance annotations
-  categories: []
-  controls: []
-  standards: []
+  consolidateManifests: false
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: cluster-version
+  severity: medium
   policySets:
     - cluster-version
+
 placementBindingDefaults:
   name: "cluster-version-binding"
 
 policies:
   - name: admin-acks
+    description: "Ensures the admin-acks ConfigMap is present in openshift-config with acknowledgements for Kubernetes API removals across upgrade paths"
     remediationAction: enforce
     manifests:
       - path: admin-acks-configmap.yml
+        name: admin-acks-configmap
 
   ## uncomment to showcase TALM
   # - name: ocp-upgrade
+  #   description: "Sets the desired ClusterVersion channel and target version for use with TALM-orchestrated upgrades"
   #   remediationAction: inform
   #   manifests:
   #     - path: clusterversion.yml
+  #       name: cluster-version-desired
 
 policySets:
   - name: cluster-version

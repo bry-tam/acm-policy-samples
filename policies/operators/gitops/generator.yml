@@ -26,17 +26,8 @@ placementBindingDefaults:
   name: "gitops-binding"
 
 policies:
-  - name: gitops-110-migration
-    description: "Migrates pre-1.10 deployments to new operator namespace"
-    remediationAction: inform
-    manifests:
-      - path: migrate-gitops-1.10.yml
-
   - name: gitops-operator
     description: "Installs GitOps Operator"
-    dependencies:
-      - name: "gitops-110-migration"
-        compliance: "Compliant"
     manifests:
       - path: operator-ns.yml
         name: operator-namespace
@@ -45,6 +36,7 @@ policies:
         name: argo-namespace
 
       - path: operatorpolicy.yml
+        name: gitops-operator-install
 
   - name: gitops-instances
     description: "Configures multiple ArgoCd instances to demonstrate how to make use of kustomize"
@@ -54,10 +46,10 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: argocd-instances/default
-        name: argo-instances
+        name: argo-instances-default
 
       - path: argocd-instances/dev
-        name: argo-instances
+        name: argo-instances-dev
 
       - path: argocd-instances/argo-server-host.yml
         name: argocd-instance-host

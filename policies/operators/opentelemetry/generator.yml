@@ -34,6 +34,7 @@ policies:
         name: otel-namespace
 
       - path: operatorpolicy.yml
+        name: opentelemetry-operator-install
 
       - path: clusterrole.yml
         name: otel-clusterrole

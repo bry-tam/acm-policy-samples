@@ -1,0 +1,43 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-cluster-scheduler
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - cluster-scheduler
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: default-scheduler
+  severity: low
+
+placementBindingDefaults:
+  name: "cluster-scheduler-binding"
+
+policies:
+  - name: cluster-scheduler
+    description: "Labels worker nodes for scheduler targeting and sets the cluster default node selector"
+    manifests:
+      - path: bry-tam-worker-node-label.yml
+        name: bry-tam-worker-node-label
+      - path: special-workload-worker-node-label.yml
+        name: special-workload-worker-node-label
+      - path: scheduler.yml
+        name: cluster-scheduler
+        extraDependencies:
+          - name: bry-tam-worker-node-label
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: cluster-scheduler
+    placement:
+      placementName: "ft-default-scheduler--enabled"

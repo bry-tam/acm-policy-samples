@@ -1,5 +1,4 @@
 ---
-
 object-templates-raw: |
   ## Create a CompilianceType objectDefinition for each deployment
   {{- range $dep := (lookup "apps/v1" "Deployment" "cert-manager" "").items }}

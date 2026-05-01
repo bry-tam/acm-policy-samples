@@ -1,37 +1,59 @@
-The policies in "simple" and "advanced" showcase how to reload a deployment when a secret or configmap is updated.
+#  Application Deployment Reload
 
-### Simple policy
-The original simple policy has been removed.
+## Description
+Automatically restarts `Deployment` pods when a watched `ConfigMap` or `Secret` changes.
+Deployments opt in by adding a label and an annotation listing the resources to monitor.
+Inspired by the [Reloader](https://github.com/stakater/Reloader) pattern but implemented
+entirely as an ACM policy using hub-side templates.
 
-### Advanced policy
-This policy allows a more flexable use case.  Based loosely off https://github.com/stakater/Reloader
+## Dependencies
+  - None
 
-Some notable differences:
-  - There is no auto watcher.  The deployment needs a label to enable reloading, and an annotation with the Secrets/ConfigMap to monitor.
-  - It does not parse the Deployment to see if the ConfigMap/Secret is used as a volumeMount or an env reference.
-  - The last known resourceVersion of the ConfigMap/Secret is recorded for tracking purposes.  If this does not match the Deployment is updated with `kubectl.kubernetes.io/restartedAt` annotation on the pod template.  And the tracking ConfigMap is updated.
-  - Only Deployments are currently reloaded
+## Details
+ACM Minimal Version: 2.12
 
+Documentation: None
 
-**Setup steps**
-1. Label deployment with `acm.reloader.enabled: ''`
-2. Annotate deployment with `acm.reloader.watchlist`
-   1. The value is a JSON string in the format of
-      ```
-      [
-        {
-          "kind": "ConfigMap",
-          "name": "booksecret",
-          "apiVersion": "v1"
-        }
-      ]
-      ```
-    Example:
-    ```
-    kind: Deployment
-    apiVersion: apps/v1
-    metadata:
-      annotations:
-        acm.reloader.watchlist: '[{"kind": "ConfigMap","name": "blogsecret","apiVersion": "v1"},{"kind": "Secret","name": "blogsecret","apiVersion": "v1"}]'
-    ```
+Notes:
+  - Deployed to clusters using the `ft-app--reload` feature-flag placement
+  - Only `Deployment` resources are supported; `StatefulSet` and `DaemonSet` are not monitored
+  - The policy does not inspect whether the ConfigMap or Secret is actually mounted or used as an env reference
+  - Tracking state is stored in a `ConfigMap` named `acm-reload-tracker` in the `default` namespace
 
+## Implementation Details
+Two `ConfigurationPolicy` resources work together:
+
+**`app-reload-tracker` (inform)** — scans all `Deployment` resources labeled `acm.reloader.enabled`
+and builds an `acm-reload-tracker` ConfigMap recording the current `resourceVersion` of each watched
+ConfigMap or Secret. Keys use the format:
+```
+<deployment>--<apiVersion>--<kind>--<namespace>--<name>: '<resourceVersion>'
+```
+This policy is `inform` only and acts as the source of truth for what versions were last seen.
+
+**`tracker-app-reload` (enforce)** — runs only when `app-reload-tracker` is `NonCompliant`
+(i.e. a tracked resource version has changed). For each labeled `Deployment` it compares the
+current `resourceVersion` of each watched resource against the value in `acm-reload-tracker`.
+If a version mismatch is found, it patches the Deployment's pod template with:
+```yaml
+kubectl.kubernetes.io/restartedAt: '<timestamp>'
+```
+This triggers a rolling restart. It then writes the updated versions back to `acm-reload-tracker`.
+
+**Opting a Deployment into reload watching:**
+
+1. Add the label:
+```yaml
+labels:
+  acm.reloader.enabled: ""
+```
+
+2. Add the watchlist annotation (JSON array of resources to monitor):
+```yaml
+annotations:
+  acm.reloader.watchlist: |
+    [
+      {"kind": "ConfigMap", "name": "my-config", "apiVersion": "v1"},
+      {"kind": "Secret",    "name": "my-secret",  "apiVersion": "v1"}
+    ]
+```

@@ -1,5 +1,8 @@
+---
 # Compliance Operator
-Installs the OpenShift Compliance Operator.
+
+## Description
+Deploys the OpenShift Compliance Operator and configures example `ScanSetting` and `ScanSettingBinding` resources for the `nerc-cip` and `cis` profiles. The operator scans cluster nodes and the API server against the selected compliance profiles and reports results as `ComplianceCheckResult` objects.
 
 ## Dependencies
   - None
@@ -9,8 +12,15 @@ ACM Minimal Version: 2.12
 
 Documentation: [latest](https://docs.redhat.com/en/documentation/openshift_container_platform/latest/html-single/security_and_compliance/compliance-operator#compliance-operator-installation)
 
----
-**Notes:**
-  - Requires configuring `ScanSetting` and `ScanSettingBinding`.  Example for nerc-cip profile included in policy.
-  - Usability imporved when combined with ACS
-  - Requires the namespace to have privileged pod-security label
+Notes:
+  - The `openshift-compliance` namespace requires the `privileged` pod-security label, included in `namespace.yml`
+  - Example scans use `autoApplyRemediations: false`; enable with caution as remediations can affect cluster behaviour
+  - Scan results are surfaced in the ACS console when ACS is also deployed
+
+## Implementation Details
+
+**`compliance-operator`** — creates the `openshift-compliance` namespace and installs the `OperatorPolicy`.
+
+**`compliance-operator-example`** — deploys two `ScanSetting` / `ScanSettingBinding` pairs:
+  - `nerc-cip` profile: extended NIST-based profile for energy-sector compliance
+  - `cis` profile: CIS Kubernetes benchmark

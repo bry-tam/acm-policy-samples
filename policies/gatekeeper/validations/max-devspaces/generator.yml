@@ -8,20 +8,33 @@ policyDefaults:
   remediationAction: enforce
   consolidateManifests: false
   informGatekeeperPolicies: false
+  categories:
+    - "AC Access Control"
+  controls:
+    - "AC-6 Least Privilege"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: max-devspaces
+  severity: low
   policySets:
     - gp-valid-max-devworkspaces
+
 placementBindingDefaults:
   name: "gp-valid-max-devworkspaces-binding"
 
 policies:
   - name: gp-valid-max-devworkspaces
+    description: "Deploys a Gatekeeper ConstraintTemplate and Constraint to cap the number of concurrently active Dev Workspaces per cluster"
     remediationAction: enforce
     dependencies:
       - name: "gatekeeper-instance"
         compliance: "Compliant"
     manifests:
       - path: max-devspaces/constrainttemplate.yml
+        name: maxdevworkspaces-constrainttemplate
       - path: max-devspaces/maxdevworkspaces.yml
+        name: max-dev-workspaces
         # extraDependencies:
         #   - name: maxdevworkspaces
         #     apiVersion: templates.gatekeeper.sh/v1beta1
@@ -32,4 +45,3 @@ policySets:
   - name: gp-valid-max-devworkspaces
     placement:
       placementName: "ft-devspaces--enabled"
-

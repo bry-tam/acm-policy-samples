@@ -33,6 +33,7 @@ policies:
         name: mesh-operator-namespace
 
       - path: operatorpolicy.yml
+        name: servicemesh-operator-install
 
   - name: servicemesh-controlplane
     description: "Configure ServiceMesh Control Plane including Kiali, Tempo, OpenTelemetry and Console Plugins"

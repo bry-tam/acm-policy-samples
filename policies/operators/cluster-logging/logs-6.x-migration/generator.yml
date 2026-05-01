@@ -7,6 +7,15 @@ policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: logging-6x-migration
+  severity: medium
   policySets:
     - cluster-logging-migration
 placementBindingDefaults:
@@ -14,12 +23,14 @@ placementBindingDefaults:
 
 policies:
   - name: prepare-logging-migration
+    description: "Checks whether the cluster is still running Cluster Logging 5.x and reports NonCompliant if migration is needed"
     remediationAction: InformOnly
     manifests:
       - path: validate-logging-version.yml
         name: validate-logging-version
 
   - name: clean-logging-migration
+    description: "Removes Cluster Logging 5.x resources (ClusterLogging, ClusterLogForwarder, Elasticsearch, PVCs, namespaces, and CRDs) to clear the path for a 6.x install"
     ## ignorePending prevents the NotCompliant dependency from causing this policy to always report as pending
     ignorePending: true
     dependencies:

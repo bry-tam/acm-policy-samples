@@ -1,6 +1,8 @@
+---
 # Gatekeeper Operator
-Installs the Gatekeeper operator and instance of `Gatekeeper`.
 
+## Description
+Deploys the Gatekeeper Operator into the `openshift-gatekeeper-operator` namespace and configures a `Gatekeeper` instance with metrics collection and a dynamic sync `ConfigMap`. Includes an `inform`-mode health check for the Gatekeeper deployments and a violation-alerting policy that reports `NonCompliant` whenever any active Gatekeeper constraint has violations.
 
 ## Dependencies
   - None
@@ -9,36 +11,27 @@ Installs the Gatekeeper operator and instance of `Gatekeeper`.
 ACM Minimal Version: 2.12
 
 Documentation: [latest](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/latest/html-single/governance/index#gk-operator-overview)
-> Upstream documentation is very helpful
 
-#### **Example Constraint annotation for sync data**
-  > When creating a constraint you can add a annotation as a json string to configure the data to be synced.
-  > ```
-  > apiVersion: templates.gatekeeper.sh/v1
-  > kind: ConstraintTemplate
-  > metadata:
-  >   name: maxdevworkspaces
-  >   annotations:
-  >     metadata.gatekeeper.sh/requires-sync-data: |
-  >       "[
-  >         [
-  >           {
-  >             "groups": ["workspace.devfile.io"],
-  >             "versions": ["v1alpha2"],
-  >             "kinds": ["DevWorkspace"]
-  >           }
-  >         ]
-  >       ]"
-  > ```
+Notes:
+  - Deploys to `openshift-gatekeeper-operator` instead of `openshift-operators` to allow manual InstallPlan approval without conflicts
+  - The `SyncConfig` `ConfigMap` is built dynamically from `metadata.gatekeeper.sh/requires-sync-data` annotations on `ConstraintTemplate` objects — add the annotation to any constraint that needs external data synced
+  - `Service` and `ServiceMonitor` enable Prometheus scraping of Gatekeeper metrics; no alerting rules are included
 
----
-**Notes:**
-  - Deploys to custom openshift-gatekeeper-operator namespace instead of documented openshift-operators.  The later causes issues when trying to manage manual install plan approval.  It is supported to use an alternate namespace and generally makes things easier in the long run.
-  - Deploys additional policy that will alert if any Gatekeeper policy becomes non-compliant
-  - Creates Service and ServiceMonitor for collecting metrics.  No alerting rules are created for Gatekeeper
-  - Creates SyncSet to sync external data.
-    - https://open-policy-agent.github.io/gatekeeper/website/docs/sync/
-    - Operator has provision to automatically build syncset based on `auditFromCache: Automatic` setting.  This only syncs objects based on constraints.  It will miss if the policy needs a type that is not part of the constraint.
-      - The downside is the SyncSet needs to include the objects in the constraint not just policy.
-    - SyncSet is built from annotation in the constraint to allow control at the [constraint definition](#example-constraint-annotation-for-sync-data).
-    - TODO: automatically include sync data from constraint definitions
+## Implementation Details
+
+**`gatekeeper-operator`** — creates the `openshift-gatekeeper-operator` namespace and installs the `OperatorPolicy`.
+
+**`gatekeeper-instance`** — deploys the `Gatekeeper` CR, applies `object-templates-raw` to build a `ConfigMap` containing the union of all `requires-sync-data` annotations found across installed `ConstraintTemplate`s, creates the metrics `Service` and `ServiceMonitor`, and runs an `inform`-mode `object-templates-raw` health check that verifies the `gatekeeper-audit` and `gatekeeper-controller-manager` deployments are fully available.
+
+**`gatekeeper-violations`** — uses `object-templates-raw` to enumerate all `ConstraintTemplate` kinds, look up every `Constraint` instance of each kind, and report `NonCompliant` if any constraint has a non-zero `violations` count. Provides a single ACM policy that surfaces all Gatekeeper policy violations.
+
+### Sync data annotation
+
+Add the following annotation to any `ConstraintTemplate` that requires external data to be synced into the Gatekeeper cache:
+
+```yaml
+metadata:
+  annotations:
+    metadata.gatekeeper.sh/requires-sync-data: |
+      "[[{"groups":["example.io"],"versions":["v1"],"kinds":["MyKind"]}]]"
+```

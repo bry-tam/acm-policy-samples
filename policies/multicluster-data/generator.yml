@@ -6,23 +6,38 @@ metadata:
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
+  consolidateManifests: false
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: multicluster-data
+  severity: low
   policySets:
     - multicluster-data-hub
+
 placementBindingDefaults:
   name: "multicluster-data-binding"
 
 policies:
   - name: coredns-service-data
+    description: "Creates ManagedClusterView resources on the hub to expose the CoreDNS service endpoint from each cluster participating in service mesh federation"
     manifests:
       - path: managedclusterview.yml
+        name: coredns-service-managedclusterview
 
   - name: coredns-secret
+    description: "Distributes a CoreDNS configuration Secret to managed clusters, aggregating LoadBalancer endpoints collected via ManagedClusterViews on the hub"
     hubTemplateOptions:
       serviceAccountName: multicluster-hub-serviceaccount
     policySets:
       - multicluster-data-mc
     manifests:
       - path: coredns-secret.yml
+        name: coredns-service-data-secret
 
 policySets:
   - name: multicluster-data-hub

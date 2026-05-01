@@ -30,6 +30,7 @@ policies:
     description: "Installs Developer Hub Operator"
     manifests:
       - path: operatorpolicy.yml
+        name: rhdh-operator-install
 
   - name: developer-hub-acm-msa
     description: "Creates ManagedServiceAccount for configuring managed clusters in DevHub"

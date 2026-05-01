@@ -9,23 +9,37 @@ policyDefaults:
   consolidateManifests: false
   policySets:
     - rh-pull-secret-merge
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: aro-merge-rh-pull-secret
+  severity: medium
+
 placementBindingDefaults:
   name: "merge-rh-pull-secret-binding"
 
 policies:
   - name: rh-pull-secret-prepare
+    description: "Copies the RH pull secret from the hub global pull secret into the policy namespace for propagation"
     remediationAction: enforce
     policySets:
       - rh-pull-secret-hub
     manifests:
       - path: prepare-rh-pull-secret.yml
-
+        name: prepare-rh-pull-secret
 
   - name: rh-pull-secret-merge
+    description: "Propagates the RH pull secret to ARO managed clusters and merges it with the existing ARO pull secret"
     remediationAction: enforce
     manifests:
       - path: propagate-rh-pull-secret.yml
+        name: rh-pull-secret-merge
       - path: merge-pull-secret-with-aro.yml
+        name: merge-pull-secret-with-aro
         extraDependencies:
           - name: rh-pull-secret-merge
             kind: ConfigurationPolicy
@@ -38,4 +52,4 @@ policySets:
 
   - name: rh-pull-secret-merge
     placement:
-      placementName: "env-bound-nohub-placement"
+      placementName: "ft-cloud--azure"

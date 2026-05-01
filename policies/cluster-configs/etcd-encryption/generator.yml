@@ -1,0 +1,56 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-etcd-encryption
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - etcd-encryption
+  categories:
+    - "SC System and Communications Protection"
+  controls:
+    - "SC-28 Protection of Information at Rest"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: etcd-encryption
+  severity: high
+
+placementBindingDefaults:
+  name: "etcd-encryption-binding"
+
+policies:
+  - name: etcd-encryption
+    description: "Enables etcd data-at-rest encryption and monitors each API server component for encryption rollout completion"
+    manifests:
+      - path: apiserver.yml
+        name: etcd-encryption
+      - path: health/kubeapiserver.yml
+        name: etcd-health-kubeapiserver
+        remediationAction: InformOnly
+        extraDependencies:
+          - name: etcd-encryption
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: health/oauthapiserver.yml
+        name: etcd-health-oauthapiserver
+        remediationAction: InformOnly
+        extraDependencies:
+          - name: etcd-encryption
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+      - path: health/openshiftapiserver.yml
+        name: etcd-health-openshiftapiserver
+        remediationAction: InformOnly
+        extraDependencies:
+          - name: etcd-encryption
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: etcd-encryption
+    placement:
+      placementName: "ft-etcd-encryption--encrypt"

@@ -1,0 +1,26 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: web-terminal-operator-policy
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: Automatic
+  subscription:
+    channel: fast
+    name: web-terminal
+    namespace: openshift-operators
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+    startingCSV: web-terminal.v1.11.1-0.1747215995.p

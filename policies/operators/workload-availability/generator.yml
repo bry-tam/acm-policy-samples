@@ -30,9 +30,13 @@ policies:
     description: "Installs Fence Agent, Self Node Remediation, Node Healthcheck, and Machine Deletion Operators"
     manifests:
       - path: namespace.yml
+        name: openshift-workload-availability-namespace
       - path: fence-agent-operatorpolicy.yml
+        name: fence-agents-remediation-operator-install
       - path: self-node-operatorpolicy.yml
+        name: self-node-remediation-operator-install
       - path: node-healthcheck-operatorpolicy.yml
+        name: node-healthcheck-operator-install
       - path: node-remediation-console.yml
         name: node-remediation-console
         extraDependencies:
@@ -41,6 +45,7 @@ policies:
             name: node-healthcheck-operator-install
             compliance: "Compliant"
       - path: machine-deletion-operatorpolicy.yml
+        name: machine-deletion-remediation-operator-install
 
   - name: workload-availability-remediation
     description: "Configures example node remediation using Self Node Remediation or Fence Agent Operator"

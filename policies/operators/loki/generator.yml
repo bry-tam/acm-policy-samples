@@ -32,7 +32,11 @@ policies:
       - path: namespace.yml
         name: loki-namespace
 
+      - path: metrics-secret.yml
+        name: loki-metrics-secret
+
       - path: operatorpolicy.yml
+        name: loki-operator-install
 
 policySets:
   - name: loki-operator

@@ -37,6 +37,7 @@ policies:
         name: trusted-ca-configmap
 
       - path: operatorpolicy.yml
+        name: cert-manager-operator-install
 
       - path: health/cert-manager-status.yml
         name: cert-manager-status
@@ -58,7 +59,7 @@ policies:
     description: "Deploys example CA based ClusterIssuer"
     remediationAction: enforce
     dependencies:
-      - name: 	cert-manager-operator
+      - name: cert-manager-operator
         compliance: Compliant
     manifests:
       - path: ca-clusterissuer/ca-clusterissuer-secret.yml

@@ -34,6 +34,7 @@ policies:
         name: tempo-namespace
 
       - path: operatorpolicy.yml
+        name: tempo-operator-install
 
 policySets:
   - name: tempo-operator

@@ -33,6 +33,7 @@ policies:
         name: netobserv-namespace
 
       - path: operatorpolicy.yml
+        name: netobserv-operator-install
 
   - name: network-observability-configure
     description: "Configured loki storage, Lokistack and flowcollector"

@@ -1,39 +1,32 @@
 ---
-apiVersion: policy.open-cluster-management.io/v1
-kind: ConfigurationPolicy
-metadata:
-  name: cluster-operator-status
-spec:
-  remediationAction: inform
-  severity: high
-  object-templates-raw: |
-    {{/* ##  Get the current or desired version of the cluster ## */}}
-    {{- $cVer := (lookup "config.openshift.io/v1" "ClusterVersion" "" "version") }}
-    {{- $desiredVersion := (dig "desiredUpdate" "version" ($cVer.status.desired.version) $cVer.spec) }}
+object-templates-raw: |
+  {{/* ##  Get the current or desired version of the cluster ## */}}
+  {{- $cVer := (lookup "config.openshift.io/v1" "ClusterVersion" "" "version") }}
+  {{- $desiredVersion := (dig "desiredUpdate" "version" ($cVer.status.desired.version) $cVer.spec) }}
 
-    {{/* ##  Exclude operators that are not real ClusterOperators ## */}}
-    {{- $excludedClusterOperators := list "aro"
-                                          "cert-manager" }}
+  {{/* ##  Exclude operators that are not real ClusterOperators ## */}}
+  {{- $excludedClusterOperators := list "aro"
+                                        "cert-manager" }}
 
-    {{/* ## Loop through the ClusterOperators to ensure they are healthy ## */}}
-    {{- range $cOp := (lookup "config.openshift.io/v1" "ClusterOperator" "" "").items }}
-      {{- if not (has $cOp.metadata.name $excludedClusterOperators) }}
-    - complianceType: musthave
-      objectDefinition:
-        apiVersion: config.openshift.io/v1
-        kind: ClusterOperator
-        metadata:
-          name: {{ $cOp.metadata.name }}
-        status:
-          conditions:
-            - status: 'False'
-              type: Progressing
-            - status: 'False'
-              type: Degraded
-            - status: 'True'
-              type: Available
-          versions:
-            - name: operator
-              version: {{ $desiredVersion }}
-      {{- end }}
+  {{/* ## Loop through the ClusterOperators to ensure they are healthy ## */}}
+  {{- range $cOp := (lookup "config.openshift.io/v1" "ClusterOperator" "" "").items }}
+    {{- if not (has $cOp.metadata.name $excludedClusterOperators) }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: config.openshift.io/v1
+      kind: ClusterOperator
+      metadata:
+        name: {{ $cOp.metadata.name }}
+      status:
+        conditions:
+          - status: 'False'
+            type: Progressing
+          - status: 'False'
+            type: Degraded
+          - status: 'True'
+            type: Available
+        versions:
+          - name: operator
+            version: {{ $desiredVersion }}
     {{- end }}
+  {{- end }}

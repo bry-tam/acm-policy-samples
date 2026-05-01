@@ -34,6 +34,7 @@ policies:
         name: gatekeeper-system-namespace
 
       - path: operatorpolicy.yml
+        name: gatekeeper-operator-install
 
   - name: gatekeeper-instance
     description: "Configures Gatekeeper instance and monitoring, along with custom syncdata policy"
@@ -56,6 +57,7 @@ policies:
         remediationAction: inform
 
   - name: gatekeeper-violations
+    description: "Alerts when any Gatekeeper constraint reports a violation"
     manifests:
       - path: violation-events.yml
         name: gatekeeper-violation-event

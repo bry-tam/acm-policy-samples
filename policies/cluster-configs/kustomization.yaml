@@ -3,9 +3,19 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - aro/merge-rh-pull-secret
+  - apiserver-cert/
+  - aro/merge-rh-pull-secret/
+  - cluster-autoscaling/
+  - clusterclaims/
+  - cluster-proxy/
+  - default-scheduler/
+  - etcd-backup/
+  - etcd-encryption/
   - image-registry/
-  # - ingress/renew-default-cert
-
-generators:
-  - generator.yml
+  - ingress/
+  - ingress-renew-default-cert/
+  - kubeletconfig/
+  - machineconfigpools/
+  - machinesets/
+  - monitoring/
+  - nodes/

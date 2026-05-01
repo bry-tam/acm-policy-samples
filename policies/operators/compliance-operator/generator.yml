@@ -34,6 +34,7 @@ policies:
         name: compliance-namespace
 
       - path: operatorpolicy.yml
+        name: compliance-operator-install
 
   - name: compliance-operator-example
     description: "Configures an example scan using the nerc-cip profile"

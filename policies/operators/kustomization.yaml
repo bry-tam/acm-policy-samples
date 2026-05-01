@@ -3,26 +3,31 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ./tekton/
-  - ./gitops/
-  - ./talm/
-  - ./gatekeeper/
-  - ./loki/
+  - ./acm/
+  - ./acs/
+  - ./ansible-automation-platform/
+  - ./cert-manager/
   - ./cluster-logging/
   - ./cluster-observability/
-  - ./data-foundation/
-  - ./acs/
-  - ./acm/
-  - ./network-observability/
-  - ./kiali/
-  - ./servicemesh/
-  - ./opentelemetry/
-  - ./tempo/
-  - ./ansible-automation-platform/
-  - ./developer-hub/
-  - ./workload-availability/
-  - ./cert-manager/
   - ./compliance-operator/
+  - ./data-foundation/
+  - ./developer-hub/
   - ./external-secrets/
   - ./file-integrity/
-  - ./secondary-scheduler
+  - ./gatekeeper/
+  - ./gitops/
+  - ./kiali/
+  - ./loki/
+  - ./metallb/
+  - ./migration-toolkit/
+  - ./network-observability/
+  - ./opentelemetry/
+  - ./portworx/
+  - ./secondary-scheduler/
+  - ./servicemesh/
+  - ./talm/
+  - ./tekton/
+  - ./tempo/
+  - ./virtualization/
+  - ./webterminal/
+  - ./workload-availability/

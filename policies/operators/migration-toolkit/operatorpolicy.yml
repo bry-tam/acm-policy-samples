@@ -1,0 +1,29 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: install-mtv-operator
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: critical
+  upgradeApproval: Automatic
+  operatorGroup:
+    name: openshift-mtv
+    targetNamespaces:
+      - openshift-mtv
+  subscription:
+    channel: release-v2.11
+    name: mtv-operator
+    namespace: openshift-mtv
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace

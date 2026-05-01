@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: tekton-operator
+  name: gen-policy-tekton
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
@@ -33,6 +33,7 @@ policies:
         name: tkn-namespace
 
       - path: operatorpolicy.yml
+        name: pipelines-operator-install
 
   - name: tekton-rh-auth
     description: "Copies global pull-secret to every namespace labeled for teketon use"

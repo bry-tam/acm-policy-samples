@@ -1,0 +1,75 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-renew-default-cert
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - ingress-certificate
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: ingress-renew-default-cert
+  severity: high
+
+placementBindingDefaults:
+  name: "ingress-certificates-binding"
+
+policies:
+  - name: monitor-renew-default-ingress
+    description: "Monitors default ingress certificate expiry and rotates router secrets when expiration is within 750 hours"
+    ignorePending: true
+    manifests:
+      - path: label-router-ca-secret.yml
+        name: label-router-ca-secret
+      - path: label-router-certs-default-secret.yml
+        name: label-router-certs-default-secret
+      - path: ingress-certificatepolicy.yml
+        name: default-ingress-certificates
+
+      - path: router-ca-secret.yml
+        name: router-ca-secret
+        complianceType: mustnothave
+        extraDependencies:
+          - name: default-ingress-certificates
+            kind: CertificatePolicy
+            compliance: "NonCompliant"
+      - path: router-certs-default-secret.yml
+        name: router-certs-default-secret
+        complianceType: mustnothave
+        extraDependencies:
+          - name: default-ingress-certificates
+            kind: CertificatePolicy
+            compliance: "NonCompliant"
+
+      - path: ingress-operator-pod.yml
+        name: ingress-operator-pod
+        extraDependencies:
+          - name: router-ca-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: router-certs-default-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+      - path: default-router-pod.yml
+        name: default-router-pod
+        extraDependencies:
+          - name: router-ca-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: router-certs-default-secret
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: ingress-certificate
+    placement:
+      placementName: "ft-renew-default-certs--enabled"

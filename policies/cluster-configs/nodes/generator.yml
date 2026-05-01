@@ -1,0 +1,37 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-nodes
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: nodes
+  severity: low
+  policySets:
+    - cluster-configs-nodes
+
+placementBindingDefaults:
+  name: "nodes-binding"
+
+policies:
+  - name: node-runtimes
+    description: "Applies base node-level configuration for cgroup version and CRI-O default runtime across all node pools"
+    manifests:
+      - path: node-cluster.yml
+        name: node-cgroups
+      - path: node-crio-runtime.yml
+        name: node-crio-runtime
+
+policySets:
+  - name: cluster-configs-nodes
+    placement:
+      placementName: "env-bound-placement"
