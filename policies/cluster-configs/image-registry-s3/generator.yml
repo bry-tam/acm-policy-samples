@@ -2,13 +2,13 @@
 apiVersion: policy.open-cluster-management.io/v1
 kind: PolicyGenerator
 metadata:
-  name: gen-policy-image-registry
+  name: gen-policy-image-registry-s3
 policyDefaults:
   namespace: bry-tam-policies
   remediationAction: enforce
   consolidateManifests: false
   policySets:
-    - image-registry
+    - image-registry-s3
   categories:
     - "CM Configuration Management"
   controls:
@@ -16,19 +16,19 @@ policyDefaults:
   standards:
     - "NIST SP 800-53"
   policyLabels:
-    policy_gen.name: image-registry
+    policy_gen.name: image-registry-s3
   severity: high
 
 placementBindingDefaults:
-  name: "image-registry-binding"
+  name: "image-registry-s3-binding"
 
 policies:
-  - name: image-registry-config
+  - name: image-registry-config-s3
     description: "Configures the OpenShift image registry to use ODF S3 object storage via NooBaa"
     remediationAction: enforce
     manifests:
       - path: objectbucketclaim.yml
-        name: image-registry-config
+        name: image-registry-config-s3
         extraDependencies:
           - name: odf-operator-status
             kind: Policy
@@ -42,17 +42,17 @@ policies:
       - path: image-registry-s3-bundle-configmap.yml
         name: image-registry-s3-bundle
         extraDependencies:
-          - name: image-registry-config
+          - name: image-registry-config-s3
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: imageregistry-config.yml
-        name: imageregistry-config
+        name: imageregistry-config-s3
         extraDependencies:
           - name: registry-s3-access-secret
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
 policySets:
-  - name: image-registry
+  - name: image-registry-s3
     placement:
       placementName: "ft-storage--odf"
