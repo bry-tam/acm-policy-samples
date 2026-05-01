@@ -1,0 +1,43 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-image-registry-pvc
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - image-registry-pvc
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: image-registry-pvc
+  severity: high
+
+placementBindingDefaults:
+  name: "image-registry-pvc-binding"
+
+policies:
+  - name: image-registry-pvc
+    description: "Configures the OpenShift image registry to use a PVC (gp3-csi) for persistent storage."
+    manifests:
+      - path: pvc.yml
+        name: image-registry-pvc
+
+      - path: imageregistry-config.yml
+        name: image-registry-pvc-config
+        extraDependencies:
+          - name: image-registry-pvc
+            kind: ConfigurationPolicy
+            apiVersion: policy.open-cluster-management.io/v1
+            compliance: Compliant
+
+policySets:
+  - name: image-registry-pvc
+    placement:
+      placementName: "ft-storage--aws"

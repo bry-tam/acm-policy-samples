@@ -11,7 +11,8 @@ resources:
   - default-scheduler/
   - etcd-backup/
   - etcd-encryption/
-  - image-registry/
+  - image-registry-s3/
+  - image-registry-pvc/
   - ingress/
   - ingress-renew-default-cert/
   - kubeletconfig/
