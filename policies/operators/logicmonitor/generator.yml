@@ -1,0 +1,41 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-logicmonitor
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - logicmonitor
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: logicmonitor
+  severity: medium
+
+placementBindingDefaults:
+  name: "logicmonitor-binding"
+
+policies:
+  - name: logicmonitor
+    description: "Deploys the LogicMonitor LM Container Helm chart via an ArgoCD Application, using a pre-existing logicmonitor-credentials Secret for API authentication."
+    manifests:
+      - path: namespace.yml
+        name: logicmonitor-namespace
+
+      # - path: secret-sample.yml
+      #   name: logicmonitor-credentials
+
+      - path: argocd-application.yml
+        name: logicmonitor-argocd-application
+
+policySets:
+  - name: logicmonitor
+    placement:
+      placementName: "ft-logicmonitor--enabled"
