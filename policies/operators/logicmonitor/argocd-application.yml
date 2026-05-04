@@ -1,0 +1,124 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
+  name: lm-container
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://logicmonitor.github.io/helm-charts
+    chart: lm-container
+    targetRevision: "13.1.0"
+    helm:
+      valuesObject:
+        argus:
+          clusterName: '{{hub $.ManagedClusterName hub}}'
+          clusterTreeParentID: 1
+          resourceContainerID: 1
+          monitoringMode: Advanced
+          # Explicit KSM URL -- bypasses post-install hook discovery that ArgoCD skips
+          ksmUrl: "http://logicmonitor-lm-collector-kube-state-metrics.logicmonitor.svc.cluster.local:8080/metrics"
+          filters:
+            - namespace == "default"
+            - namespace == "kube-public"
+            - namespace == "kube-system"
+            - (namespace =~ "open-cluster-management-*")
+          collector:
+            env:
+              COLLECTOR_NON_ROOT: "false"
+            replicas: 2
+            size: medium
+          resources:
+            limits:
+              cpu: "1500m"
+              memory: "1Gi"
+              ephemeral-storage: "500Mi"
+            requests:
+              cpu: "1000m"
+              memory: "500Mi"
+              ephemeral-storage: "500Mi"
+          monitoring:
+            disable:
+            - horizontalpodautoscalers
+            - configmaps
+            - endpoints
+            - secrets
+            - storageclasses
+            - serviceaccounts
+            - roles
+            - rolebindings
+            - resourcequotas
+            - priorityclasses
+            - networkpolicies
+            - limitranges
+            - customresourcedefinitions
+            - clusterroles
+            - clusterrolebindings
+          # K8s Job monitoring -- ingest job events as logs to the argus partition
+          jobs:
+            eventMode: "logs"
+            tenantIdentifier: "argus"
+        lm-logs:
+          enabled: false
+        kube-state-metrics:
+          enabled: true
+          selfMonitor:
+            enabled: true
+            telemetryPort: 8081
+          replicas: 1
+          collectors:
+            - daemonsets
+            - replicasets
+            - statefulsets
+            - persistentvolumes
+            - persistentvolumeclaims
+            - pods
+            - nodes
+            - deployments
+            - services
+        # Collectorset Controller Configurations, check https://artifacthub.io/packages/helm/logicmonitor-helm-charts/collectorset-controller?modal=values-schema for schema
+        collectorset-controller:
+          enabled: true
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+              ephemeral-storage: "100Mi"
+            requests:
+              cpu: "1000m"
+              memory: "1Gi"
+              ephemeral-storage: "100Mi"
+        global:
+          userDefinedSecret: logicmonitor-credentials
+          companyDomain: 'logicmonitor.com'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: logicmonitor
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+        # Ignore env var drift from post-install hook patches
+        - /spec/template/spec/containers/0/env
+    - kind: ServiceAccount
+      jsonPointers:
+        - /imagePullSecrets
+    - group: '*'
+      kind: ClusterRole
+      jsonPointers:
+        - /rules
+    # Ignore ConfigMap drift from post-install hook KSM URL patching
+    - kind: ConfigMap
+      jsonPointers:
+        - /data
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true

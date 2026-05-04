@@ -19,6 +19,7 @@ resources:
   - ./gitops/
   - ./kiali/
   - ./loki/
+  - ./logicmonitor/
   - ./metallb/
   - ./migration-toolkit/
   - ./network-observability/
