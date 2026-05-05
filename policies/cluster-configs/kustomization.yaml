@@ -4,6 +4,7 @@ kind: Kustomization
 
 resources:
   - apiserver-cert/
+  - chrony-ntp/
   - aro/merge-rh-pull-secret/
   - cluster-autoscaling/
   - clusterclaims/

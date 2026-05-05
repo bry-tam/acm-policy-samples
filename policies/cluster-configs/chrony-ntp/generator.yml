@@ -1,0 +1,38 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-chrony-ntp
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - chrony-ntp
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: chrony-ntp
+  severity: medium
+
+placementBindingDefaults:
+  name: "chrony-ntp-binding"
+
+policies:
+  - name: chrony-ntp
+    description: "Applies a MachineConfig to the worker and master MachineConfigPools to configure chronyd with the standard Red Hat NTP pool servers."
+    manifests:
+      - path: worker-chrony.yml
+        name: chrony-ntp-worker
+
+      - path: master-chrony.yml
+        name: chrony-ntp-master
+
+policySets:
+  - name: chrony-ntp
+    placement:
+      placementName: "env-bound-placement"
