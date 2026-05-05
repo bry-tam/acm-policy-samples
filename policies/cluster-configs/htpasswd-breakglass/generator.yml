@@ -1,0 +1,39 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-htpasswd-breakglass
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - htpasswd-breakglass
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: htpasswd-breakglass
+  severity: high
+
+placementBindingDefaults:
+  name: "htpasswd-breakglass-binding"
+
+policies:
+  - name: htpasswd-breakglass
+    description: "Configures an htpasswd IdentityProvider named BreakGlass-Emergency with a local redhat user for emergency cluster access when other identity providers are unavailable."
+    manifests:
+      - path: secret.yml
+        name: htpasswd-breakglass-secret
+
+      - path: oauth.yml
+        name: htpasswd-breakglass-oauth
+        complianceType: musthave
+
+policySets:
+  - name: htpasswd-breakglass
+    placement:
+      placementName: "env-bound-placement"

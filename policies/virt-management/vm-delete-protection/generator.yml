@@ -1,0 +1,56 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-vm-delete-protection
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - vm-delete-protection
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: vm-delete-protection
+  severity: high
+
+placementBindingDefaults:
+  name: "vm-delete-protection-binding"
+
+policies:
+  - name: vm-delete-protection
+    description: "Ensures all VirtualMachines without the admin-allow-delete label have the kubevirt.io/vm-delete-protection label set, preventing accidental deletion."
+    manifests:
+      - path: delete-protection.yml
+        name: vm-delete-protection-label
+        complianceType: musthave
+        namespaceSelector:
+          include:
+            - "*"
+          exclude:
+            - kube-*
+            - openshift-*
+            - open-*
+            - default*
+            - multicluster-engine
+            - hive
+        objectSelector:
+          matchExpressions:
+            - key: admin-allow-delete
+              operator: DoesNotExist
+
+      - path: vap.yml
+        name: vm-delete-protection-vap
+
+      - path: vap-binding.yml
+        name: vm-delete-protection-vap-binding
+
+policySets:
+  - name: vm-delete-protection
+    placement:
+      placementName: "ft-ocp-virt--enabled"

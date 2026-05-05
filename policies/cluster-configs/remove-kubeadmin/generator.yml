@@ -1,0 +1,36 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-remove-kubeadmin
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - remove-kubeadmin
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: remove-kubeadmin
+  severity: high
+
+placementBindingDefaults:
+  name: "remove-kubeadmin-binding"
+
+policies:
+  - name: remove-kubeadmin
+    description: "Removes the kubeadmin secret from kube-system to disable the temporary bootstrap admin user after an identity provider has been configured."
+    manifests:
+      - path: kubeadmin.yml
+        name: remove-kubeadmin-secret
+        complianceType: mustnothave
+
+policySets:
+  - name: remove-kubeadmin
+    placement:
+      placementName: "ft-remove-kubeadmin--enabled"

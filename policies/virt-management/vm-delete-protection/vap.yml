@@ -1,0 +1,26 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vm-delete-protection
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["kubevirt.io"]
+        apiVersions: ["v1"]
+        resources: ["virtualmachines"]
+        operations: ["UPDATE"]
+  variables:
+    - name: protectionLabel
+      expression: "'kubevirt.io/vm-delete-protection'"
+    - name: adminLabel
+      expression: "'admin-allow-delete'"
+  validations:
+    - expression: >-
+        !(variables.protectionLabel in oldObject.metadata.labels) ||
+        oldObject.metadata.labels[variables.protectionLabel] != "True" ||
+        (variables.protectionLabel in object.metadata.labels &&
+         object.metadata.labels[variables.protectionLabel] == "True") ||
+        variables.adminLabel in object.metadata.labels
+      message: "Removing kubevirt.io/vm-delete-protection is not permitted unless the admin-allow-delete label is present"

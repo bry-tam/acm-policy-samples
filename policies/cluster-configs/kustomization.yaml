@@ -20,3 +20,6 @@ resources:
   - machinesets/
   - monitoring/
   - nodes/
+  - disable-self-provisioner/
+  - htpasswd-breakglass/
+  - remove-kubeadmin/
