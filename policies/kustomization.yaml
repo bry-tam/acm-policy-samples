@@ -24,5 +24,6 @@ resources:
   - ./cluster-health/
   - ./security/
   - ./multicluster-data
+  - ./virt-management/
 
 

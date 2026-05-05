@@ -1,0 +1,36 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-disable-self-provisioner
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - disable-self-provisioner
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: disable-self-provisioner
+  severity: high
+
+placementBindingDefaults:
+  name: "disable-self-provisioner-binding"
+
+policies:
+  - name: disable-self-provisioner
+    description: "Disables the self-provisioner ClusterRoleBinding so authenticated users cannot create new projects, and prevents OpenShift from restoring it via the autoupdate annotation."
+    manifests:
+      - path: self-provisioner.yml
+        name: disable-self-provisioner-crb
+        complianceType: mustonlyhave
+
+policySets:
+  - name: disable-self-provisioner
+    placement:
+      placementName: "env-bound-placement"
