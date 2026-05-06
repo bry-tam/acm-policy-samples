@@ -1,0 +1,16 @@
+---
+apiVersion: operator.openshift.io/v1
+kind: MachineConfiguration
+metadata:
+  name: cluster
+spec:
+  nodeDisruptionPolicy:
+    files:
+      - path: /usr/local/bin/px-pool-label.sh
+        actions:
+          - type: None
+    units:
+      - name: px-pool-label.service
+        actions:
+          - type: DaemonReload
+          - type: Restart

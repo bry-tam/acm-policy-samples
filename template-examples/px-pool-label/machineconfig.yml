@@ -1,0 +1,37 @@
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: worker
+  name: 99-worker-px-pool-label
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    storage:
+      files:
+        - path: /usr/local/bin/px-pool-label.sh
+          mode: 0755
+          overwrite: true
+          contents:
+            source: 'data:text/plain;charset=utf-8;base64,IyEvYmluL2Jhc2gKcHhjdGwgY2x1c3RlciBwcm92aXNpb24tc3RhdHVzIHwgZ3JlcCAiJChob3N0bmFtZSkiIHwgZ3JlcCAnMi4wIFRpQicgfCBhd2sgJ3sgcHJpbnQgJDcgfScgfCB4YXJncyAtSXt9IHB4Y3RsIHNlcnZpY2UgcG9vbCB1cGRhdGUgLS11aWQge30gLS1sYWJlbHMgIm1lZGlhdHlwZT1weC1wdXJlLXg3MDMiCg=='
+    systemd:
+      units:
+        - name: px-pool-label.service
+          enabled: true
+          contents: |
+            [Unit]
+            Description=Label Portworx pool with mediatype px-pure-x703
+            After=portworx.service
+            Requires=portworx.service
+            ConditionPathExists=!/var/lib/px-pool-label.done
+
+            [Service]
+            Type=oneshot
+            RemainAfterExit=yes
+            ExecStart=/usr/local/bin/px-pool-label.sh
+            ExecStartPost=/bin/touch /var/lib/px-pool-label.done
+
+            [Install]
+            WantedBy=multi-user.target
