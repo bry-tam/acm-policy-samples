@@ -38,7 +38,7 @@ object-templates-raw: |
             bridge-mappings:
               - localnet: {{ $cudn.spec.network.localnet.physicalNetworkName }}
                 bridge: br-vmdata
-                state: present
+                state: up
         nodeSelector:
           node-role.kubernetes.io/worker: ""
 

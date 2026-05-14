@@ -1,4 +1,11 @@
 ---
+object-templates-raw: |
+  {{- $px_label_script := `
+    #!/bin/bash
+    pxctl cluster provision-status | grep "$(hostname)" | grep '8.0 TiB' | awk '{ print $7 }' | xargs -I{} pxctl service pool update --uid {} --labels "mediatype=px-pure-x701"
+    pxctl cluster provision-status | grep "$(hostname)" | grep '2.0 TiB' | awk '{ print $7 }' | xargs -I{} pxctl service pool update --uid {} --labels "mediatype=px-pure-x703"
+    `
+  }}
 apiVersion: machineconfiguration.openshift.io/v1
 kind: MachineConfig
 metadata:
@@ -15,7 +22,7 @@ spec:
           mode: 0755
           overwrite: true
           contents:
-            source: 'data:text/plain;charset=utf-8;base64,IyEvYmluL2Jhc2gKcHhjdGwgY2x1c3RlciBwcm92aXNpb24tc3RhdHVzIHwgZ3JlcCAiJChob3N0bmFtZSkiIHwgZ3JlcCAnMi4wIFRpQicgfCBhd2sgJ3sgcHJpbnQgJDcgfScgfCB4YXJncyAtSXt9IHB4Y3RsIHNlcnZpY2UgcG9vbCB1cGRhdGUgLS11aWQge30gLS1sYWJlbHMgIm1lZGlhdHlwZT1weC1wdXJlLXg3MDMiCg=='
+            source: 'data:text/plain;charset=utf-8;base64,{{ $px_label_script | base64enc }}'
     systemd:
       units:
         - name: px-pool-label.service
