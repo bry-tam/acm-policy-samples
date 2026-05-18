@@ -26,7 +26,8 @@ spec:
           image:
             repository: registry.redhat.io/rhel8/postgresql-15
             tag: latest
-        openshift.enabled: true
+        openshift:
+          enabled: true
         persistentVolume:
           create: true
           size: 8Gi
@@ -34,6 +35,8 @@ spec:
           # storageClass:
         rbac:
           create: true
+        database:
+          url: ""
         serviceAccount:
           create: true
           name: cyberark
