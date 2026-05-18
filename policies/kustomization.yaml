@@ -25,5 +25,6 @@ resources:
   - ./security/
   - ./multicluster-data
   - ./virt-management/
+  - ./third-party/
 
 

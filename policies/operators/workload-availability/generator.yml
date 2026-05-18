@@ -27,7 +27,7 @@ placementBindingDefaults:
 
 policies:
   - name: workload-availability-operator
-    description: "Installs Fence Agent, Self Node Remediation, Node Healthcheck, and Machine Deletion Operators"
+    description: "Installs Fence Agent, Self Node Remediation, Node Healthcheck, Node Maintenance, and Machine Deletion Operators"
     manifests:
       - path: namespace.yml
         name: openshift-workload-availability-namespace
@@ -44,6 +44,9 @@ policies:
             kind: OperatorPolicy
             name: node-healthcheck-operator-install
             compliance: "Compliant"
+      - path: node-maintenance-operatorpolicy.yml
+        name: node-maintenance-operator-install
+
       - path: machine-deletion-operatorpolicy.yml
         name: machine-deletion-remediation-operator-install
 
