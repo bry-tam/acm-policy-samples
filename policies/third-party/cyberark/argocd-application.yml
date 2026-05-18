@@ -21,7 +21,7 @@ spec:
         nginx:
           image:
             repository: registry.connect.redhat.com/cyberark/conjur-nginx
-            tag: latest
+            tag: ubi9-2.0.15-781
         postgres:
           image:
             repository: registry.redhat.io/rhel8/postgresql-15
