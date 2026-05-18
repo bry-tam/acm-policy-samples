@@ -1,0 +1,52 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cyberark
+  namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
+spec:
+  project: default
+  source:
+    repoURL: https://cyberark.github.io/helm-charts
+    chart: conjur-oss
+    targetRevision: "*"
+    helm:
+      releaseName: cyberark
+      valuesObject:
+        conjur:
+          account: myorg
+          dataKey: ""
+          applianceUrl: "https://conjur.example.com"
+        authenticators: "authn-k8s/prod"
+        ssl:
+          certificate: ""
+        logLevel: info
+        rbac:
+          create: true
+        serviceAccount:
+          create: true
+          name: cyberark
+        clusterName: '{{hub $.ManagedClusterName hub}}'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cyberark
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - kind: ServiceAccount
+      jsonPointers:
+        - /imagePullSecrets
+    - group: '*'
+      kind: ClusterRole
+      jsonPointers:
+        - /rules
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
