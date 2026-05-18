@@ -34,6 +34,7 @@ policies:
 
       - path: argocd-application.yml
         name: logicmonitor-argocd-application
+        complianceType: mustonlyhave
 
 policySets:
   - name: logicmonitor
