@@ -2,8 +2,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  annotations:
-    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
   name: lm-container
   namespace: openshift-gitops
 spec:
@@ -13,6 +11,8 @@ spec:
     chart: lm-container
     targetRevision: "13.1.0"
     helm:
+      apiVersions:
+        - security.openshift.io/v1
       valuesObject:
         argus:
           clusterName: '{{hub $.ManagedClusterName hub}}'
@@ -20,7 +20,7 @@ spec:
           resourceContainerID: 1
           monitoringMode: Advanced
           # Explicit KSM URL -- bypasses post-install hook discovery that ArgoCD skips
-          ksmUrl: "http://logicmonitor-lm-collector-kube-state-metrics.logicmonitor.svc.cluster.local:8080/metrics"
+          ksmUrl: "http://lm-container-kube-state-metrics.logicmonitor.svc.cluster.local:8080/metrics"
           filters:
             - namespace == "default"
             - namespace == "kube-public"
@@ -28,9 +28,18 @@ spec:
             - (namespace =~ "open-cluster-management-*")
           collector:
             env:
-              COLLECTOR_NON_ROOT: "false"
+              COLLECTOR_NON_ROOT: "true"
             replicas: 2
             size: medium
+            labels:
+              acm.reloader.enabled: ""
+            annotations:
+              acm.reloader.watchlist: |
+                [
+                  {"kind": "ConfigMap", "name": "lm-container-argus", "apiVersion": "v1"},
+                  {"kind": "Secret", "name": "logicmonitor-credentials",  "apiVersion": "v1"},
+                  {"kind": "CollectorSet", "name": "lm-container-argus",  "apiVersion": "logicmonitor.com/v1beta1"}
+                ]
           resources:
             limits:
               cpu: "1500m"
@@ -61,6 +70,15 @@ spec:
           jobs:
             eventMode: "logs"
             tenantIdentifier: "argus"
+          labels:
+            acm.reloader.enabled: ""
+          annotations:
+            acm.reloader.watchlist: |
+              [
+                {"kind": "ConfigMap", "name": "lm-container-argus", "apiVersion": "v1"},
+                {"kind": "Secret", "name": "logicmonitor-credentials",  "apiVersion": "v1"},
+                {"kind": "CollectorSet", "name": "lm-container-argus",  "apiVersion": "logicmonitor.com/v1beta1"}
+              ]
         lm-logs:
           enabled: false
         kube-state-metrics:
@@ -79,6 +97,7 @@ spec:
             - nodes
             - deployments
             - services
+            - virtualmachines
         # Collectorset Controller Configurations, check https://artifacthub.io/packages/helm/logicmonitor-helm-charts/collectorset-controller?modal=values-schema for schema
         collectorset-controller:
           enabled: true
@@ -91,6 +110,15 @@ spec:
               cpu: "1000m"
               memory: "1Gi"
               ephemeral-storage: "100Mi"
+          labels:
+            acm.reloader.enabled: ""
+          annotations:
+            acm.reloader.watchlist: |
+              [
+                {"kind": "ConfigMap", "name": "lm-container-argus", "apiVersion": "v1"},
+                {"kind": "Secret", "name": "logicmonitor-credentials",  "apiVersion": "v1"},
+                {"kind": "CollectorSet", "name": "lm-container-argus",  "apiVersion": "logicmonitor.com/v1beta1"}
+              ]
         global:
           userDefinedSecret: logicmonitor-credentials
           companyDomain: 'logicmonitor.com'
@@ -121,4 +149,3 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=false
-      - ServerSideApply=true
