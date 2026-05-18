@@ -1,0 +1,40 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-cyberark
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - cyberark
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: cyberark
+  severity: high
+
+placementBindingDefaults:
+  name: "cyberark-binding"
+
+policies:
+  - name: cyberark
+    description: "Deploys CyberArk Conjur OSS via an ArgoCD Application using the official CyberArk Helm chart for secrets management."
+    manifests:
+      - path: namespace.yml
+        name: cyberark-namespace
+        complianceType: musthave
+
+      - path: argocd-application.yml
+        name: cyberark-argocd-application
+        complianceType: musthave
+
+policySets:
+  - name: cyberark
+    placement:
+      placementName: "ft-cyberark--enabled"
