@@ -1,0 +1,14 @@
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: nginx-anyuid
+  namespace: conjur-oss
+subjects:
+  - kind: ServiceAccount
+    name: cyberark
+    namespace: conjur-oss
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: nginx-anyuid

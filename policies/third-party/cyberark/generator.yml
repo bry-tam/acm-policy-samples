@@ -30,6 +30,14 @@ policies:
         name: cyberark-namespace
         complianceType: musthave
 
+      - path: role.yml
+        name: cyberark-nginx-anyuid-role
+        complianceType: musthave
+
+      - path: rolebinding.yml
+        name: cyberark-nginx-anyuid-rolebinding
+        complianceType: musthave
+
       - path: argocd-application.yml
         name: cyberark-argocd-application
         complianceType: musthave
