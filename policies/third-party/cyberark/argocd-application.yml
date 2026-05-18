@@ -13,7 +13,6 @@ spec:
     helm:
       releaseName: conjur-oss
       valuesObject:
-        account: default
         authenticators: "authn-k8s/prod"
         dataKey: "xtmvecebDLqRdB0RzZI3HCaMPjrUzdUJtqYXDCgOwSg="
         image:
