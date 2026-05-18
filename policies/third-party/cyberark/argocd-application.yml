@@ -4,34 +4,43 @@ kind: Application
 metadata:
   name: cyberark
   namespace: openshift-gitops
-  annotations:
-    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
 spec:
   project: default
   source:
     repoURL: https://cyberark.github.io/helm-charts
     chart: conjur-oss
-    targetRevision: "*"
+    targetRevision: "2.1.2"
     helm:
       releaseName: cyberark
       valuesObject:
-        conjur:
-          account: myorg
-          dataKey: ""
-          applianceUrl: "https://conjur.example.com"
+        account: default
         authenticators: "authn-k8s/prod"
-        ssl:
-          certificate: ""
-        logLevel: info
+        dataKey: "xtmvecebDLqRdB0RzZI3HCaMPjrUzdUJtqYXDCgOwSg="
+        image:
+          repository: registry.connect.redhat.com/cyberark/conjur
+          tag: latest
+        nginx:
+          image:
+            repository: registry.connect.redhat.com/cyberark/conjur-nginx
+            tag: latest
+        postgres:
+          image:
+            repository: registry.redhat.io/rhel8/postgresql-15
+            tag: latest
+        openshift.enabled: true
+        persistentVolume:
+          create: true
+          size: 8Gi
+          # Set storageClass to use a non-default storage class for your platform
+          # storageClass:
         rbac:
           create: true
         serviceAccount:
           create: true
           name: cyberark
-        clusterName: '{{hub $.ManagedClusterName hub}}'
   destination:
     server: https://kubernetes.default.svc
-    namespace: cyberark
+    namespace: conjur-oss
   ignoreDifferences:
     - group: apps
       kind: Deployment
