@@ -29,6 +29,7 @@ policies:
     manifests:
       - path: reload-tracker-configmap.yml
         name: app-reload-tracker
+        remediationAction: InformOnly
       - path: reload-tracker-deployment.yml
         name: tracker-app-reload
         extraDependencies:
