@@ -9,9 +9,9 @@ spec:
   source:
     repoURL: https://cyberark.github.io/helm-charts
     chart: conjur-oss
-    targetRevision: "2.1.2"
+    targetRevision: "2.1.1"
     helm:
-      releaseName: cyberark
+      releaseName: conjur-oss
       valuesObject:
         account: default
         authenticators: "authn-k8s/prod"
