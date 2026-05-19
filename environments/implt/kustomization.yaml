@@ -1,0 +1,34 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+
+## specify the namespace to create the polcies/placements/bindings in
+namespace: bry-tam-policies-implt
+
+
+transformers:
+  ## set the name of the PolicySets to include a suffix specific to this environment
+  - kustomize-configs/policyset-suffixer.yml
+
+
+patches:
+  ## override all policies to inform-only so no changes are enforced in this environment
+  - target:
+      kind: Policy
+    patch: |
+      - op: replace
+        path: /spec/remediationAction
+        value: inform
+
+
+resources:
+  - managedclusterset.yml
+
+
+  ## include all policies
+  - ../../policies/
+
+components:
+  ## include all of the kustomize transformers and configurations
+  - ../../kustomize-configs/
