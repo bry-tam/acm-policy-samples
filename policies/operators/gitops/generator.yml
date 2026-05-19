@@ -71,6 +71,15 @@ policies:
       - path: applicationset-config/managedclustersetbinding.yml
         name: applicationset-clusterbinding
 
+  - name: gitops-secret-rotation
+    description: "Removes the openshift-gitops-operator-metrics-monitor-bearer-token secret when older than 7 days; the SA token controller recreates it with a fresh token."
+    dependencies:
+      - name: "gitops-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: secret-rotation.yml
+        name: gitops-metrics-bearer-token-rotation
+
   - name: gitops-instance-status
     description: "Monitors the health of ArgoCd instances"
     remediationAction: inform
