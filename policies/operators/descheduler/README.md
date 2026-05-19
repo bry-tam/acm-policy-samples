@@ -25,13 +25,14 @@ Notes:
     mutually exclusive — do not combine them
 
 ## Implementation Details
-Two resources are deployed within the single `descheduler-operator` policy:
+Three resources are deployed within the single `descheduler-operator` policy:
 
 **OperatorPolicy** (`descheduler-operator-install`) — installs the operator via OLM into
 `openshift-kube-descheduler-operator` with cluster monitoring enabled.
 
-**KubeDescheduler** (`descheduler-kubevirt-migrate`) — uses `object-templates-raw` to look up
-the `HyperConverged` CR and map its `liveMigrationConfig` fields to `evictionLimits`:
+**KubeDescheduler** (`descheduler-kubevirt-migrate`) — depends on the OperatorPolicy being
+Compliant; uses `object-templates-raw` to look up the `HyperConverged` CR and map its
+`liveMigrationConfig` fields to `evictionLimits`:
 
 | `evictionLimits` field | Source field | Default |
 |---|---|---|
@@ -40,3 +41,7 @@ the `HyperConverged` CR and map its `liveMigrationConfig` fields to `evictionLim
 
 The defaults match KubeVirt's built-in defaults and are applied via `dig` fallback when the
 HyperConverged CR does not explicitly set those values.
+
+**MachineConfig** (`99-worker-psi-kernelarg`) — adds the `psi=1` kernel argument to worker
+nodes, enabling Pressure Stall Information (PSI) metrics required by the
+`DevKubeVirtRelieveAndMigrate` CPU/PSI utilization profile.
