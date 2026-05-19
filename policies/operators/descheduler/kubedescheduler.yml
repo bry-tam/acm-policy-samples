@@ -1,0 +1,22 @@
+---
+object-templates-raw: |
+  {{- $hco := lookup "hco.kubevirt.io/v1beta1" "HyperConverged" "openshift-cnv" "kubevirt-hyperconverged" }}
+  {{- $totalMigrations := dig "spec" "liveMigrationConfig" "parallelMigrationsPerCluster" 5 $hco }}
+  {{- $nodeMigrations := dig "spec" "liveMigrationConfig" "parallelOutboundMigrationsPerNode" 2 $hco }}
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: operator.openshift.io/v1
+      kind: KubeDescheduler
+      metadata:
+        name: cluster
+        namespace: openshift-kube-descheduler-operator
+      spec:
+        managementState: Managed
+        mode: Automatic
+        deschedulingIntervalSeconds: 3600
+        profiles:
+          - KubeVirtRelieveAndMigrate
+        evictionLimits:
+          total: {{ $totalMigrations }}
+          node: {{ $nodeMigrations }}
