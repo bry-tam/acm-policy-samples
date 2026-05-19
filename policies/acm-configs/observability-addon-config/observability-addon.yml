@@ -1,0 +1,44 @@
+---
+object-templates-raw: |
+  {{- $ns := "open-cluster-management-observability" }}
+  {{- $cma := lookup "addon.open-cluster-management.io/v1alpha1" "ClusterManagementAddOn" "" "multicluster-observability-addon" }}
+  {{- if dig "metadata" "name" "" $cma }}
+  {{- $scrapeConfigs := (lookup "monitoring.coreos.com/v1alpha1" "ScrapeConfig" $ns "").items }}
+  {{- $placements := dig "spec" "installStrategy" "placements" (list) $cma }}
+
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: addon.open-cluster-management.io/v1alpha1
+      kind: ClusterManagementAddOn
+      metadata:
+        name: multicluster-observability-addon
+      spec:
+        addOnMeta: '{{ $cma.spec.addOnMeta | toRawJson | toLiteral }}'
+        supportedConfigs: '{{ $cma.spec.supportedConfigs | toRawJson | toLiteral }}'
+        installStrategy:
+          type: Placements
+          placements:
+          {{- range $p := $placements }}
+            {{- if ne $p.name "global" }}
+          - '{{ $p | toRawJson | toLiteral }}'
+            {{- else }}
+          - name: global
+            namespace: '{{ $p.namespace }}'
+            {{- if $p.rolloutStrategy }}
+            rolloutStrategy: '{{ $p.rolloutStrategy | toRawJson | toLiteral }}'
+            {{- end }}
+            configs:
+              {{- range $c := (dig "configs" (list) $p) }}
+                {{- if ne $c.resource "scrapeconfigs" }}
+              - '{{ $c | toRawJson | toLiteral }}'
+                {{- end }}
+              {{- end }}
+              {{- range $sc := $scrapeConfigs }}
+              - group: monitoring.coreos.com
+                resource: scrapeconfigs
+                name: '{{ $sc.metadata.name }}'
+                namespace: '{{ $ns }}'
+              {{- end }}
+            {{- end }}
+          {{- end }}
+  {{- end }}

@@ -1,0 +1,35 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-observability-addon-config
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - observability-addon-config
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: observability-addon-config
+  severity: medium
+
+placementBindingDefaults:
+  name: "observability-addon-config-binding"
+
+policies:
+  - name: observability-addon-config
+    description: "Keeps the multicluster-observability-addon CMA global placement in sync with ScrapeConfigs in the open-cluster-management-observability namespace."
+    manifests:
+      - path: observability-addon.yml
+        name: observability-addon-scrapeconfig-sync
+
+policySets:
+  - name: observability-addon-config
+    placement:
+      placementName: "ft-observability-mcoa--exists"
