@@ -12,14 +12,14 @@ transformers:
   - kustomize-configs/policyset-suffixer.yml
 
 
-# patches:
-#   ## override all policies to inform-only so no changes are enforced in this environment
-#   - target:
-#       kind: Policy
-#     patch: |
-#       - op: replace
-#         path: /spec/remediationAction
-#         value: inform
+patches:
+  ## override all policies to inform-only so no changes are enforced in this environment
+  - target:
+      kind: Policy
+    patch: |
+      - op: replace
+        path: /spec/remediationAction
+        value: inform
 
 
 resources:
