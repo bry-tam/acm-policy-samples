@@ -7,7 +7,8 @@ metadata:
 spec:
   liveMigrationConfig:
     completionTimeoutPerGiB: 800
-    network: bond3.999
+    ## network should be specified based on the configuration of the hardware
+    #network: bond3.999
     parallelMigrationsPerCluster: 5
     parallelOutboundMigrationsPerNode: 2
     progressTimeout: 150
