@@ -31,6 +31,14 @@ policies:
 
       - path: operatorpolicy.yml
 
+      - path: kubedescheduler.yml
+        name: descheduler-kubevirt-migrate
+        extraDependencies:
+          - name: descheduler-operator-install
+            kind: OperatorPolicy
+            apiVersion: policy.open-cluster-management.io/v1beta1
+            compliance: "Compliant"
+
 policySets:
   - name: descheduler-operator
     placement:
