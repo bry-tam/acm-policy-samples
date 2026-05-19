@@ -39,6 +39,9 @@ policies:
             apiVersion: policy.open-cluster-management.io/v1beta1
             compliance: "Compliant"
 
+      - path: worker-kernelargs.yml
+        name: worker-psi-kernelarg
+
 policySets:
   - name: descheduler-operator
     placement:
