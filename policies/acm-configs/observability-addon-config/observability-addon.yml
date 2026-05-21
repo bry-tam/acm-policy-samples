@@ -1,20 +1,20 @@
 ---
 object-templates-raw: |
   {{- $ns := "open-cluster-management-observability" }}
-  {{- $cma := lookup "addon.open-cluster-management.io/v1alpha1" "ClusterManagementAddOn" "" "multicluster-observability-addon" }}
+  {{- $cma := lookup "addon.open-cluster-management.io/v1beta1" "ClusterManagementAddOn" "" "multicluster-observability-addon" }}
   {{- if dig "metadata" "name" "" $cma }}
-  {{- $scrapeConfigs := (lookup "monitoring.coreos.com/v1alpha1" "ScrapeConfig" $ns "").items }}
+  {{- $scrapeConfigs := (lookup "monitoring.rhobs/v1alpha1" "ScrapeConfig" $ns "").items }}
   {{- $placements := dig "spec" "installStrategy" "placements" (list) $cma }}
 
   - complianceType: mustonlyhave
     objectDefinition:
-      apiVersion: addon.open-cluster-management.io/v1alpha1
+      apiVersion: addon.open-cluster-management.io/v1beta1
       kind: ClusterManagementAddOn
       metadata:
         name: multicluster-observability-addon
       spec:
         addOnMeta: '{{ $cma.spec.addOnMeta | toRawJson | toLiteral }}'
-        supportedConfigs: '{{ $cma.spec.supportedConfigs | toRawJson | toLiteral }}'
+        defaultConfigs: '{{ $cma.spec.defaultConfigs | toRawJson | toLiteral }}'
         installStrategy:
           type: Placements
           placements:
@@ -34,7 +34,7 @@ object-templates-raw: |
                 {{- end }}
               {{- end }}
               {{- range $sc := $scrapeConfigs }}
-              - group: monitoring.coreos.com
+              - group: monitoring.rhobs
                 resource: scrapeconfigs
                 name: '{{ $sc.metadata.name }}'
                 namespace: '{{ $ns }}'
