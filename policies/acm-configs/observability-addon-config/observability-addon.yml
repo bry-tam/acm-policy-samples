@@ -30,7 +30,7 @@ object-templates-raw: |
             configs:
               {{- range $c := (dig "configs" (list) $p) }}
                 {{- if ne $c.resource "scrapeconfigs" }}
-              - '{{ $c | toRawJson | toLiteral }}'
+              - {{ $c | toRawJson | toLiteral }}
                 {{- end }}
               {{- end }}
               {{- range $sc := $scrapeConfigs }}
