@@ -1,0 +1,27 @@
+---
+apiVersion: policy.open-cluster-management.io/v1beta1
+kind: OperatorPolicy
+metadata:
+  name: ingress-node-firewall-operator-install
+spec:
+  complianceType: musthave
+  complianceConfig:
+    catalogSourceUnhealthy: NonCompliant
+    deploymentsUnavailable: NonCompliant
+    upgradesAvailable: Compliant
+  remediationAction: enforce
+  removalBehavior:
+    clusterServiceVersions: Delete
+    customResourceDefinitions: Delete
+    operatorGroups: DeleteIfUnused
+    subscriptions: Delete
+  severity: medium
+  upgradeApproval: Automatic
+  subscription:
+    channel: stable
+    name: ingress-node-firewall
+    namespace: openshift-ingress-node-firewall
+    source: redhat-operators
+    sourceNamespace: openshift-marketplace
+  operatorGroup:
+    name: ingress-node-firewall-operators

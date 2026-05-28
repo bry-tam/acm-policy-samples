@@ -1,0 +1,62 @@
+---
+object-templates-raw: |
+  {{- $allowCIDRs := list }}
+
+  ## Read the pod and service network cluster
+  {{- $network := lookup "config.openshift.io/v1" "Network" "" "cluster" }}
+  {{- range $cn := (dig "spec" "clusterNetwork" (list) $network) }}
+    {{- $allowCIDRs = append $allowCIDRs $cn.cidr }}
+  {{- end }}
+  {{- range $sn := (dig "spec" "serviceNetwork" (list) $network) }}
+    {{- $allowCIDRs = append $allowCIDRs $sn }}
+  {{- end }}
+
+  ## Read the initial "machineNetwork" from the install-config, add additional cidrs based on environment
+  {{- $installConfig := dig "data" "install-config" "" (lookup "v1" "ConfigMap" "kube-system" "cluster-config-v1") | fromYaml }}
+  {{- range $mn := (dig "networking" "machineNetwork" (list) $installConfig) }}
+    {{- $allowCIDRs = append $allowCIDRs $mn.cidr }}
+  {{- end }}
+
+  - complianceType: mustonlyhave
+    objectDefinition:
+      apiVersion: ingressnodefirewall.openshift.io/v1alpha1
+      kind: IngressNodeFirewall
+      metadata:
+        name: block-external-dns
+      spec:
+        interfaces:
+          - eth0 ## likely Azure primary interface
+          - ens4 ## likely GCP primary interface
+          - ens5 ## likely AWS primary interface
+        nodeSelector: {}
+        ingress:
+          - sourceCIDRs: '{{ $allowCIDRs | toRawJson | toLiteral }}'
+            rules:
+              - order: 10
+                protocolConfig:
+                  protocol: UDP
+                  udp:
+                    ports: "53"
+                action: Allow
+              - order: 11
+                protocolConfig:
+                  protocol: TCP
+                  tcp:
+                    ports: "53"
+                action: Allow
+          - sourceCIDRs:
+              - 0.0.0.0/0
+              - ::/0
+            rules:
+              - order: 10
+                protocolConfig:
+                  protocol: UDP
+                  udp:
+                    ports: "53"
+                action: Deny
+              - order: 11
+                protocolConfig:
+                  protocol: TCP
+                  tcp:
+                    ports: "53"
+                action: Deny

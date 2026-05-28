@@ -17,6 +17,7 @@ resources:
   - ./file-integrity/
   - ./gatekeeper/
   - ./gitops/
+  - ./ingress-node-firewall/
   - ./kiali/
   - ./loki/
 
