@@ -1,0 +1,57 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-ingress-node-firewall
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - ingress-node-firewall
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: ingress-node-firewall
+  severity: medium
+
+placementBindingDefaults:
+  name: "ingress-node-firewall-binding"
+
+policies:
+  - name: ingress-node-firewall-operator
+    description: "Installs the Ingress Node Firewall operator into the openshift-ingress-node-firewall namespace for managing eBPF-based stateless node-level ingress firewall rules."
+    manifests:
+      - path: namespace.yml
+        name: ingress-node-firewall-namespace
+
+      - path: operatorpolicy.yml
+
+      - path: ingressnodefirewallconfig.yml
+        name: ingress-node-firewall-config
+        extraDependencies:
+          - name: ingress-node-firewall-operator-install
+            kind: OperatorPolicy
+            apiVersion: policy.open-cluster-management.io/v1beta1
+            compliance: "Compliant"
+
+  - name: ingress-node-firewall-rules
+    description: "Ingress node firewall rules for clusters where CoreDNS is exposed on hostNetwork (e.g. Azure). Blocks external DNS queries on port 53 while allowing all pods, services, and nodes within the cluster."
+    dependencies:
+      - name: ingress-node-firewall-operator
+        compliance: "Compliant"
+    manifests:
+      - path: rules/block-external-dns.yml
+        name: block-external-dns-rule
+
+      - path: rules/block-icmp-timestamp.yml
+        name: block-icmp-timestamp-rule
+
+policySets:
+  - name: ingress-node-firewall
+    placement:
+      placementName: "ft-ingress-node-firewall--enabled"
