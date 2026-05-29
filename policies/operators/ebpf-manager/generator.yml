@@ -1,0 +1,37 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-ebpf-manager
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - ebpf-manager
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: ebpf-manager
+  severity: medium
+
+placementBindingDefaults:
+  name: "ebpf-manager-binding"
+
+policies:
+  - name: ebpf-manager-operator
+    description: "Installs the eBPF Manager (bpfman) operator into the bpfman namespace for managing eBPF programs on cluster nodes."
+    manifests:
+      - path: namespace.yml
+        name: ebpf-manager-namespace
+
+      - path: operatorpolicy.yml
+
+policySets:
+  - name: ebpf-manager
+    placement:
+      placementName: "ft-ebpf-manager--enabled"
