@@ -13,6 +13,7 @@ resources:
   - ./data-foundation/
   - ./descheduler/
   - ./developer-hub/
+  - ./ebpf-manager/
   - ./external-secrets/
   - ./file-integrity/
   - ./gatekeeper/
