@@ -6,4 +6,6 @@ metadata:
   namespace: openshift-ingress-node-firewall
 spec:
   nodeSelector: {}
-  ebpfProgramManagerMode: '{{hub (eq (index $.ManagedClusterLabels "ebpf-manager") "enabled") | toRawJson | toBool hub}}'
+  ## below set to false as ebpf operator is Tech Preview.  Uncomment to use
+  ebpfProgramManagerMode: false
+  # ebpfProgramManagerMode: '{{hub (eq (index $.ManagedClusterLabels "ebpf-manager") "enabled") | toRawJson | toBool hub}}'
