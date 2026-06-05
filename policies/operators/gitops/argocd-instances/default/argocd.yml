@@ -4,6 +4,8 @@ kind: ArgoCD
 metadata:
   name: gitops
 spec:
+  aggregatedClusterRoles: true
+  defaultClusterScopedRoleDisabled: false
   server:
     autoscale:
       enabled: true
