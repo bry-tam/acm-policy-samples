@@ -1,0 +1,63 @@
+---
+object-templates-raw: |
+  {{- $infrastructure := (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status }}
+  {{- $region := $infrastructure.platformStatus.aws.region }}
+  {{- $infrastructure_id := $infrastructure.infrastructureName }}
+  {{- $worker_ms := (index (lookup "machine.openshift.io/v1beta1" "MachineSet" "openshift-machine-api" "").items 0) }}
+
+  {{hub- range $ms := (fromConfigMap "" .ManagedClusterName .PolicyMetadata.name | fromYaml) hub}}
+  {{hub- range $az := $ms.availabilityZones hub}}
+  {{- $zone := printf "%s{{hub $az hub}}" $region }}
+  {{- $ps_raw := `
+    value:
+      placement:
+        availabilityZone: %[1]s{{hub $az hub}}
+      instanceType: {{hub $ms.instanceType hub}}
+      blockDevices:
+        - ebs:
+            encrypted: true
+            iops: 2000
+            kmsKey:
+              arn: ''
+            volumeSize: {{hub $ms.volumeSize hub}}
+            volumeType: io1
+      subnet:
+        filters:
+          - name: 'tag:Name'
+            values:
+              - %[2]s-subnet-private-%[1]s{{hub $az hub}}
+  ` }}
+  {{- $_ := unset $worker_ms.spec.template.spec.providerSpec.value "blockDevices" }}
+  {{- $_ := unset $worker_ms.spec.template.spec.providerSpec.value.subnet "filters" }}
+  {{- $merged_ps := merge ((printf $ps_raw $region $infrastructure_id) | fromYaml) $worker_ms.spec.template.spec.providerSpec }}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: machine.openshift.io/v1beta1
+      kind: MachineSet
+      metadata:
+        labels:
+          machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
+        name: {{ $infrastructure_id }}-{{hub $ms.baseName hub}}-{{ $zone }}
+        namespace: openshift-machine-api
+      spec:
+        replicas: {{hub $ms.replicas hub}}
+        selector:
+          matchLabels:
+            machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
+            machine.openshift.io/cluster-api-machineset: {{ $infrastructure_id }}-{{hub $ms.baseName hub}}-{{ $zone }}
+        template:
+          metadata:
+            labels:
+              machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
+              machine.openshift.io/cluster-api-machine-role: {{hub $ms.role hub}}
+              machine.openshift.io/cluster-api-machine-type: {{hub $ms.role hub}}
+              machine.openshift.io/cluster-api-machineset: {{ $infrastructure_id }}-{{hub $ms.baseName hub}}-{{ $zone }}
+          spec:
+            metadata:
+              labels: '{{hub merge (dict (printf "node-role.kubernetes.io/%s" $ms.role) "") ($ms.labels | default dict) | toRawJson | toLiteral hub}}'
+            {{hub- if $ms.taints hub}}
+            taints: '{{hub $ms.taints | toRawJson | toLiteral hub}}'
+            {{hub- end hub}}
+            providerSpec: '{{ $merged_ps | toRawJson | toLiteral }}'
+  {{hub- end hub}}
+  {{hub- end hub}}

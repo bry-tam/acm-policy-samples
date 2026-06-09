@@ -1,0 +1,84 @@
+#######################################################################
+## Example managed cluster ConfigMap
+#######################################################################
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clustera
+  namespace: acm-policies
+data:
+  infra-nodes: |
+    replicas: 3
+    instanceType: c6gn.8xlarge
+    volumeSize: 200
+  cluster-logging-configure: |
+    lokiSize: 1x.extra-small
+    storageClassName: gp3-csi
+    s3Storage: odf
+    lokiLimits:
+      global:
+        retention:
+          days: 2
+          streams:
+          - days: 2
+            priority: 1
+            selector: '{kubernetes_namespace_name=~"test.+"}'
+          - days: 1
+            priority: 1
+            selector: '{log_type="infrastructure"}'
+      tenants:
+        application:
+          retention:
+            days: 1
+            streams:
+              - days: 2
+                selector: '{kubernetes_namespace_name=~"test.+"}'
+        infrastructure:
+          retention:
+            days: 1
+            streams:
+              - days: 1
+                selector: '{kubernetes_namespace_name=~"openshift-cluster.+"}'
+        audit:
+          retention:
+            days: 1
+
+
+#######################################################################
+## Example usage
+#######################################################################
+---
+## key/value where what is stored in the ConfigMap is a specific value that should be used
+## In a policy named "infra-nodes"  The replicas on the MachineSet would be set to 3 from the ConfigMap above
+object-templates-raw: |
+  {{hub- $data := (fromConfigMap "" .ManagedClusterName .PolicyMetadata.name | fromYaml) hub}}
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: machine.openshift.io/v1beta1
+      kind: MachineSet
+      metadata:
+        labels:
+          machine.openshift.io/cluster-api-cluster: {{ $infrastructure_id }}
+        name: {{ $infrastructure_id }}-{{ $machineset_role }}-{{ $zone }}
+        namespace: openshift-machine-api
+      spec:
+        replicas: {{hub $data.replicas hub}}
+
+---
+## key/object data where what is stored in the ConfigMap is a more complex YAML object definition
+## In a policy named "cluster-logging-configure"  The entire limits definition is used exactly as defined in the ConfigMap
+object-templates-raw: |
+  {{hub- $data := (fromConfigMap "" .ManagedClusterName .PolicyMetadata.name | fromYaml) hub}}
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: loki.grafana.com/v1
+      kind: LokiStack
+      metadata:
+        name: logging-loki
+        namespace: openshift-logging
+      spec:
+        limits: '{{hub $data.lokiLimits | toRawJson | toLiteral hub}}'
+        managementState: Managed
+        size: {{hub $data.lokiSize hub}}
