@@ -2,10 +2,10 @@
 apiVersion: argoproj.io/v1beta1
 kind: ArgoCD
 metadata:
-  name: gitops
+  name: openshift-gitops
+  namespace: openshift-gitops
 spec:
   aggregatedClusterRoles: true
-  defaultClusterScopedRoleDisabled: false
   server:
     autoscale:
       enabled: true
