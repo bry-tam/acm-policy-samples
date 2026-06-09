@@ -1,7 +1,7 @@
+---
 #######################################################################
 ## Example managed cluster ConfigMap
 #######################################################################
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -45,10 +45,10 @@ data:
             days: 1
 
 
+---
 #######################################################################
 ## Example usage
 #######################################################################
----
 ## key/value where what is stored in the ConfigMap is a specific value that should be used
 ## In a policy named "infra-nodes"  The replicas on the MachineSet would be set to 3 from the ConfigMap above
 object-templates-raw: |
