@@ -1,0 +1,68 @@
+---
+## Per-cluster ConfigMap for the "machinesets" policy.
+##
+## - ConfigMap name  = managed cluster name (e.g. local-cluster)
+## - ConfigMap key   = policy name (machinesets) — resolved via .PolicyMetadata.name
+## - ConfigMap value = YAML list; each item defines one MachineSet family deployed
+##                     across the specified availability zones.
+##
+## Fields per list item:
+##   baseName           (required) base name appended after the infrastructure ID in the MachineSet name
+##   replicas           (required) number of replicas per availability zone
+##   instanceType       (required) EC2 instance type
+##   volumeSize         (required) root EBS volume size in GiB
+##   role               (required) machine role; sets machine.openshift.io/cluster-api-machine-role
+##                                 and the node-role.kubernetes.io/<role> node label
+##   availabilityZones  (required) AZ suffix letters to deploy into (e.g. a, b, c); the region
+##                                 is read from the cluster Infrastructure CR at managed-side time
+##   labels             (optional) additional node labels merged with the role label
+##   taints             (optional) node taints; each entry requires key and effect, value is optional
+##
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-cluster
+  namespace: bry-tam-policies-prod
+data:
+  machinesets: |
+    - baseName: infra
+      replicas: 1
+      instanceType: c6i.4xlarge
+      volumeSize: 200
+      role: infra
+      availabilityZones:
+        - a
+        - b
+        - c
+      taints:
+        - key: node-role.kubernetes.io/infra
+          effect: NoSchedule
+
+    - baseName: storage
+      replicas: 3
+      instanceType: m6i.4xlarge
+      volumeSize: 500
+      role: storage
+      availabilityZones:
+        - a
+        - b
+        - c
+      labels:
+        cluster.ocs.openshift.io/openshift-storage: ""
+      taints:
+        - key: node.ocs.openshift.io/storage
+          value: "true"
+          effect: NoSchedule
+
+    - baseName: ocp-md
+      replicas: 3
+      instanceType: m6i.4xlarge
+      volumeSize: 500
+      role: ocp-md
+      availabilityZones:
+        - a
+        - b
+        - c
+      labels:
+        appenv: "dev"
+        costcenter: "408"

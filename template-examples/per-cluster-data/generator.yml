@@ -1,0 +1,35 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-per-cluster-machinesets
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - per-cluster-machinesets
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: per-cluster-machinesets
+  severity: low
+
+placementBindingDefaults:
+  name: "per-cluster-machinesets-binding"
+
+policies:
+  - name: machinesets
+    description: "Creates MachineSets across three availability zones per cluster using configuration stored in a hub ConfigMap named after the cluster. The ConfigMap key matches the policy name."
+    manifests:
+      - path: machinesets.yml
+        name: per-cluster-machineset
+
+policySets:
+  - name: per-cluster-machinesets
+    placement:
+      placementName: "ft-per-cluster-machinesets--enabled"
