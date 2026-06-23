@@ -1,0 +1,166 @@
+---
+# Scans every VM in vCenter and reports any VMDK whose capacity in bytes
+# is NOT evenly divisible by 4096.  A disk whose size is not a multiple
+# of 4096 bytes may have alignment or provisioning issues with modern
+# 4K-native (Advanced Format) storage.
+#
+# Prerequisites:
+#   pip install pyVmomi
+#   ansible-galaxy collection install community.vmware
+#
+# Usage:
+#   export VMWARE_HOST=vcenter.example.com
+#   export VMWARE_USER=administrator@vsphere.local
+#   export VMWARE_PASSWORD=secret
+#   ansible-playbook vmware-disk-alignment.yml
+#
+# Override any var on the command line:
+#   ansible-playbook vmware-disk-alignment.yml -e vcenter_validate_certs=true
+- name: Report VMware VMDKs whose size is not divisible by 4096 bytes
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    vcenter_hostname: "{{ lookup('env', 'VMWARE_HOST') }}"
+    vcenter_username: "{{ lookup('env', 'VMWARE_USER') }}"
+    vcenter_password: "{{ lookup('env', 'VMWARE_PASSWORD') }}"
+    vcenter_validate_certs: false
+    misaligned_disks: []
+    csv_rows: []
+
+  tasks:
+    - name: Validate required connection vars are set
+      assert:
+        that:
+          - vcenter_hostname | length > 0
+          - vcenter_username | length > 0
+          - vcenter_password | length > 0
+        fail_msg: "Set VMWARE_HOST, VMWARE_USER, and VMWARE_PASSWORD environment variables."
+
+    # ------------------------------------------------------------------ #
+    # Step 1 — enumerate every VM visible to the vCenter user             #
+    # ------------------------------------------------------------------ #
+    - name: Gather inventory of all VMs
+      community.vmware.vmware_vm_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: "{{ vcenter_validate_certs }}"
+      register: all_vms
+      no_log: true
+
+    - name: Show VM count
+      debug:
+        msg: "Found {{ all_vms.virtual_machines | length }} VMs; gathering disk info..."
+
+    # ------------------------------------------------------------------ #
+    # Step 2 — fetch detailed disk info for every VM                      #
+    #                                                                      #
+    # vmware_guest_disk_info returns guest_disk_info as a dict keyed by  #
+    # unit number:                                                         #
+    #   { "0": { label, backing_filename, capacity_in_kb, ... }, ... }   #
+    # ------------------------------------------------------------------ #
+    - name: Gather disk info for each VM
+      community.vmware.vmware_guest_disk_info:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: "{{ vcenter_validate_certs }}"
+        datacenter: "{{ item.datacenter }}"
+        name: "{{ item.guest_name }}"
+      register: disk_results
+      loop: "{{ all_vms.virtual_machines }}"
+      loop_control:
+        label: "{{ item.guest_name }}"
+      failed_when: false
+      no_log: true
+
+    # ------------------------------------------------------------------ #
+    # Step 3 — collect every disk where capacity_in_kb % 4 != 0           #
+    #                                                                      #
+    # Relationship between KB and 4096 bytes:                             #
+    #   capacity_in_bytes = capacity_in_kb * 1024                         #
+    #   capacity_in_bytes % 4096 == 0  ⟺  capacity_in_kb % 4 == 0       #
+    #                                                                      #
+    # dict2items turns { "0": {...}, "1": {...} } into a list so we can  #
+    # use rejectattr to drop aligned disks, then annotate each entry      #
+    # with its VM name.                                                    #
+    # ------------------------------------------------------------------ #
+    - name: Collect disks not divisible by 4096 bytes
+      vars:
+        vm_misaligned: >-
+          {{
+            item.guest_disk_info | default({}) | dict2items
+            | rejectattr('value.capacity_in_kb', 'divisibleby', 4)
+            | map('combine', {'vm_name': item.item.guest_name})
+            | list
+          }}
+      set_fact:
+        misaligned_disks: "{{ misaligned_disks + vm_misaligned }}"
+      loop: "{{ disk_results.results | rejectattr('failed', 'equalto', true) | list }}"
+      loop_control:
+        label: "{{ item.item.guest_name }}"
+
+    # ------------------------------------------------------------------ #
+    # Step 4 — report results                                              #
+    # ------------------------------------------------------------------ #
+    - name: "PASS — all disks are evenly divisible by 4096 bytes"
+      debug:
+        msg: >-
+          Examined {{ disk_results.results | length }} VMs.
+          All VMDKs have capacity evenly divisible by 4096 bytes.
+      when: misaligned_disks | length == 0
+
+    - name: "FAIL — misaligned VMDK found"
+      debug:
+        msg: |
+          VM:     {{ item.vm_name }}
+          Disk:   {{ item.value.label }}
+          VMDK:   {{ item.value.backing_filename }}
+          Size:   {{ item.value.capacity_in_kb | int }} KB
+                  ({{ (item.value.capacity_in_kb | int / 1048576) | round(3) }} GB)
+          Offset: {{ (item.value.capacity_in_kb | int % 4) * 1024 }} bytes past
+                  the last 4096-byte boundary
+      loop: "{{ misaligned_disks }}"
+      loop_control:
+        label: "{{ item.vm_name }} / {{ item.value.label }}"
+      when: misaligned_disks | length > 0
+
+    - name: Summary
+      debug:
+        msg: >-
+          SUMMARY: {{ misaligned_disks | length }} VMDK(s) across
+          {{ misaligned_disks | map(attribute='vm_name') | unique | list | length }}
+          VM(s) have capacity not evenly divisible by 4096 bytes.
+      when: misaligned_disks | length > 0
+
+    # ------------------------------------------------------------------ #
+    # Step 5 — write CSV report                                            #
+    # ------------------------------------------------------------------ #
+    - name: Build CSV rows
+      set_fact:
+        csv_rows: >-
+          {{
+            csv_rows + [
+              item.vm_name ~ ',' ~
+              item.value.label ~ ',' ~
+              '"' ~ item.value.backing_filename ~ '",' ~
+              item.value.capacity_in_kb ~ ',' ~
+              (item.value.capacity_in_kb | int / 1048576) | round(3) ~ ',' ~
+              (item.value.capacity_in_kb | int % 4) * 1024
+            ]
+          }}
+      loop: "{{ misaligned_disks }}"
+      loop_control:
+        label: "{{ item.vm_name }}/{{ item.value.label }}"
+      when: misaligned_disks | length > 0
+
+    - name: Write CSV report
+      copy:
+        content: >-
+          {{
+            'vm_name,disk_label,vmdk_path,capacity_kb,capacity_gb,offset_bytes\n' +
+            csv_rows | join('\n') + '\n'
+          }}
+        dest: "{{ playbook_dir }}/vmware-disk-alignment-report.csv"
+      when: misaligned_disks | length > 0
