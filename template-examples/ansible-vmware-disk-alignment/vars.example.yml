@@ -1,0 +1,31 @@
+---
+# Copy this file to vars.yml (or another local name) and fill in your values.
+# Do not commit a vars file that contains real credentials.
+#
+# Run the playbook with:
+#   ansible-playbook vmware-disk-alignment.yml -e @vars.yml
+
+# vCenter hostname or IP address (required)
+vcenter_hostname: vcenter.example.com
+
+# vCenter login — use a read-only account when possible (required)
+vcenter_username: readonly@vsphere.local
+
+# vCenter password (required)
+# Tip: pass at runtime instead of storing in the file:
+#   ansible-playbook vmware-disk-alignment.yml -e @vars.yml -e vcenter_password=secret
+vcenter_password: changeme
+
+# Validate the vCenter TLS certificate.
+# Defaults to false in the playbook; set to true in production.
+vcenter_validate_certs: false
+
+# Optional — limit the scan to VMs under this vCenter inventory folder.
+# Path is relative to the datacenter, e.g. "/Datacenter/vm/Production/Apps".
+# Omit or comment out to scan all VMs visible to the vCenter user.
+# vcenter_folder: "/Datacenter/vm/Production"
+
+# Optional — limit the scan to a single VM by guest name.
+# Omit or comment out to scan every VM returned by the inventory step above.
+# vm_name: "my-app-vm"
+
