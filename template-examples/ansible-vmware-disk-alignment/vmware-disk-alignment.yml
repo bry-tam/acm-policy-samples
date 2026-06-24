@@ -164,4 +164,4 @@
         dest: "{{ playbook_dir }}/vmware-disk-alignment-report.csv"
         mode: "0644"
       when: misaligned_disks | length > 0
-
+...
