@@ -9,13 +9,8 @@
 #   ansible-galaxy collection install community.vmware
 #
 # Usage:
-#   export VMWARE_HOST=vcenter.example.com
-#   export VMWARE_USER=administrator@vsphere.local
-#   export VMWARE_PASSWORD=secret
-#   ansible-playbook vmware-disk-alignment.yml
-#
-# Override any var on the command line:
-#   ansible-playbook vmware-disk-alignment.yml -e vcenter_validate_certs=true
+#   cp vars.example.yml vars.yml   # edit with your connection details
+#   ansible-playbook vmware-disk-alignment.yml -e @vars.yml
 - name: Report VMware VMDKs whose size is not divisible by 4096 bytes
   hosts: localhost
   gather_facts: false
@@ -30,12 +25,14 @@
 
   tasks:
     - name: Validate required connection vars are set
-      assert:
+      ansible.builtin.assert:
         that:
           - vcenter_hostname | length > 0
           - vcenter_username | length > 0
           - vcenter_password | length > 0
-        fail_msg: "Set VMWARE_HOST, VMWARE_USER, and VMWARE_PASSWORD environment variables."
+        fail_msg: >-
+          Set vcenter_hostname, vcenter_username, and vcenter_password
+          (via -e @vars.yml or environment variables VMWARE_HOST, VMWARE_USER, VMWARE_PASSWORD).
 
     # ------------------------------------------------------------------ #
     # Step 1 — enumerate every VM visible to the vCenter user             #
@@ -46,11 +43,13 @@
         username: "{{ vcenter_username }}"
         password: "{{ vcenter_password }}"
         validate_certs: "{{ vcenter_validate_certs }}"
+        folder: "{{ vcenter_folder | default(omit) }}"
+        vm_name: "{{ vm_name | default(omit) }}"
       register: all_vms
       no_log: true
 
     - name: Show VM count
-      debug:
+      ansible.builtin.debug:
         msg: "Found {{ all_vms.virtual_machines | length }} VMs; gathering disk info..."
 
     # ------------------------------------------------------------------ #
@@ -95,7 +94,7 @@
             | map('combine', {'vm_name': item.item.guest_name})
             | list
           }}
-      set_fact:
+      ansible.builtin.set_fact:
         misaligned_disks: "{{ misaligned_disks + vm_misaligned }}"
       loop: "{{ disk_results.results | rejectattr('failed', 'equalto', true) | list }}"
       loop_control:
@@ -105,14 +104,14 @@
     # Step 4 — report results                                              #
     # ------------------------------------------------------------------ #
     - name: "PASS — all disks are evenly divisible by 4096 bytes"
-      debug:
+      ansible.builtin.debug:
         msg: >-
           Examined {{ disk_results.results | length }} VMs.
           All VMDKs have capacity evenly divisible by 4096 bytes.
       when: misaligned_disks | length == 0
 
     - name: "FAIL — misaligned VMDK found"
-      debug:
+      ansible.builtin.debug:
         msg: |
           VM:     {{ item.vm_name }}
           Disk:   {{ item.value.label }}
@@ -127,7 +126,7 @@
       when: misaligned_disks | length > 0
 
     - name: Summary
-      debug:
+      ansible.builtin.debug:
         msg: >-
           SUMMARY: {{ misaligned_disks | length }} VMDK(s) across
           {{ misaligned_disks | map(attribute='vm_name') | unique | list | length }}
@@ -138,7 +137,7 @@
     # Step 5 — write CSV report                                            #
     # ------------------------------------------------------------------ #
     - name: Build CSV rows
-      set_fact:
+      ansible.builtin.set_fact:
         csv_rows: >-
           {{
             csv_rows + [
@@ -156,11 +155,13 @@
       when: misaligned_disks | length > 0
 
     - name: Write CSV report
-      copy:
+      ansible.builtin.copy:
         content: >-
           {{
             'vm_name,disk_label,vmdk_path,capacity_kb,capacity_gb,offset_bytes\n' +
             csv_rows | join('\n') + '\n'
           }}
         dest: "{{ playbook_dir }}/vmware-disk-alignment-report.csv"
+        mode: "0644"
       when: misaligned_disks | length > 0
+...

@@ -4,7 +4,7 @@
 Ansible playbook that scans every VM in a vCenter inventory, inspects each VMDK's provisioned capacity, and reports any disk whose size in bytes is not evenly divisible by 4096. Disks that are not aligned to a 4096-byte boundary can cause degraded performance or unexpected behavior on modern 4K-native (Advanced Format) storage.
 
 ## Dependencies
-- Python: `pip install pyVmomi`
+- Python: `pip install -r requirements.txt`
 - Ansible collection: `ansible-galaxy collection install community.vmware`
 
 ## Details
@@ -13,8 +13,9 @@ Documentation: https://docs.ansible.com/ansible/latest/collections/community/vmw
 
 Notes:
   - Run against `localhost`; the vCenter API is called directly from the control node via pyVmomi — no SSH to managed hosts required
-  - Connection credentials are read from environment variables (`VMWARE_HOST`, `VMWARE_USER`, `VMWARE_PASSWORD`) or can be overridden with `-e`
+  - Connection settings are supplied via a vars file (see [Usage](#usage)); environment variables (`VMWARE_HOST`, `VMWARE_USER`, `VMWARE_PASSWORD`) are used as fallbacks when vars are not passed on the command line
   - `vcenter_validate_certs` defaults to `false`; set to `true` in production
+  - Optionally scope the scan with `vcenter_folder` (inventory folder path) and/or `vm_name` (single guest name); omit both to scan all VMs visible to the vCenter user
   - VMs that are temporarily inaccessible (e.g., powered off and locked) are skipped via `failed_when: false` and do not abort the run
   - A CSV report (`vmware-disk-alignment-report.csv`) is written to the playbook directory when misaligned disks are found
 
@@ -47,23 +48,43 @@ This keeps only disks where `capacity_in_kb % 4 != 0`, i.e., those not evenly di
 
 ### Usage
 
-```bash
-export VMWARE_HOST=vcenter.example.com
-export VMWARE_USER=administrator@vsphere.local
-export VMWARE_PASSWORD=secret
-
-ansible-playbook vmware-disk-alignment.yml
-```
-
-Override connection vars inline:
+1. Install Python and Ansible dependencies:
 
 ```bash
-ansible-playbook vmware-disk-alignment.yml \
-  -e vcenter_hostname=vcenter.example.com \
-  -e vcenter_username=readonly@vsphere.local \
-  -e vcenter_password=secret \
-  -e vcenter_validate_certs=true
+pip install -r requirements.txt
+ansible-galaxy collection install community.vmware
 ```
+
+2. Copy the example vars file and edit it with your vCenter connection details:
+
+```bash
+cp vars.example.yml vars.yml
+# edit vars.yml — set vcenter_hostname, vcenter_username, and vcenter_password
+# optionally set vcenter_folder and/or vm_name to limit the scan scope
+```
+
+3. Run the playbook, passing the vars file with `-e @`:
+
+```bash
+ansible-playbook vmware-disk-alignment.yml -e @vars.yml
+```
+
+Keep `vars.yml` local and out of version control if it contains real credentials. To avoid storing the password in the file, leave `vcenter_password` unset in `vars.yml` and pass it at runtime:
+
+```bash
+ansible-playbook vmware-disk-alignment.yml -e @vars.yml -e vcenter_password=secret
+```
+
+To scan a subset of VMs, uncomment and set the optional scope vars in `vars.yml`:
+
+```yaml
+vcenter_folder: "/Datacenter/vm/Production"
+vm_name: "my-app-vm"
+```
+
+`vcenter_folder` limits inventory to VMs under that folder path; `vm_name` further restricts to one guest. Either can be used alone. Omit both to scan every VM the vCenter account can see.
+
+Alternatively, set `VMWARE_HOST`, `VMWARE_USER`, and `VMWARE_PASSWORD` in the environment and run without a vars file — the playbook reads those when connection vars are not supplied via `-e`.
 
 ### Example output
 
@@ -78,3 +99,4 @@ ok: [localhost] => {
     "msg": "SUMMARY: 1 VMDK(s) across 1 VM(s) have capacity not evenly divisible by 4096 bytes."
 }
 ```
+
