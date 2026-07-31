@@ -6,3 +6,4 @@ metadata:
   namespace: openshift-mtv
 spec:
   olm_managed: true
+  feature_copy_offload: true
