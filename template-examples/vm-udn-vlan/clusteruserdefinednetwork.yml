@@ -3,6 +3,8 @@ apiVersion: k8s.ovn.org/v1
 kind: ClusterUserDefinedNetwork
 metadata:
   name: example-vlan-200
+  annotations:
+    nodenetworkname: br-vm-data
 spec:
   namespaceSelector:
     matchLabels:
@@ -13,7 +15,7 @@ spec:
       ipam:
         mode: Disabled
       mtu: 1500
-      physicalNetworkName: localnet-2
+      physicalNetworkName: localnet-vm-data-vlan200
       role: Secondary
       vlan:
         mode: Access
