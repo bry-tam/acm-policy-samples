@@ -1,0 +1,41 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-blue-green-mcp
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - blue-green-mcp
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: blue-green-mcp
+  severity: low
+
+placementBindingDefaults:
+  name: "blue-green-mcp-binding"
+
+policies:
+  - name: blue-mcp
+    description: "Creates the blue MachineConfigPool inheriting all worker MachineConfigs and targeting nodes labeled current-management-pool=blue."
+    manifests:
+      - path: blue-mcp.yml
+        name: blue-machineconfigpool
+
+  - name: green-mcp
+    description: "Creates the green MachineConfigPool inheriting all worker MachineConfigs and targeting nodes labeled current-management-pool=green."
+    manifests:
+      - path: green-mcp.yml
+        name: green-machineconfigpool
+
+policySets:
+  - name: blue-green-mcp
+    placement:
+      placementName: "ft-blue-green-mcp--enabled"
