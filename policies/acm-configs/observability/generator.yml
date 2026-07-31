@@ -54,13 +54,6 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
-      - path: uiplugin.yml
-        name: acm-alert-ui
-        extraDependencies:
-          - name: acm-observ-multiclusterobservability
-            kind: ConfigurationPolicy
-            compliance: "Compliant"
-
       - path: managedcluster.yml
         name: annotate-hub-info-managedcluster
         objectSelector:

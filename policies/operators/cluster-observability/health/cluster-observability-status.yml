@@ -5,7 +5,7 @@ object-templates-raw: |
 
   ## Create a CompilianceType objectDefinition for each deployment
   {{- range $plugin := $pluginList }}
-    {{- $dep := (lookup "apps/v1" "Deployment" "openshift-clusterobservability-operator" $plugin.metadata.name) }}
+    {{- $dep := (lookup "apps/v1" "Deployment" "openshift-cluster-observability-operator" $plugin.metadata.name) }}
   - complianceType: musthave
     objectDefinition:
       kind: Deployment

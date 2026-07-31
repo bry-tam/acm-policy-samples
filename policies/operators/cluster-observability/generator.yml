@@ -30,6 +30,10 @@ policies:
     description: "Installs the Cluster Observability Operator"
     remediationAction: enforce
     manifests:
+      - path: namespace-conflict.yml
+        name: coo-namespace-clanup
+        complianceType: mustnothave
+
       - path: namespace.yml
         name: coo-namespace
 

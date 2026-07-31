@@ -1,13 +1,30 @@
 ---
 object-templates-raw: |
+  {{/* ##  Gather all AddOnDeploymentConfig  to reference later ## */}}
+  {{- $aodc := dict }}
+  {{- range $ao := (lookup "addon.open-cluster-management.io/v1beta1" "AddOnDeploymentConfig" "" "").items }}
+    {{- $_ := set $aodc (printf "%s-%s" $ao.metadata.namespace $ao.metadata.name) $ao }}
+  {{- end }}
+
+  {{/* ##  create the yaml to represent the nodeselector for the AddOnDeploymentConfig as a reusable bit ## */}}
+  {{- $nodeSelector := `
+    agentInstallNamespace: open-cluster-management-agent-addon
+    nodePlacement:
+      nodeSelector:
+        node-role.kubernetes.io/%[1]s: ""
+      tolerations:
+      - key: node-role.kubernetes.io/%[1]s
+        operator: Exists
+  `}}
+
   {{/* ##  Gather all ManagedClusters using the ManagedClusterInfo object since this has node info ## */}}
   {{- range $mc := (lookup "internal.open-cluster-management.io/v1beta1" "ManagedClusterInfo" "" "").items }}
 
     {{/* ##  check if has infra nodes   ## */}}
-    {{- $hasInfra := false }}
+    {{- $roleLabel := "worker" }}
     {{- range $nd := $mc.status.nodeList }}
       {{- if and (eq "" (dig "node-role.kubernetes.io/infra" "notinfra" $nd.labels)) (ne "" (dig "node-role.kubernetes.io/storage" "notstorage" $nd.labels)) }}
-        {{- $hasInfra = true }}
+        {{- $roleLabel = "infra" }}
         {{- break }}
       {{- end }}
     {{- end }}
@@ -18,25 +35,52 @@ object-templates-raw: |
       kind: ManagedCluster
       metadata:
         annotations:
-          open-cluster-management/nodeSelector: '{"node-role.kubernetes.io/{{ $hasInfra | ternary "infra" "worker" }}":""}'
-          open-cluster-management/tolerations: '[{"key":"node-role.kubernetes.io/infra","operator":"Exists"}]'
+          open-cluster-management/nodeSelector: '{"node-role.kubernetes.io/{{ $roleLabel }}":""}'
+          open-cluster-management/tolerations: '[{"key":"node-role.kubernetes.io/{{ $roleLabel }}","operator":"Exists"}]'
         name: {{ $mc.metadata.name }}
 
-    {{/* ##  Gather all ClusterManagementAddOn ## */}}
+    {{/* ##  Gather all ManagedClusterAddOn ## */}}
     {{- range $mca := (lookup "addon.open-cluster-management.io/v1alpha1" "ManagedClusterAddOn" $mc.metadata.name "").items }}
+      {{- $aodcSpec := ((printf $nodeSelector $roleLabel) | fromYaml) }}
+      {{- $aodcName := (dig "annotations" "org_addondeploymentconfig_name" "" $mca.metadata) }}
+
+      {{/* ##  Check if there is an existing AddOnDeploymentConfig created for this MCAO ## */}}
+      {{- range $configRef := $mca.status.configReferences }}
+        {{- if eq $configRef.resource "addondeploymentconfigs" }}
+          {{- if not $aodcName }}
+            {{- $aodcName = (printf "%s-%s" $configRef.desiredConfig.namespace $configRef.desiredConfig.name) }}
+          {{- end }}
+          {{- $aodcSpec = merge $aodcSpec (get $aodc $aodcName).spec }}
+          {{- break }}
+        {{- end }}
+      {{- end }}
+
   - complianceType: mustonlyhave
+    metadataComplianceType: musthave
     objectDefinition:
       apiVersion: addon.open-cluster-management.io/v1alpha1
+      kind: AddOnDeploymentConfig
+      metadata:
+        name: 'override-{{ $mca.metadata.name }}'
+        namespace: {{ $mc.metadata.name }}
+      spec: '{{ $aodcSpec | toRawJson | toLiteral }}'
+
+  - complianceType: mustonlyhave
+    metadataComplianceType: musthave
+    objectDefinition:
+      apiVersion: addon.open-cluster-management.io/v1beta1
       kind: ManagedClusterAddOn
       metadata:
         name: {{ $mca.metadata.name }}
         namespace: {{ $mc.metadata.name }}
+        annotations:
+          org_addondeploymentconfig_name: '{{ $aodcName }}'
       spec:
         configs:
           - group: addon.open-cluster-management.io
-            name: {{ ($hasInfra | ternary "infra" "worker") }}-deploy-config
-            namespace: open-cluster-management-hub
+            name: 'override-{{ $mca.metadata.name }}'
+            namespace: {{ $mc.metadata.name }}
             resource: addondeploymentconfigs
-        installNamespace: {{ $mca.spec.installNamespace }}
+
     {{- end }}
   {{- end }}
