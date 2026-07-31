@@ -37,6 +37,10 @@ policies:
       - path: user-workload-monitoring-config-mcoa.yml
         name: user-workload-monitoring-config-mcoa
         remediationAction: Enforce
+      ## fix ACM-35500 missing label otherwise not all metrics get scraped by the Prometheus Agent
+      - path: addon-namespace-label.yml
+        name: addon-namespace-label
+        remediationAction: Enforce
 
       ## Non-MCOA variant — swap in when MCOA is not in use:
       # - path: cluster-monitoring-config.yml

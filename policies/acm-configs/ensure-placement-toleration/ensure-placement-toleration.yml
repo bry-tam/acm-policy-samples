@@ -1,13 +1,10 @@
 ---
 object-templates-raw: |
   {{/* ##  Gather all Placements from the hub cluster ## */}}
-  {{- $unreachableToleration := "cluster.open-cluster-management.io/unreachable" }}
-  {{- $unavailableToleration := "cluster.open-cluster-management.io/unavailable" }}
+  {{- $stdTolerations := dict "unreachable" "cluster.open-cluster-management.io/unreachable"
+                              "unavailable" "cluster.open-cluster-management.io/unavailable" }}
 
   {{- range $pt := (lookup "cluster.open-cluster-management.io/v1beta1" "Placement" "" "").items }}
-    {{- $hasUnreachable := false }}
-    {{- $hasUnavailable := false }}
-
   - complianceType: musthave
     objectDefinition:
       apiVersion: cluster.open-cluster-management.io/v1beta1
@@ -18,29 +15,19 @@ object-templates-raw: |
       spec:
         tolerations:
     {{- range $t := $pt.spec.tolerations }}
+          - {{ $t | toRawJson | toLiteral }}
+
       {{/* ##  check if the toleration is unavailable or unreachable ## */}}
-      {{- if eq $t.key $unreachableToleration }}
-        {{- $hasUnreachable = true }}
-      {{- else if eq $t.key $unavailableToleration }}
-        {{- $hasUnavailable = true }}
-      {{- end }}
-          - key: {{ $t.key }}
-            operator: {{ $t.operator }}
-      {{- if not (empty $t.value) }}
-            value: {{ $t.value }}
-      {{- end }}
-      {{- if not (empty $t.tolerationSeconds) }}
-            tolerationSeconds: {{ $t.tolerationSeconds }}
+      {{- if eq $t.key $stdTolerations.unreachable }}
+        {{- $_ := unset $stdTolerations "unreachable" }}
+      {{- else if eq $t.key $stdTolerations.unavailable }}
+        {{- $_ := unset $stdTolerations "unavailable" }}
       {{- end }}
     {{- end }}
 
-    {{- if not $hasUnreachable }}
-          - key: {{ $unreachableToleration }}
+    {{- range $t := $stdTolerations }}
+          - key: {{ $t }}
             operator: Exists
     {{- end }}
 
-    {{- if not $hasUnavailable  }}
-          - key: {{ $unavailableToleration }}
-            operator: Exists
-    {{- end }}
   {{- end }}

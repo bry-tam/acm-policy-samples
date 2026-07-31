@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    ## the true value must come after the skipObject test otherwise ACM treats it as a bool which isn't an allowed label value
+    openshift.io/cluster-monitoring: '{{ (empty (lookup "v1" "Namespace" "" "open-cluster-management-agent-addon")) | skipObject }}true'
+  name: open-cluster-management-agent-addon

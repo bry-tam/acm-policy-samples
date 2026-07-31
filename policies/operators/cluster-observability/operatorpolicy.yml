@@ -20,6 +20,6 @@ spec:
   subscription:
     channel: stable
     name: cluster-observability-operator
-    namespace: openshift-clusterobservability-operator
+    namespace: openshift-cluster-observability-operator
     source: redhat-operators
     sourceNamespace: openshift-marketplace
