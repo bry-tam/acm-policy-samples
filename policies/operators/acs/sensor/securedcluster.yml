@@ -8,6 +8,11 @@ spec:
   auditLogs:
     collection: Auto
   admissionControl:
+    nodeSelector:
+      node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+    tolerations:
+    - operator: Exists
+      key: node-role.kubernetes.io/infra
     listenOnUpdates: true
     bypass: BreakGlassAnnotation
     contactImageScanners: DoNotScanInline
@@ -36,8 +41,25 @@ spec:
   scannerV4:
     scannerComponent: AutoSense
     indexer:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
       scaling:
         autoScaling: Enabled
         maxReplicas: 5
         minReplicas: 1
         replicas: 3
+    matcher:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
+  sensor:
+    nodeSelector:
+      node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+    tolerations:
+    - operator: Exists
+      key: node-role.kubernetes.io/infra

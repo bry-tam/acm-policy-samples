@@ -1,0 +1,66 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-acs-sensor
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  evaluationInterval:
+    compliant: 30s
+    noncompliant: 10s
+  policySets:
+    - acs-sensor
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: acs-sensor
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "acs-sensor-binding"
+
+policies:
+  - name: acs-sensor
+    description: "Propagates init-bundle secrets and creates SecuredCluster on every acs-labeled cluster"
+    remediationAction: enforce
+    hubTemplateOptions:
+      serviceAccountName: acs-hub-serviceaccount
+    dependencies:
+      - name: acs-central-init-bundle-cert
+        compliance: "Compliant"
+    manifests:
+      - path: propagate-admission-control-tls.yml
+        name: propagate-admission-control-tls
+
+      - path: propagate-collector-tls.yml
+        name: propagate-collector-tls
+
+      - path: propagate-sensor-tls.yml
+        name: propagate-sensor-tls
+
+      - path: securedcluster.yml
+        name: stackrox-secured-cluster-services
+        extraDependencies:
+          - name: propagate-admission-control-tls
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: propagate-collector-tls
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: propagate-sensor-tls
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: acs-sensor
+    placement:
+      placementName: "ft-acs--exists"

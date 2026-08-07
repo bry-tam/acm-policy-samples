@@ -1,0 +1,133 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-acs-central
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  evaluationInterval:
+    compliant: 30s
+    noncompliant: 10s
+  policySets:
+    - acs-central
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: acs-central
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "acs-central-binding"
+
+policies:
+  - name: acs-central
+    description: "Configures the Central component of ACS along with reporting health status of Central"
+    remediationAction: enforce
+    dependencies:
+      - name: acs-operator
+        compliance: "Compliant"
+    manifests:
+      - path: central.yml
+        name: stackrox-central-services
+
+      - path: consolelink.yml
+        name: acs-consolelink
+
+      - path: health/central-status.yml
+        name: acs-central-status
+        remediationAction: InformOnly
+        severity: high
+        extraDependencies:
+          - name: stackrox-central-services
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+  - name: acs-central-init-bundle
+    description: "Configures Job to generate init-bundle"
+    remediationAction: enforce
+    dependencies:
+      - name: acs-central
+        compliance: "Compliant"
+    manifests:
+      - path: init-bundle/serviceaccount.yml
+        name: create-cluster-init-serviceaccount
+
+      - path: init-bundle/role.yml
+        name: create-cluster-init-role
+
+      - path: init-bundle/rolebinding.yml
+        name: create-cluster-init-rolebinding
+
+      - path: init-bundle/job.yml
+        name: create-cluster-init-job
+        extraDependencies:
+          - name: create-cluster-init-serviceaccount
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: create-cluster-init-role
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+          - name: create-cluster-init-rolebinding
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+
+  - name: acs-central-init-bundle-cert
+    description: "Monitors the init-bundle certificate for expiration"
+    remediationAction: enforce
+    dependencies:
+      - name: acs-central-init-bundle
+        compliance: "Compliant"
+    manifests:
+      - path: health/init-bundle/sensor-tls-cert.yml
+        name: acs-bundle-certificates
+
+      - path: init-bundle/init-bundle-tls-secret.yml
+        remediationAction: InformOnly
+        name: acs-cert-sensor-tls
+        objectSelector:
+          matchExpressions:
+            - key: certificate_key_name
+              operator: In
+              values:
+                - sensor-cert.pem
+
+
+  - name: acs-central-expired-certs
+    description: "When init-bundle is expired policy removes expired secrets and resets init-bundle job to create a new init-bundle."
+    remediationAction: enforce
+    complianceType: mustnothave
+    dependencies:
+      - name: acs-central-init-bundle-cert
+        compliance: "NonCompliant"
+    ## ignorePending prevents the NotCompliant dependency from causing this policy to always report as pending
+    ignorePending: true
+    manifests:
+      - path: init-bundle/init-bundle-tls-secret.yml
+        name: expired-init-bundle-secrets
+        objectSelector:
+          matchExpressions:
+            - key: certificate_key_name
+              operator: Exists
+
+      - path: init-bundle/job.yml
+        name: expired-init-bundle-job
+        extraDependencies:
+          - name: expired-init-bundle-secrets
+            kind: ConfigurationPolicy
+            compliance: "Compliant"
+
+policySets:
+  - name: acs-central
+    placement:
+      placementName: "ft-acs--hub"

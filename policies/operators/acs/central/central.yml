@@ -9,6 +9,11 @@ spec:
     openshift:
       enabled: true
   central:
+    nodeSelector:
+      node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+    tolerations:
+    - operator: Exists
+      key: node-role.kubernetes.io/infra
     exposure:
       loadBalancer:
         enabled: false
@@ -20,6 +25,11 @@ spec:
     telemetry:
       enabled: true
     db:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
       isEnabled: Default
       persistence:
         persistentVolumeClaim:
@@ -27,26 +37,59 @@ spec:
     persistence:
       persistentVolumeClaim:
         claimName: stackrox-db
+  configAsCode:
+    nodeSelector:
+      node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+    tolerations:
+    - operator: Exists
+      key: node-role.kubernetes.io/infra
   egress:
     connectivityPolicy: Online
   scanner:
     analyzer:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
       scaling:
         autoScaling: Enabled
         maxReplicas: 5
         minReplicas: 2
         replicas: 3
+    db:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
   scannerV4:
     scannerComponent: Enabled
     matcher:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
       scaling:
         autoScaling: Enabled
         maxReplicas: 5
         minReplicas: 1
         replicas: 3
     indexer:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
       scaling:
         autoScaling: Enabled
         maxReplicas: 5
         minReplicas: 1
         replicas: 3
+    db:
+      nodeSelector:
+        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
+      tolerations:
+      - operator: Exists
+        key: node-role.kubernetes.io/infra
