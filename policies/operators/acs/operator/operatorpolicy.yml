@@ -2,7 +2,7 @@
 apiVersion: policy.open-cluster-management.io/v1beta1
 kind: OperatorPolicy
 metadata:
-  name: advanced-cluster-secutity-operator-install
+  name: advanced-cluster-security-operator-install
 spec:
   complianceType: musthave
   complianceConfig:

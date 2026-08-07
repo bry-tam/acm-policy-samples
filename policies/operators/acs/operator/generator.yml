@@ -1,0 +1,48 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-generator-acs-operator
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  evaluationInterval:
+    compliant: 30s
+    noncompliant: 10s
+  policySets:
+    - acs-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: acs-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "acs-operator-binding"
+
+policies:
+  - name: acs-operator
+    description: "Installs and manages the ACS Operator on any cluster labeled acs"
+    remediationAction: enforce
+    manifests:
+      - path: ns-rhacs-operator.yml
+        name: acs-operator-namespace
+
+      - path: ns-stackrox.yml
+        name: stackrox-namespace
+
+      - path: operatorpolicy.yml
+        name: advanced-cluster-security-operator-install
+
+policySets:
+  - name: acs-operator
+    placement:
+      placementName: "ft-acs--exists"
