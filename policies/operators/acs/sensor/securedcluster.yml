@@ -51,12 +51,6 @@ spec:
         maxReplicas: 5
         minReplicas: 1
         replicas: 3
-    matcher:
-      nodeSelector:
-        node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
-      tolerations:
-      - operator: Exists
-        key: node-role.kubernetes.io/infra
   sensor:
     nodeSelector:
       node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
