@@ -1,0 +1,37 @@
+---
+object-templates-raw: |
+  {{- $allNADs := (lookup "k8s.cni.cncf.io/v1" "NetworkAttachmentDefinition" "" "" "k8s.ovn.org/user-defined-network").items }}
+  {{- range $cudn := (lookup "k8s.ovn.org/v1" "ClusterUserDefinedNetwork" "" "" "cnv/multiple-nad").items }}
+    {{- $copyCount := (index $cudn.metadata.labels "cnv/multiple-nad") | toInt }}
+    {{- if lt $copyCount 1 }}{{- continue }}{{- end }}
+
+    {{- range $nad := $allNADs }}
+      {{- $cudn_owners := list }}
+      {{- range $ref := $nad.metadata.ownerReferences }}
+        {{- if eq $ref.kind "ClusterUserDefinedNetwork" }}
+          {{- $cudn_owners = append $cudn_owners $ref.name }}
+        {{- end }}
+      {{- end }}
+      {{- if not (has $cudn.metadata.name $cudn_owners) }}{{- continue }}{{- end }}
+      {{- $config := $nad.spec.config | fromJson }}
+
+      {{- range $i := until $copyCount }}
+        {{- $idx := add1 $i }}
+        {{- $newName := printf "%s-%d" $nad.metadata.name $idx }}
+        {{- $_ := set $config "name" $newName }}
+        {{- $_ := set $config "netAttachDefName" (printf "%s/%s" $nad.metadata.namespace $newName) }}
+
+  - complianceType: musthave
+    objectDefinition:
+      apiVersion: k8s.cni.cncf.io/v1
+      kind: NetworkAttachmentDefinition
+      metadata:
+        name: '{{ $newName }}'
+        namespace: '{{ $nad.metadata.namespace }}'
+      labels:
+        k8s.ovn.org/user-defined-network: ''
+      spec:
+        config: '{{ $config | toRawJson }}'
+      {{- end }}
+    {{- end }}
+  {{- end }}

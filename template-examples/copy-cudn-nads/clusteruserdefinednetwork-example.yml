@@ -1,0 +1,23 @@
+---
+apiVersion: k8s.ovn.org/v1
+kind: ClusterUserDefinedNetwork
+metadata:
+  name: vm-data-vlan200
+  labels:
+    cnv/multiple-nad: "3"
+spec:
+  namespaceSelector:
+    matchLabels:
+      cudn-vmdata-vlan: vm-data-vlan200
+  network:
+    topology: Localnet
+    localnet:
+      ipam:
+        mode: Disabled
+      mtu: 1500
+      physicalNetworkName: localnet-vm-data-vlan200
+      role: Secondary
+      vlan:
+        mode: Access
+        access:
+          id: 200

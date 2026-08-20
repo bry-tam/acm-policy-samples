@@ -1,0 +1,34 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-copy-cudn-nads
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - copy-cudn-nads
+  policyLabels:
+    policy_gen.name: copy-cudn-nads
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+placementBindingDefaults:
+  name: "copy-cudn-nads-binding"
+
+policies:
+  - name: copy-cudn-nads
+    description: "For each ClusterUserDefinedNetwork labeled cnv/multiple-nad, creates N copies of the corresponding NetworkAttachmentDefinition in each opted-in namespace, adjusting config name and netAttachDefName for each copy."
+    manifests:
+      - path: copy-cudn-nads.yml
+        name: copy-cudn-nads-config
+
+policySets:
+  - name: copy-cudn-nads
+    placement:
+      placementName: "env-bound-hub-placement"
