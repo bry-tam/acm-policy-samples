@@ -10,7 +10,7 @@ spec:
     additionalNamespaces:
       - openshift-console
       - openshift-monitoring
-  deploymentModel: Service
+  deploymentModel: Direct
   agent:
     type: eBPF
     ebpf:
