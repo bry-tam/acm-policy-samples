@@ -22,7 +22,7 @@ spec:
     targetNamespaces:
       - openshift-mtv
   subscription:
-    channel: release-v2.11
+    channel: release-v2.12
     name: mtv-operator
     namespace: openshift-mtv
     source: redhat-operators
