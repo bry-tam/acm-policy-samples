@@ -1,6 +1,7 @@
 ---
 object-templates-raw: |
   - complianceType: musthave
+    recordDiff: InStatus
     objectDefinition:
       apiVersion: v1
       kind: ConfigMap
