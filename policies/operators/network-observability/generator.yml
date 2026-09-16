@@ -44,15 +44,15 @@ policies:
         compliance: "Compliant"
     manifests:
       - path: loki/noobaa-s3-serving-cert.yml
-        name: loki-s3-cert
+        name: netobserv-loki-s3-cert
 
       - path: loki/objectbucketclaim.yml
-        name: loki-objectbucketclaim
+        name: netobserv-loki-objectbucketclaim
 
       - path: loki/loki-secret.yml
         name: netobserv-loki-secret
         extraDependencies:
-          - name: loki-s3-cert
+          - name: netobserv-loki-s3-cert
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
@@ -72,7 +72,7 @@ policies:
             compliance: "Compliant"
 
       - path: flowcollector.yml
-        name: flowcollector
+        name: netobserv-flowcollector
         extraDependencies:
           - name: loki-netobserv-status
             kind: ConfigurationPolicy
