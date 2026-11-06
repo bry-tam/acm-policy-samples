@@ -41,6 +41,9 @@ policies:
 
       - path: fileintegritynodestatus-cleaner.yml
         name: fio-nodestatus-cleaner
+        evaluationInterval:
+          compliant: 12h
+          noncompliant: 20m
 
       - path: health/fileintegritynodestatus-failed.yml
         name: fileintegritynodestatus-failed
