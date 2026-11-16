@@ -36,7 +36,7 @@ policies:
       - path: registry-s3-access-secret.yml
         name: registry-s3-access-secret
         extraDependencies:
-          - name: image-registry-config
+          - name: image-registry-config-s3
             kind: ConfigurationPolicy
             compliance: "Compliant"
       - path: image-registry-s3-bundle-configmap.yml
