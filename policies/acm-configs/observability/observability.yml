@@ -4,7 +4,6 @@ kind: MultiClusterObservability
 metadata:
   name: observability
   annotations:
-    mco-disable-alerting: 'true'
     ## flag to turn on perses dashboards in 2.17
     observability.open-cluster-management.io/right-sizing-capable: v1
 spec:
@@ -21,12 +20,16 @@ spec:
         virtualizationRightSizingRecommendation:
           enabled: true
       metrics:
+        alerts:
+          enabled: '{{hub default false (not (empty (index $.ManagedClusterLabels "observability-mcoa"))) | toRawJson | toBool hub}}'
         default:
           enabled: '{{hub default false (not (empty (index $.ManagedClusterLabels "observability-mcoa"))) | toRawJson | toBool hub}}'
         ui:
           enabled: '{{hub default false (not (empty (index $.ManagedClusterLabels "observability-mcoa"))) | toRawJson | toBool hub}}'
     userWorkloads:
       metrics:
+        alerts:
+          enabled: '{{hub default false (not (empty (index $.ManagedClusterLabels "observability-mcoa"))) | toRawJson | toBool hub}}'
         default:
           enabled: '{{hub default false (not (empty (index $.ManagedClusterLabels "observability-mcoa"))) | toRawJson | toBool hub}}'
 
