@@ -1,0 +1,43 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-ocp-lifecycle-exporter
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - ocp-lifecycle-exporter
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: ocp-lifecycle-exporter
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "ocp-lifecycle-exporter-binding"
+
+policies:
+  - name: ocp-lifecycle-exporter
+    description: "Deploys the OCP lifecycle exporter (built and run in-cluster via Shipwright) to every managed cluster"
+    consolidateManifests: true
+    complianceType: musthave
+    dependencies:
+      - name: "openshift-builds-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: ocp-lifecycle-exporter/
+        name: ocp-lifecycle-exporter
+
+policySets:
+  - name: ocp-lifecycle-exporter
+    placement:
+      placementName: "env-bound-placement"

@@ -1,0 +1,45 @@
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: etcd-metrics
+  namespace: open-cluster-management-observability
+  labels:
+    app.kubernetes.io/component: platform-metrics-collector
+    managed-by: bry-tam-policies
+spec:
+  jobName: etcd-metrics
+  metricsPath: /federate
+  scheme: HTTPS
+  scrapeClass: not-configurable
+  staticConfigs:
+    - targets: ["not-configurable"]
+  params:
+    match[]:
+      - '{__name__="container_cpu_usage_seconds_total"}'
+      - '{__name__="container_fs_writes_bytes_total"}'
+      - '{__name__="container_memory_working_set_bytes",container="",pod!="",namespace=~"openshift-etcd.*"}'
+      - '{__name__="container_network_receive_bytes_total"}'
+      - '{__name__="container_network_transmit_bytes_total"}'
+      - '{__name__="etcd_cluster_version"}'
+      - '{__name__="etcd_debugging_mvcc_db_compaction_keys_total"}'
+      - '{__name__="etcd_debugging_mvcc_db_compaction_total_duration_milliseconds_sum"}'
+      - '{__name__="etcd_debugging_mvcc_keys_total"}'
+      - '{__name__="etcd_debugging_snap_save_total_duration_seconds_sum"}'
+      - '{__name__="etcd_disk_backend_commit_duration_seconds_count"}'
+      - '{__name__="etcd_disk_backend_commit_duration_seconds_sum"}'
+      - '{__name__="etcd_disk_backend_defrag_duration_seconds_sum"}'
+      - '{__name__="etcd_disk_wal_fsync_duration_seconds_count"}'
+      - '{__name__="etcd_disk_wal_fsync_duration_seconds_sum"}'
+      - '{__name__="etcd_mvcc_db_total_size_in_use_in_bytes"}'
+      - '{__name__="etcd_mvcc_delete_total"}'
+      - '{__name__="etcd_mvcc_put_total"}'
+      - '{__name__="etcd_network_peer_round_trip_time_seconds_bucket"}'
+      - '{__name__="etcd_server_health_failures"}'
+      - '{__name__="etcd_server_heartbeat_send_failures_total"}'
+      - '{__name__="etcd_server_quota_backend_bytes"}'
+      - '{__name__="etcd_server_slow_apply_total"}'
+      - '{__name__="etcd_server_slow_read_indexes_total"}'
+      - '{__name__="grpc_server_handled_total"}'
+      - '{__name__="grpc_server_started_total"}'
+      - '{__name__="node_vmstat_pgmajfault"}'

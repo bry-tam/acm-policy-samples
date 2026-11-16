@@ -1,0 +1,1742 @@
+---
+apiVersion: perses.dev/v1alpha2
+kind: PersesDashboard
+metadata:
+  namespace: open-cluster-management-observability
+  name: ocp-cluster-health
+  labels:
+    managed-by: bry-tam-policies
+spec:
+  config:
+    display:
+      name: bry-tam / OpenShift Cluster Health
+      description: "High-level health of one OpenShift cluster at a glance: firing alerts, cluster operator status, etcd health and object counts, and the health of the in-cluster monitoring stack (Prometheus, Alertmanager, metrics-server). Start here to decide whether a cluster needs attention, then drill into the Node Performance, etcd, API Performance or OVN dashboards. Stat tiles turn orange/red when a value needs attention."
+    variables:
+    - kind: ListVariable
+      spec:
+        allowAllValue: false
+        allowMultiple: false
+        display:
+          hidden: false
+          name: cluster
+        name: cluster
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+            labelName: name
+            matchers:
+            - acm_managed_cluster_labels{openshiftVersion_major!="3"}
+    - kind: ListVariable
+      spec:
+        display:
+          name: interval
+          hidden: false
+        defaultValue: 10m
+        allowAllValue: false
+        allowMultiple: false
+        plugin:
+          kind: StaticListVariable
+          spec:
+            values:
+            - 1m
+            - 3m
+            - 5m
+            - 10m
+            - 20m
+            - 30m
+        name: interval
+    panels:
+      overview_alerts_stat:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of alerts currently firing, grouped by severity (critical, warning, info). The always-firing Watchdog alert and severity 'none' alerts are excluded. Anything critical needs attention first."
+            name: Firing alerts by severity
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 1
+                  color: '#ff9830'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (severity) (ALERTS{cluster="$cluster",alertstate="firing",alertname!="Watchdog",severity!="none"})
+                  seriesNameFormat: '{{severity}}'
+      overview_summary:
+        kind: Panel
+        spec:
+          display:
+            description: "Snapshot of cluster inventory: total and Ready/NotReady nodes (and other node conditions), namespaces by phase, and pods by phase (Running, Failed, Succeeded, ...). Rows with a zero count are hidden. Use it to spot NotReady nodes, Terminating namespaces or failed pods quickly."
+            name: Cluster summary
+          plugin:
+            kind: Table
+            spec:
+              density: compact
+              columnSettings:
+              - header: Resource
+                name: resource
+                sort: asc
+                width: 200
+              - header: State
+                name: state
+                sort: asc
+                width: 240
+              - header: Count
+                name: value
+                width: 120
+                align: right
+              - hide: true
+                name: condition
+              - hide: true
+                name: phase
+              - hide: true
+                name: timestamp
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: |-
+                    label_replace(label_replace(sum(kube_node_info{cluster="$cluster"}), "resource", "Nodes", "", ""), "state", "Total", "", "")
+                    or
+                    label_replace(label_replace(sum by (condition) (kube_node_status_condition{cluster="$cluster",status="true"}) > 0, "resource", "Nodes", "", ""), "state", "$1", "condition", "(.*)")
+                    or
+                    label_replace(label_replace(sum by (phase) (kube_namespace_status_phase{cluster="$cluster"}), "resource", "Namespaces", "", ""), "state", "$1", "phase", "(.*)")
+                    or
+                    label_replace(label_replace(sum by (phase) (kube_pod_status_phase{cluster="$cluster"}) > 0, "resource", "Pods", "", ""), "state", "$1", "phase", "(.*)")
+      overview_alerts:
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 most frequently firing alerts over the selected time range, by alert name and severity. Shows which alerts are firing and how long they have been active."
+            name: Top 10 firing alerts
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10,sum(ALERTS{cluster="$cluster",severity!="none"}) by (alertname, severity))
+                  seriesNameFormat: '{{severity}}: {{alertname}}'
+      operators_total:
+        kind: Panel
+        spec:
+          display:
+            description: "Total number of ClusterOperators reporting on this cluster."
+            name: Operators
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+              thresholds:
+                defaultColor: '#5794f2'
+                steps: []
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(count by (name) (cluster_operator_conditions{cluster="$cluster"}))
+                  seriesNameFormat: ''
+      operators_available:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of ClusterOperators that report Available=True, meaning they are functional. This should equal the total."
+            name: Available
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+              thresholds:
+                defaultColor: '#73bf69'
+                steps: []
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(cluster_operator_conditions{cluster="$cluster",condition="Available"} == 1) or vector(0)
+                  seriesNameFormat: ''
+      operators_not_available:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of ClusterOperators that are not Available. Any value above zero means a platform component is not functioning and needs investigation."
+            name: Not available
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 1
+                  color: '#f2495c'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(cluster_operator_conditions{cluster="$cluster",condition="Available"} == 0) or vector(0)
+                  seriesNameFormat: ''
+      operators_degraded_count:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of ClusterOperators reporting Degraded=True, meaning they are running but in a failing or reduced state. Check the operator status table below and 'oc get co' for details."
+            name: Degraded
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 1
+                  color: '#f2495c'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(cluster_operator_conditions{cluster="$cluster",condition="Degraded"} == 1) or vector(0)
+                  seriesNameFormat: ''
+      operators_progressing:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of ClusterOperators currently rolling out a change (Progressing=True). Expected during upgrades or configuration changes; if it stays above zero for a long time, a rollout may be stuck."
+            name: Progressing
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 1
+                  color: '#ff9830'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(cluster_operator_conditions{cluster="$cluster",condition="Progressing"} == 1) or vector(0)
+                  seriesNameFormat: ''
+      operators_not_upgradeable:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of ClusterOperators reporting Upgradeable=False. These block cluster upgrades until the issue is resolved."
+            name: Not upgradeable
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 1
+                  color: '#ff9830'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(cluster_operator_conditions{cluster="$cluster",condition="Upgradeable"} == 0) or vector(0)
+                  seriesNameFormat: ''
+      etcd_members:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of etcd members reporting metrics. A standard OpenShift cluster has 3 (single-node clusters have 1)."
+            name: Members
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#f2495c'
+                steps:
+                - value: 3
+                  color: '#73bf69'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(max by (pod) (etcd_server_has_leader{cluster="$cluster"}))
+                  seriesNameFormat: ''
+      etcd_leader:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of etcd members that currently see a leader. It should equal the member count; a lower number means a member cannot reach the cluster leader."
+            name: Members with a leader
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#f2495c'
+                steps:
+                - value: 3
+                  color: '#73bf69'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(max by (pod) (etcd_server_has_leader{cluster="$cluster"}))
+                  seriesNameFormat: ''
+      etcd_leader_changes:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of etcd leader elections over the last hour. A healthy cluster should have zero or very few; repeated changes indicate instability (slow disk, network latency or CPU starvation)."
+            name: Leader changes (1h)
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 1
+                  color: '#ff9830'
+                - value: 4
+                  color: '#f2495c'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(max by (pod) (increase(etcd_server_leader_changes_seen_total{cluster="$cluster"}[1h])))
+                  seriesNameFormat: ''
+      etcd_failed_proposals:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of failed Raft proposals over the selected interval. It should be zero. Failures usually accompany leader changes or loss of quorum."
+            name: Failed proposals ($interval)
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 1
+                  color: '#ff9830'
+                - value: 10
+                  color: '#f2495c'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(max by (pod) (increase(etcd_server_proposals_failed_total{cluster="$cluster"}[$interval])))
+                  seriesNameFormat: ''
+      etcd_health_failures:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of etcd health check failures over the selected interval. It should be zero; failures mean a member did not respond to health probes in time."
+            name: Health failures ($interval)
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 1
+                  color: '#ff9830'
+                - value: 10
+                  color: '#f2495c'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(increase(etcd_server_health_failures{cluster="$cluster"}[$interval]))
+                  seriesNameFormat: ''
+      etcd_quota:
+        kind: Panel
+        spec:
+          display:
+            description: "Largest etcd database size as a percentage of the database size quota. At 100% etcd goes read-only (NOSPACE alarm). Orange above 70%, red above 85%; defragment or reduce object counts before reaching these levels."
+            name: DB size vs. quota
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: percent-decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 0.6
+                  color: '#ff9830'
+                - value: 0.8
+                  color: '#f2495c'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max(etcd_mvcc_db_total_size_in_bytes{cluster="$cluster"}) / max(etcd_server_quota_backend_bytes{cluster="$cluster"})
+                  seriesNameFormat: ''
+      etcd_db_size:
+        kind: Panel
+        spec:
+          display:
+            description: "etcd database size per member: total physical size on disk versus the size actually in use. A large gap means space can be reclaimed by defragmentation."
+            name: etcd DB size
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (pod) (etcd_mvcc_db_total_size_in_bytes{cluster="$cluster"})
+                  seriesNameFormat: size - {{pod}}
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (pod) (etcd_mvcc_db_total_size_in_use_in_bytes{cluster="$cluster"})
+                  seriesNameFormat: in use - {{pod}}
+      etcd_objects:
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 resource types with the most objects stored in etcd, as counted by the API server. Use it to find what is driving etcd growth (for example secrets, configmaps, events or custom resources). Requires the apiserver_storage_objects metric from the ocp-cluster-health-metrics ScrapeConfig."
+            name: Top 10 object counts stored in etcd (by resource)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, max by (resource) (apiserver_storage_objects{cluster="$cluster"}))
+                  seriesNameFormat: '{{resource}}'
+      etcd_wal_fsync:
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time to fsync the etcd write-ahead log per member. This is the most important etcd disk indicator: consistently above about 10 ms indicates slow storage."
+            name: WAL fsync duration (p99)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum by (le, pod) (rate(etcd_disk_wal_fsync_duration_seconds_bucket{cluster="$cluster"}[$interval])))
+                  seriesNameFormat: '{{pod}}'
+      etcd_backend_commit:
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time for etcd to commit its database to disk per member. Consistently above about 25 ms indicates slow storage."
+            name: Backend commit duration (p99)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum by (le, pod) (rate(etcd_disk_backend_commit_duration_seconds_bucket{cluster="$cluster"}[$interval])))
+                  seriesNameFormat: '{{pod}}'
+      etcd_peer_rtt:
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile network round-trip time between etcd peers. High or spiky values point to network problems between control plane nodes and can cause leader elections."
+            name: Peer round trip time (p99)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum by (le, instance) (rate(etcd_network_peer_round_trip_time_seconds_bucket{cluster="$cluster"}[$interval])))
+                  seriesNameFormat: '{{instance}}'
+      etcd_slow_apply:
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of slow applies (requests that took over 100 ms to apply) per etcd member. Nonzero values indicate disk, CPU or network slowness on that member."
+            name: Slow applies
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (pod) (rate(etcd_server_slow_apply_total{cluster="$cluster"}[$interval]))
+                  seriesNameFormat: '{{pod}}'
+      '5_3':
+        kind: Panel
+        spec:
+          display:
+            description: "Total number of nodes over time, plus the number of nodes in each condition (for example Ready, MemoryPressure). Drops in the Ready count indicate nodes leaving the cluster."
+            name: Number of nodes
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(kube_node_info{cluster="$cluster"})
+                  seriesNameFormat: Number of nodes
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(kube_node_status_condition{cluster="$cluster",status="true"}) by (condition) > 0
+                  seriesNameFormat: 'Node: {{ condition }}'
+      '5_4':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of namespaces by phase (Active, Terminating). Namespaces stuck in Terminating usually have finalizers or resources that cannot be deleted."
+            name: Namespace count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(kube_namespace_status_phase{cluster="$cluster"}) by (phase) > 0
+                  seriesNameFormat: '{{ phase }} namespaces'
+      '5_6':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of Secrets and ConfigMaps in the cluster. Large counts increase etcd size and apiserver memory use."
+            name: Secret & configmap count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(kube_secret_info{cluster="$cluster"})
+                  seriesNameFormat: secrets
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(kube_configmap_info{cluster="$cluster"})
+                  seriesNameFormat: Configmaps
+      '5_7':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of Deployments in the cluster."
+            name: Deployment count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(kube_deployment_spec_replicas{cluster="$cluster"})
+                  seriesNameFormat: Deployments
+      '5_8':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of Services in the cluster. Very large counts increase network programming work (iptables/OVN load balancers)."
+            name: Services count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(kube_service_info{cluster="$cluster"})
+                  seriesNameFormat: Services
+      '5_9':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of OpenShift Routes in the cluster."
+            name: Routes count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(openshift_route_info{cluster="$cluster"})
+                  seriesNameFormat: Routes
+      mon_prom_up:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of Prometheus replicas (prometheus-k8s) that are up in the in-cluster monitoring stack. Normally 2; below that, monitoring is running without redundancy or is down. Note that this is the cluster's own Prometheus, not the ACM observability stack."
+            name: Prometheus replicas up
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#f2495c'
+                steps:
+                - value: 1
+                  color: '#ff9830'
+                - value: 2
+                  color: '#73bf69'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(up{cluster="$cluster",namespace="openshift-monitoring",job="prometheus-k8s"} == 1) or vector(0)
+                  seriesNameFormat: ''
+      mon_am_members:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of Alertmanager members in the cluster. Normally 2; fewer means alert delivery is not highly available. Requires alertmanager_cluster_members from the ocp-cluster-health-metrics ScrapeConfig."
+            name: Alertmanager cluster members
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#f2495c'
+                steps:
+                - value: 1
+                  color: '#ff9830'
+                - value: 2
+                  color: '#73bf69'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max(alertmanager_cluster_members{cluster="$cluster",namespace="openshift-monitoring",job="alertmanager-main"})
+                  seriesNameFormat: ''
+      mon_targets_down:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of scrape targets that Prometheus reports as down across the cluster. Any value above zero means some component is not being monitored; see the by-job panel to find which."
+            name: Scrape targets down
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#73bf69'
+                steps:
+                - value: 1
+                  color: '#ff9830'
+                - value: 10
+                  color: '#f2495c'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(up{cluster="$cluster"} == 0) or vector(0)
+                  seriesNameFormat: ''
+      mon_reload:
+        kind: Panel
+        spec:
+          display:
+            description: "Whether Prometheus loaded its last configuration successfully (1 = yes, 0 = failed). A failure means new scrape or alert rule changes are not being applied."
+            name: Prometheus config reload
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+              sparkline: {}
+              thresholds:
+                defaultColor: '#f2495c'
+                steps:
+                - value: 1
+                  color: '#73bf69'
+              mappings:
+              - kind: Value
+                spec:
+                  value: '0'
+                  result:
+                    value: FAILED
+              - kind: Value
+                spec:
+                  value: '1'
+                  result:
+                    value: OK
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: min(prometheus_config_last_reload_successful{cluster="$cluster",namespace="openshift-monitoring",job="prometheus-k8s"})
+                  seriesNameFormat: ''
+      mon_head_series:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of active time series held in each Prometheus replica's in-memory head. This drives Prometheus memory use; rapid growth indicates a cardinality explosion."
+            name: Prometheus head series
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: prometheus_tsdb_head_series{cluster="$cluster",namespace="openshift-monitoring",job="prometheus-k8s"}
+                  seriesNameFormat: '{{pod}}'
+      mon_ingest:
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of samples ingested per second by each Prometheus replica. Sudden changes can mean targets were added or lost, or load has spiked."
+            name: Prometheus samples ingested / s
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (pod) (rate(prometheus_tsdb_head_samples_appended_total{cluster="$cluster",namespace="openshift-monitoring",job="prometheus-k8s"}[$interval]))
+                  seriesNameFormat: '{{pod}}'
+      mon_prom_cpu:
+        kind: Panel
+        spec:
+          display:
+            description: "CPU used by the Prometheus container per replica, as a percentage of one core. Sustained high usage suggests heavy queries or high series counts."
+            name: Prometheus CPU
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (pod) (rate(container_cpu_usage_seconds_total{cluster="$cluster",namespace="openshift-monitoring",pod=~"prometheus-k8s-.*",container="prometheus"}[$interval])) * 100
+                  seriesNameFormat: '{{pod}}'
+      mon_prom_rss:
+        kind: Panel
+        spec:
+          display:
+            description: "Resident memory of the Prometheus container per replica. Watch for growth towards the node's memory limits, which risks OOM kills."
+            name: Prometheus memory (RSS)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (pod) (container_memory_rss{cluster="$cluster",namespace="openshift-monitoring",pod=~"prometheus-k8s-.*",container="prometheus"})
+                  seriesNameFormat: '{{pod}}'
+      mon_targets_down_by_job:
+        kind: Panel
+        spec:
+          display:
+            description: "Number of down scrape targets grouped by job name. Shows which component (job) is failing to be scraped; for example kubelet or an operator's metrics endpoint."
+            name: Scrape targets down (by job)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count by (job) (up{cluster="$cluster"} == 0)
+                  seriesNameFormat: '{{job}}'
+      mon_adapter_cpu:
+        kind: Panel
+        spec:
+          display:
+            description: "CPU used by the metrics-server pods, as a percentage of one core. metrics-server provides node and pod usage for 'oc adm top' and the horizontal pod autoscaler."
+            name: metrics-server CPU
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(irate(container_cpu_usage_seconds_total{cluster="$cluster",pod=~"metrics-server-.*",namespace="openshift-monitoring"}[$interval])) by (pod,container) * 100
+                  seriesNameFormat: '{{pod}}'
+      mon_adapter_rss:
+        kind: Panel
+        spec:
+          display:
+            description: "Resident memory of the metrics-server pods."
+            name: metrics-server memory (RSS)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(container_memory_rss{cluster="$cluster",pod=~"metrics-server-.*",namespace="openshift-monitoring"}) by (pod)
+                  seriesNameFormat: '{{pod}}'
+      operators_status:
+        kind: Panel
+        spec:
+          display:
+            description: "One row per ClusterOperator with its current Available, Progressing and Degraded state. Operators are sorted by name; click a column header to sort by status. Green = healthy, orange = progressing, red = unavailable or degraded."
+            name: Cluster operator status
+          plugin:
+            kind: Table
+            spec:
+              density: compact
+              columnSettings:
+              - header: Operator
+                name: 'name #1'
+                enableSorting: true
+                sort: asc
+                width: 300
+              - hide: true
+                name: 'name #2'
+              - hide: true
+                name: 'name #3'
+              - cellSettings:
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: Available
+                - backgroundColor: '#f2495c'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: Not available
+                enableSorting: true
+                header: Available
+                name: 'value #1'
+                width: 150
+                align: center
+              - cellSettings:
+                - backgroundColor: '#ff9830'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: Progressing
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: 'No'
+                enableSorting: true
+                header: Progressing
+                name: 'value #2'
+                width: 150
+                align: center
+              - cellSettings:
+                - backgroundColor: '#f2495c'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: Degraded
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: 'No'
+                enableSorting: true
+                header: Degraded
+                name: 'value #3'
+                width: 150
+                align: center
+              - hide: true
+                name: timestamp
+              transforms:
+              - kind: JoinByColumnValue
+                spec:
+                  columns:
+                  - 'name #1'
+                  - 'name #2'
+                  - 'name #3'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (name) (cluster_operator_conditions{cluster="$cluster",condition="Available",name!=""})
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (name) (cluster_operator_conditions{cluster="$cluster",condition="Progressing",name!=""})
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (name) (cluster_operator_conditions{cluster="$cluster",condition="Degraded",name!=""})
+      operators_changes:
+        kind: Panel
+        spec:
+          display:
+            description: "Timeline of operators that were Degraded or Progressing during the selected time range, one row per operator and condition. It only has data when an operator was Degraded or Progressing; 'No data' means all operators stayed healthy and stable. Use it to see when a problem started and how long it lasted."
+            name: Degraded / progressing operators over time
+          plugin:
+            kind: StatusHistoryChart
+            spec:
+              legend:
+                position: bottom
+              sorting: asc
+              mappings:
+              - kind: Value
+                spec:
+                  value: '1'
+                  result:
+                    value: Progressing
+                    color: '#ff9830'
+              - kind: Value
+                spec:
+                  value: '2'
+                  result:
+                    value: Degraded
+                    color: '#f2495c'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (cluster_operator_conditions{cluster="$cluster",condition="Degraded",name!=""} == 1) * 2
+                  seriesNameFormat: '{{name}} - Degraded'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: cluster_operator_conditions{cluster="$cluster",condition="Progressing",name!=""} == 1
+                  seriesNameFormat: '{{name}} - Progressing'
+    layouts:
+    - kind: Grid
+      spec:
+        display:
+          title: Cluster Overview
+          collapse:
+            open: true
+        items:
+        - x: 0
+          "y": 0
+          width: 24
+          height: 6
+          content:
+            $ref: '#/spec/panels/overview_alerts_stat'
+        - x: 0
+          "y": 6
+          width: 12
+          height: 9
+          content:
+            $ref: '#/spec/panels/overview_summary'
+        - x: 12
+          "y": 6
+          width: 12
+          height: 9
+          content:
+            $ref: '#/spec/panels/overview_alerts'
+    - kind: Grid
+      spec:
+        display:
+          title: Cluster Operators
+          collapse:
+            open: true
+        items:
+        - x: 0
+          "y": 0
+          width: 4
+          height: 5
+          content:
+            $ref: '#/spec/panels/operators_total'
+        - x: 4
+          "y": 0
+          width: 4
+          height: 5
+          content:
+            $ref: '#/spec/panels/operators_available'
+        - x: 8
+          "y": 0
+          width: 4
+          height: 5
+          content:
+            $ref: '#/spec/panels/operators_not_available'
+        - x: 12
+          "y": 0
+          width: 4
+          height: 5
+          content:
+            $ref: '#/spec/panels/operators_degraded_count'
+        - x: 16
+          "y": 0
+          width: 4
+          height: 5
+          content:
+            $ref: '#/spec/panels/operators_progressing'
+        - x: 20
+          "y": 0
+          width: 4
+          height: 5
+          content:
+            $ref: '#/spec/panels/operators_not_upgradeable'
+        - x: 0
+          "y": 5
+          width: 12
+          height: 14
+          content:
+            $ref: '#/spec/panels/operators_status'
+        - x: 12
+          "y": 5
+          width: 12
+          height: 14
+          content:
+            $ref: '#/spec/panels/operators_changes'
+    - kind: Grid
+      spec:
+        display:
+          title: etcd Health
+          collapse:
+            open: true
+        items:
+        - x: 0
+          "y": 0
+          width: 4
+          height: 4
+          content:
+            $ref: '#/spec/panels/etcd_members'
+        - x: 4
+          "y": 0
+          width: 4
+          height: 4
+          content:
+            $ref: '#/spec/panels/etcd_leader'
+        - x: 8
+          "y": 0
+          width: 4
+          height: 4
+          content:
+            $ref: '#/spec/panels/etcd_leader_changes'
+        - x: 12
+          "y": 0
+          width: 4
+          height: 4
+          content:
+            $ref: '#/spec/panels/etcd_failed_proposals'
+        - x: 16
+          "y": 0
+          width: 4
+          height: 4
+          content:
+            $ref: '#/spec/panels/etcd_health_failures'
+        - x: 20
+          "y": 0
+          width: 4
+          height: 4
+          content:
+            $ref: '#/spec/panels/etcd_quota'
+        - x: 0
+          "y": 4
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/etcd_db_size'
+        - x: 8
+          "y": 4
+          width: 16
+          height: 8
+          content:
+            $ref: '#/spec/panels/etcd_objects'
+        - x: 0
+          "y": 12
+          width: 6
+          height: 8
+          content:
+            $ref: '#/spec/panels/etcd_wal_fsync'
+        - x: 6
+          "y": 12
+          width: 6
+          height: 8
+          content:
+            $ref: '#/spec/panels/etcd_backend_commit'
+        - x: 12
+          "y": 12
+          width: 6
+          height: 8
+          content:
+            $ref: '#/spec/panels/etcd_peer_rtt'
+        - x: 18
+          "y": 12
+          width: 6
+          height: 8
+          content:
+            $ref: '#/spec/panels/etcd_slow_apply'
+    - kind: Grid
+      spec:
+        display:
+          title: Cluster Object Counts
+          collapse:
+            open: true
+        items:
+        - x: 0
+          "y": 0
+          width: 8
+          height: 7
+          content:
+            $ref: '#/spec/panels/5_3'
+        - x: 8
+          "y": 0
+          width: 8
+          height: 7
+          content:
+            $ref: '#/spec/panels/5_4'
+        - x: 16
+          "y": 0
+          width: 8
+          height: 7
+          content:
+            $ref: '#/spec/panels/5_6'
+        - x: 0
+          "y": 7
+          width: 8
+          height: 7
+          content:
+            $ref: '#/spec/panels/5_7'
+        - x: 8
+          "y": 7
+          width: 8
+          height: 7
+          content:
+            $ref: '#/spec/panels/5_8'
+        - x: 16
+          "y": 7
+          width: 8
+          height: 7
+          content:
+            $ref: '#/spec/panels/5_9'
+    - kind: Grid
+      spec:
+        display:
+          title: Monitoring Stack Health
+          collapse:
+            open: true
+        items:
+        - x: 0
+          "y": 0
+          width: 6
+          height: 4
+          content:
+            $ref: '#/spec/panels/mon_prom_up'
+        - x: 6
+          "y": 0
+          width: 6
+          height: 4
+          content:
+            $ref: '#/spec/panels/mon_am_members'
+        - x: 12
+          "y": 0
+          width: 6
+          height: 4
+          content:
+            $ref: '#/spec/panels/mon_targets_down'
+        - x: 18
+          "y": 0
+          width: 6
+          height: 4
+          content:
+            $ref: '#/spec/panels/mon_reload'
+        - x: 0
+          "y": 4
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/mon_head_series'
+        - x: 12
+          "y": 4
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/mon_ingest'
+        - x: 0
+          "y": 12
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/mon_prom_cpu'
+        - x: 12
+          "y": 12
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/mon_prom_rss'
+        - x: 0
+          "y": 20
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/mon_targets_down_by_job'
+        - x: 8
+          "y": 20
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/mon_adapter_cpu'
+        - x: 16
+          "y": 20
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/mon_adapter_rss'
+    duration: 1h

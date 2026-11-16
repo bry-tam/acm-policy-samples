@@ -1,0 +1,36 @@
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: ovn-metrics
+  namespace: open-cluster-management-observability
+  labels:
+    app.kubernetes.io/component: platform-metrics-collector
+    managed-by: bry-tam-policies
+spec:
+  jobName: ovn-metrics
+  metricsPath: /federate
+  scheme: HTTPS
+  scrapeClass: not-configurable
+  staticConfigs:
+    - targets: ["not-configurable"]
+  params:
+    match[]:
+      - '{__name__="container_cpu_usage_seconds_total"}'
+      - '{__name__="ovn_controller_monitor_all"}'
+      - '{__name__="ovn_northd_status"}'
+      - '{__name__="ovnkube_clustermanager_leader"}'
+      - '{__name__="ovnkube_controller_network_programming_duration_seconds_bucket"}'
+      - '{__name__="ovnkube_controller_pod_creation_latency_seconds_bucket"}'
+      - '{__name__="ovnkube_controller_pod_first_seen_lsp_created_duration_seconds_bucket"}'
+      - '{__name__="ovnkube_controller_pod_lsp_created_port_binding_duration_seconds_bucket"}'
+      - '{__name__="ovnkube_controller_port_binding_chassis_assignment_latency_seconds_bucket"}'
+      - '{__name__="ovnkube_controller_port_binding_port_up_duration_seconds_bucket"}'
+      - '{__name__="ovnkube_controller_sync_service_latency_seconds_bucket"}'
+      - '{__name__="ovnkube_node_cni_request_duration_seconds_bucket"}'
+      - '{__name__="ovnkube_node_ready_duration_seconds_bucket"}'
+      - '{__name__="scheduler_pod_scheduling_sli_duration_seconds_bucket"}'
+      - '{__name__="workqueue_adds_total",job!="apiserver"}'
+      - '{__name__="workqueue_depth",job!="apiserver"}'
+      - '{__name__="workqueue_queue_duration_seconds_bucket"}'
+      - '{__name__="workqueue_unfinished_work_seconds"}'

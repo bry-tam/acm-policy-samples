@@ -1,0 +1,30 @@
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: api-performance-metrics
+  namespace: open-cluster-management-observability
+  labels:
+    app.kubernetes.io/component: platform-metrics-collector
+    managed-by: bry-tam-policies
+spec:
+  jobName: api-performance-metrics
+  metricsPath: /federate
+  scheme: HTTPS
+  scrapeClass: not-configurable
+  staticConfigs:
+    - targets: ["not-configurable"]
+  params:
+    match[]:
+      - '{__name__="apiserver_current_inflight_requests"}'
+      - '{__name__="apiserver_flowcontrol_current_inqueue_requests"}'
+      - '{__name__="apiserver_flowcontrol_dispatched_requests_total"}'
+      - '{__name__="apiserver_flowcontrol_request_concurrency_in_use"}'
+      - '{__name__="apiserver_flowcontrol_request_execution_seconds_bucket"}'
+      - '{__name__="apiserver_flowcontrol_request_queue_length_after_enqueue_bucket"}'
+      - '{__name__="apiserver_flowcontrol_request_wait_duration_seconds_bucket"}'
+      - '{__name__="apiserver_longrunning_requests"}'
+      - '{__name__="apiserver_request_duration_seconds_bucket"}'
+      - '{__name__="apiserver_request_terminations_total"}'
+      - '{__name__="apiserver_request_total"}'
+      - '{__name__="apiserver_response_sizes_bucket"}'

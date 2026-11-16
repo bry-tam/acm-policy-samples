@@ -1,0 +1,54 @@
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: node-metrics
+  namespace: open-cluster-management-observability
+  labels:
+    app.kubernetes.io/component: platform-metrics-collector
+    managed-by: bry-tam-policies
+spec:
+  jobName: node-metrics
+  metricsPath: /federate
+  scheme: HTTPS
+  scrapeClass: not-configurable
+  staticConfigs:
+    - targets: ["not-configurable"]
+  params:
+    match[]:
+      - '{__name__="container_cpu_usage_seconds_total"}'
+      - '{__name__="container_last_seen"}'
+      - '{__name__="container_memory_working_set_bytes",id=~"/system.slice|/system.slice/kubelet.service|/system.slice/ovs-vswitchd.service|/system.slice/crio.service|/system.slice/systemd-journald.service|/system.slice/ovsdb-server.service|/system.slice/systemd-udevd.service|/kubepods.slice"}'
+      - '{__name__="container_pressure_cpu_stalled_seconds_total"}'
+      - '{__name__="container_pressure_cpu_waiting_seconds_total"}'
+      - '{__name__="container_pressure_io_stalled_seconds_total"}'
+      - '{__name__="container_pressure_io_waiting_seconds_total"}'
+      - '{__name__="container_pressure_memory_stalled_seconds_total"}'
+      - '{__name__="container_pressure_memory_waiting_seconds_total"}'
+      - '{__name__="container_runtime_crio_operations_errors_total"}'
+      - '{__name__="container_runtime_crio_operations_latency_seconds_total"}'
+      - '{__name__="container_runtime_crio_operations_total"}'
+      - '{__name__="container_threads"}'
+      - '{__name__="go_goroutines",job!="apiserver"}'
+      - '{__name__="kube_pod_container_info"}'
+      - '{__name__="kube_pod_status_phase"}'
+      - '{__name__="kubelet_cgroup_manager_duration_seconds_bucket"}'
+      - '{__name__="kubelet_http_requests_duration_seconds_count"}'
+      - '{__name__="kubelet_http_requests_duration_seconds_sum"}'
+      - '{__name__="kubelet_pleg_relist_duration_seconds_bucket"}'
+      - '{__name__="kubelet_pleg_relist_duration_seconds_count"}'
+      - '{__name__="kubelet_pleg_relist_duration_seconds_sum"}'
+      - '{__name__="kubelet_runtime_operations_errors_total"}'
+      - '{__name__="node_disk_reads_completed_total"}'
+      - '{__name__="node_disk_writes_completed_total"}'
+      - '{__name__="node_filesystem_files"}'
+      - '{__name__="node_filesystem_files_free"}'
+      - '{__name__="node_load1"}'
+      - '{__name__="node_memory_MemAvailable_bytes"}'
+      - '{__name__="node_pressure_cpu_waiting_seconds_total"}'
+      - '{__name__="node_pressure_io_stalled_seconds_total"}'
+      - '{__name__="node_pressure_io_waiting_seconds_total"}'
+      - '{__name__="node_pressure_irq_stalled_seconds_total"}'
+      - '{__name__="node_pressure_memory_stalled_seconds_total"}'
+      - '{__name__="process_cpu_seconds_total",job!="apiserver"}'
+      - '{__name__="process_resident_memory_bytes",job!~"apiserver|etcd"}'
