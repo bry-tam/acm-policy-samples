@@ -5,7 +5,7 @@ object-templates-raw: |
     {{/* ##  test if the name of the Placement in the PlacementBinding matches the naming of a feature flag ## */}}
     {{- $pname := $pb.placementRef.name }}
     {{- if hasPrefix "ft-" $pname }}
-      {{- $feature := (split "--" ($pname | replace "ft-" "")) }}
+      {{- $feature := (split "--" ($pname | trimPrefix "ft-")) }}
 
       {{/* ##  Lookup an existing Placement in the same namespace so we can use the same ClusterSet ## */}}
       {{- $refPlacement := (index (lookup "cluster.open-cluster-management.io/v1beta1" "Placement" $pb.metadata.namespace "").items 0) }}
