@@ -30,7 +30,6 @@ spec:
       daemonCount: 1
     cephToolbox: {}
     cephDashboard: {}
-    cephConfig: {}
   mirroring: {}
   multiCloudGateway:
     dbStorageClassName: gp3-csi
