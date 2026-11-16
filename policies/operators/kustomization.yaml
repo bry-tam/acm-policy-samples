@@ -26,6 +26,7 @@ resources:
   - ./migration-toolkit/
   - ./network-observability/
   - ./nmstate/
+  - ./openshift-builds/
   - ./opentelemetry/
 
   - ./secondary-scheduler/
