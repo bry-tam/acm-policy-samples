@@ -16,6 +16,9 @@ placementBindingDefaults:
 policies:
   - name: klusterlet-selector-tolerations
     remediationAction: enforce
+    dependencies:
+      - name: acm-addon-config
+        compliance: "Compliant"
     manifests:
       - path: infra-selector-tolerations.yml
         name: infra-selector-tolerations

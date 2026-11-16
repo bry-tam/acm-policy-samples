@@ -8,8 +8,9 @@ resources:
   - ./policy-alerts/
   - ./observability/
   - ./observability-addon-config/
+  - ./perses-dashboards/
   - ./managedserviceaccount/
   - ./klusterlet-infra/
   - ./kubeadmin-config-trustca/
   - ./set-cluster-debug-mode/
-  # - ./cluster-addon-config/
+  - ./cluster-addon-config/
