@@ -1,0 +1,44 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-openshift-builds
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - openshift-builds-operator
+
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+
+  policyLabels:
+    policy_gen.name: openshift-builds-operator
+
+  severity: medium
+
+placementBindingDefaults:
+  name: "openshift-builds-binding"
+
+policies:
+  - name: openshift-builds-operator
+    description: "Installs Builds for Red Hat OpenShift Operator"
+    dependencies:
+      - name: "tekton-operator"
+        compliance: "Compliant"
+    manifests:
+      - path: namespace.yml
+        name: openshift-builds-namespace
+
+      - path: operatorpolicy.yml
+        name: openshift-builds-operator-install
+
+policySets:
+  - name: openshift-builds-operator
+    placement:
+      placementName: "ft-openshift-builds--enabled"
