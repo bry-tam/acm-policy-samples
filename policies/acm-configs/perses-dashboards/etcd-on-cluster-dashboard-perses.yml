@@ -1,0 +1,1661 @@
+---
+apiVersion: perses.dev/v1alpha2
+kind: PersesDashboard
+metadata:
+  namespace: open-cluster-management-observability
+  name: etcd-on-cluster-dashboard
+  labels:
+    managed-by: bry-tam-policies
+spec:
+  config:
+    display:
+      name: bry-tam / etcd-cluster-info dashboard
+      description: "Detailed health and performance of the etcd cluster on one OpenShift cluster: resource usage, disk (WAL fsync and backend commit) latency, compaction/defrag, network, database size vs quota, Raft activity and key operations. Use the etcd_pod variable to focus on specific members. Disk latency and database size are the most common causes of etcd trouble. Container and kubelet-based panels depend on the extra etcd metrics in etcd-metrics-scrapeconfig.yml."
+    variables:
+    - kind: ListVariable
+      spec:
+        allowAllValue: false
+        allowMultiple: false
+        display:
+          hidden: false
+          name: cluster
+        name: cluster
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+            labelName: name
+            matchers:
+            - acm_managed_cluster_labels{openshiftVersion_major!="3"}
+    - kind: ListVariable
+      spec:
+        display:
+          hidden: false
+        allowAllValue: true
+        allowMultiple: true
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: pod
+            matchers:
+            - etcd_cluster_version{cluster="$cluster"}
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+        name: etcd_pod
+    - kind: ListVariable
+      spec:
+        display:
+          name: interval
+          hidden: false
+        defaultValue: 10m
+        allowAllValue: false
+        allowMultiple: false
+        plugin:
+          kind: StaticListVariable
+          spec:
+            values:
+            - 1m
+            - 3m
+            - 5m
+            - 10m
+            - 20m
+            - 30m
+        name: interval
+    panels:
+      '0_0':
+        kind: Panel
+        spec:
+          display:
+            description: "CPU used by each etcd container, as a percentage of one core (100% = one full core). Sustained high CPU can slow Raft processing and raise API latency."
+            name: CPU usage
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(irate(container_cpu_usage_seconds_total{cluster="$cluster",namespace="openshift-etcd", container="etcd",pod=~"$etcd_pod"}[$interval])) by (pod) * 100
+                  seriesNameFormat: '{{ pod }}'
+      '0_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Working-set memory of each etcd pod. etcd memory grows with database size and number of watchers; steady growth toward node limits is a warning sign."
+            name: Memory usage
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(avg_over_time(container_memory_working_set_bytes{cluster="$cluster",container="",pod!="", namespace=~"openshift-etcd.*",pod=~"$etcd_pod"}[$interval])) BY (pod, namespace)
+                  seriesNameFormat: '{{ pod }}'
+      '0_2':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time to fsync the etcd write-ahead log (WAL) to disk, per member. This is the key disk-latency indicator for etcd: values above about 10 ms (and certainly above 100 ms) indicate slow disks that cause leader elections and slow API requests."
+            name: Disk WAL Sync Duration
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])) by (pod, le))
+                  seriesNameFormat: '{{pod}} WAL fsync'
+      '0_3':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time for etcd to commit its backend (bbolt database) batches to disk, per member. Sustained values above about 25 ms indicate slow storage. Compare with WAL fsync duration."
+            name: Disk Backend Sync Duration
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(etcd_disk_backend_commit_duration_seconds_bucket{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])) by (pod, le))
+                  seriesNameFormat: '{{pod}} DB fsync'
+      '0_4':
+        kind: Panel
+        spec:
+          display:
+            description: "Write throughput of the etcd containers to disk, per pod and device. Helps correlate disk latency with write load."
+            name: Etcd container disk writes
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: bytes/sec
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate(container_fs_writes_bytes_total{cluster="$cluster",namespace="openshift-etcd",device!~".+dm.+"}[$interval])
+                  seriesNameFormat: '{{ pod }}: {{ device }}'
+      '0_5':
+        kind: Panel
+        spec:
+          display:
+            description: "Physical size of the etcd database file versus the logical size actually in use (the difference is space freed by compaction but not yet reclaimed by defragmentation). Compare to the DB size limit; a large gap suggests a defrag is due."
+            name: DB Size
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_mvcc_db_total_size_in_bytes{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: '{{pod}} DB physical size'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_mvcc_db_total_size_in_use_in_bytes{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: '{{pod}} DB logical size'
+      '1_0':
+        kind: Panel
+        spec:
+          display:
+            description: "Time etcd spends compacting its keyspace. The first series is the compaction time per second (rate); the second is the cumulative total in milliseconds. Long or frequent compactions can add latency."
+            name: Compaction Duration sum
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              querySettings:
+              - format:
+                  unit: decimal
+                queryIndex: 0
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+                label: sum
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: delta(etcd_debugging_mvcc_db_compaction_total_duration_milliseconds_sum{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[1m:30s])/2
+                  seriesNameFormat: 'rate compact sum {{instance}} '
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_debugging_mvcc_db_compaction_total_duration_milliseconds_sum{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: 'compact sum {{instance}} '
+      '1_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Time etcd spends defragmenting its database. The first series is the rate; the second is the cumulative total in seconds. Defrag blocks the member while it runs, so spikes are expected only during maintenance."
+            name: Defrag Duration sum
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              querySettings:
+              - format:
+                  unit: decimal
+                queryIndex: 0
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+                label: count
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: delta(etcd_disk_backend_defrag_duration_seconds_sum{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[1m:30s])/2
+                  seriesNameFormat: 'rate defrag sum {{instance}} '
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_disk_backend_defrag_duration_seconds_sum{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: 'defrag sum {{instance}} '
+      '1_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Major page faults per second on control plane nodes (data from node_exporter). Major faults mean the OS had to read memory pages from disk, which is a sign of memory pressure that can hurt etcd latency."
+            name: vmstat major page faults
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              querySettings:
+              - format:
+                  unit: decimal
+                queryIndex: 0
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+                label: count
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate(node_vmstat_pgmajfault{cluster="$cluster"}[$interval])* on (instance) group_left label_replace(kube_node_role{cluster="$cluster",role="control-plane"},"instance","$1","node","(.*)")
+                  seriesNameFormat: 'rate pgmajfault {{instance}} '
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: node_vmstat_pgmajfault{cluster="$cluster"} * on (instance) group_left label_replace(kube_node_role{cluster="$cluster",role="control-plane"},"instance","$1","node","(.*)")
+                  seriesNameFormat: 'pgmajfault {{instance}} '
+      '2_0':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile WAL fsync latency per member (same data as 'Disk WAL Sync Duration'). Values consistently over about 10 ms indicate slow disks."
+            name: WAL fsync Duration p99
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])) by (pod, le))
+                  seriesNameFormat: '{{pod}} WAL fsync'
+      '2_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Cumulative and per-second time spent in WAL fsync. Useful together with the count panel: sum divided by count gives the average fsync time."
+            name: WAL fsync Duration sum
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              querySettings:
+              - format:
+                  unit: decimal
+                queryIndex: 0
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+                label: sum
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: irate(etcd_disk_wal_fsync_duration_seconds_sum{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: '2m irate WAL sum {{instance}} '
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_disk_wal_fsync_duration_seconds_sum{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: 'WAL sum {{instance}} '
+      '2_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of WAL fsync calls, cumulative and per second. Shows how write-intensive the cluster is; combine with the sum panel to compute average latency."
+            name: WAL fsync Duration count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              querySettings:
+              - format:
+                  unit: decimal
+                queryIndex: 0
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+                label: count
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: irate(etcd_disk_wal_fsync_duration_seconds_count{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: '2m irate WAL count {{instance}} '
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_disk_wal_fsync_duration_seconds_count{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: 'WAL count {{instance}} '
+      '3_0':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time to commit the etcd backend database to disk, per member. Values consistently over about 25 ms indicate slow storage."
+            name: Backend Commit Duration
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(etcd_disk_backend_commit_duration_seconds_bucket{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])) by (pod, le))
+                  seriesNameFormat: '{{pod}} DB fsync'
+      '3_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Cumulative and per-second total time spent in backend commits. Divide by the count panel to get the average commit time."
+            name: Backend Commit Duration sum
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              querySettings:
+              - format:
+                  unit: decimal
+                queryIndex: 0
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+                label: sum
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: irate(etcd_disk_backend_commit_duration_seconds_sum{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: '2m irate WAL sum {{instance}} '
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_disk_backend_commit_duration_seconds_sum{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: 'WAL sum {{instance}} '
+      '3_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of backend commits, cumulative and per second. Combine with the sum panel to compute average commit latency."
+            name: Backend Commit Duration count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              querySettings:
+              - format:
+                  unit: decimal
+                queryIndex: 0
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+                label: count
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: irate(etcd_disk_backend_commit_duration_seconds_count{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: '2m irate WAL count {{instance}} '
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_disk_backend_commit_duration_seconds_count{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: 'WAL count {{instance}} '
+      '4_0':
+        kind: Panel
+        spec:
+          display:
+            description: "Receive (rx) and transmit (tx) network traffic of the etcd pods, per pod. Includes all traffic in the etcd namespaces, not only etcd peer traffic."
+            name: Container network traffic
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: bytes/sec
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(container_network_receive_bytes_total{cluster="$cluster", namespace=~"openshift-etcd.*"}[$interval])) BY (namespace, pod)
+                  seriesNameFormat: rx {{ pod }}
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(container_network_transmit_bytes_total{cluster="$cluster", namespace=~"openshift-etcd.*"}[$interval])) BY (namespace, pod)
+                  seriesNameFormat: tx {{ pod }}
+      '4_1':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile round-trip time between etcd peers. High or spiky values indicate network problems between control plane nodes, which can trigger leader elections. Etcd expects a few milliseconds or less."
+            name: p99 peer to peer latency
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval]))
+                  seriesNameFormat: '{{pod}}'
+      '4_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Traffic between etcd members (Raft replication), received (rx) and sent (tx) per pod."
+            name: Peer network traffic
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: bytes/sec
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate(etcd_network_peer_received_bytes_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: rx {{pod}} Peer Traffic
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate(etcd_network_peer_sent_bytes_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: tx {{pod}} Peer Traffic
+      '4_3':
+        kind: Panel
+        spec:
+          display:
+            description: "Client traffic over etcd's gRPC API (mainly the kube-apiserver), received (rx) and sent (tx) per pod."
+            name: gRPC network traffic
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: bytes/sec
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate(etcd_network_client_grpc_received_bytes_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: rx {{pod}}
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate(etcd_network_client_grpc_sent_bytes_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: tx {{pod}}
+      '4_4':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of currently open gRPC bidirectional streams for the Watch and Lease services (started minus handled). Shows how many watchers and lease keep-alives clients hold on etcd; large growth can increase etcd memory and CPU."
+            name: Active Streams
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(grpc_server_started_total{cluster="$cluster",namespace="openshift-etcd",grpc_service="etcdserverpb.Watch",grpc_type="bidi_stream"}) - sum(grpc_server_handled_total{cluster="$cluster",namespace="openshift-etcd",grpc_service="etcdserverpb.Watch",grpc_type="bidi_stream"})
+                  seriesNameFormat: Watch Streams
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(grpc_server_started_total{cluster="$cluster",namespace="openshift-etcd",grpc_service="etcdserverpb.Lease",grpc_type="bidi_stream"}) - sum(grpc_server_handled_total{cluster="$cluster",namespace="openshift-etcd",grpc_service="etcdserverpb.Lease",grpc_type="bidi_stream"})
+                  seriesNameFormat: Lease Streams
+      '4_5':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of time spent saving etcd snapshots (sum across all members). Snapshots are created periodically by Raft and spikes can briefly affect performance."
+            name: Snapshot duration
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(etcd_debugging_snap_save_total_duration_seconds_sum{cluster="$cluster",namespace="openshift-etcd"}[$interval]))
+                  seriesNameFormat: the total latency distributions of save called by snapshot
+      '5_0':
+        kind: Panel
+        spec:
+          display:
+            description: "Percentage of the etcd database size quota that is currently used, per member. If it reaches 100% etcd raises a NOSPACE alarm and becomes read-only. Consider defragmenting or reducing object counts if it approaches 80%."
+            name: '% DB Space Used'
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (etcd_mvcc_db_total_size_in_bytes{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"} / etcd_server_quota_backend_bytes{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"})*100
+                  seriesNameFormat: '{{pod}}'
+      '5_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Remaining space before each member reaches its database size quota (quota minus physical database size, including fragmented space)."
+            name: DB Left capacity (with fragmented space)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_server_quota_backend_bytes{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"} - etcd_mvcc_db_total_size_in_bytes{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: '{{pod}}'
+      '5_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Configured database size quota (backend-bytes) per member. OpenShift defaults to 8 GiB."
+            name: DB Size Limit (Backend-bytes)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_server_quota_backend_bytes{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: '{{ pod }} Quota Bytes'
+      '6_0':
+        kind: Panel
+        spec:
+          display:
+            description: "Raft proposal activity summed across members: failed rate, pending count, and committed and applied rates. Failures or a growing pending count mean etcd cannot reach consensus quickly, usually due to leader loss, slow disks or network problems."
+            name: Raft Proposals
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(etcd_server_proposals_failed_total{cluster="$cluster",namespace="openshift-etcd"}[$interval]))
+                  seriesNameFormat: Proposal Failure Rate
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(etcd_server_proposals_pending{cluster="$cluster",namespace="openshift-etcd"})
+                  seriesNameFormat: Proposal Pending Total
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(etcd_server_proposals_committed_total{cluster="$cluster",namespace="openshift-etcd"}[$interval]))
+                  seriesNameFormat: Proposal Commit Rate
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(etcd_server_proposals_applied_total{cluster="$cluster",namespace="openshift-etcd"}[$interval]))
+                  seriesNameFormat: Proposal Apply Rate
+      '6_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of leader changes across the cluster. Leader elections should be rare; frequent changes indicate instability (slow disks, network latency or CPU starvation)."
+            name: Number of leader changes seen
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(etcd_server_leader_changes_seen_total{cluster="$cluster",namespace="openshift-etcd"}[$interval]))
+                  seriesNameFormat: ''
+      '6_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Whether the etcd cluster currently has a leader (1 = yes, 0 = no). Shows the maximum across members. Anything other than 1 means etcd is unavailable for writes."
+            name: Etcd has a leader?
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: mean
+              colorMode: none
+              format:
+                unit: decimal
+              mappings:
+              - kind: Value
+                spec:
+                  result:
+                    value: 'NO'
+                  value: '0'
+              - kind: Value
+                spec:
+                  result:
+                    value: 'YES'
+                  value: '1'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max(etcd_server_has_leader{cluster="$cluster",namespace="openshift-etcd"})
+                  seriesNameFormat: ''
+      '6_3':
+        kind: Panel
+        spec:
+          display:
+            description: "Total number of failed Raft proposals seen since the etcd members started (maximum across members). It should be 0 or stay flat; an increasing value means proposals failed, usually because of leader loss, slow disks or network problems."
+            name: Total number of failed proposals seen
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: mean
+              colorMode: none
+              format:
+                unit: decimal
+              mappings:
+              - kind: Misc
+                spec:
+                  result:
+                    value: N/A
+                  value: 'null'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max(etcd_server_proposals_failed_total{cluster="$cluster",namespace="openshift-etcd"})
+                  seriesNameFormat: ''
+      '6_4':
+        kind: Panel
+        spec:
+          display:
+            description: "Total number of keys stored in etcd, per member. Tracks object growth in the cluster; all members should show nearly the same number."
+            name: Keys
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_debugging_mvcc_keys_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: '{{ pod }} Num keys'
+      '6_5':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of leader changes seen over the last day, per member. A healthy cluster has very few; a high count indicates etcd instability."
+            name: Leader Elections Per Day
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: changes(etcd_server_leader_changes_seen_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[1d])
+                  seriesNameFormat: '{{instance}} Total Leader Elections Per Day'
+      '6_6':
+        kind: Panel
+        spec:
+          display:
+            description: "Slow operations reported by etcd: slow applies (apply took longer than 100 ms) and slow read indexes. Nonzero values indicate disk, CPU or network slowness on that member."
+            name: Slow Operations
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: ops/sec
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: delta(etcd_server_slow_apply_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: '{{ pod }} slow applies'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: delta(etcd_server_slow_read_indexes_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: '{{ pod }} slow read indexes'
+      '6_7':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of key puts and deletes handled by etcd, per member. Shows write activity on the cluster's API state."
+            name: Key Operations
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: ops/sec
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate(etcd_mvcc_put_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: '{{ pod }} puts/s'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate(etcd_mvcc_delete_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}[$interval])
+                  seriesNameFormat: '{{ pod }} deletes/s'
+      '6_8':
+        kind: Panel
+        spec:
+          display:
+            description: "Heartbeat send failures and health check failures per member (counters). Increases mean a member is struggling to talk to its peers in time, often because of an overloaded node or slow network."
+            name: Heartbeat Failures
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_server_heartbeat_send_failures_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: '{{ pod }} heartbeat failures'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_server_health_failures{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: '{{ pod }} health failures'
+      '6_9':
+        kind: Panel
+        spec:
+          display:
+            description: "Cumulative number of keys removed by compaction, per member. Compaction removes old revisions so the database does not grow without bound."
+            name: Compacted Keys
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: etcd_debugging_mvcc_db_compaction_keys_total{cluster="$cluster",namespace="openshift-etcd",pod=~"$etcd_pod"}
+                  seriesNameFormat: '{{ pod  }} keys compacted'
+    layouts:
+    - kind: Grid
+      spec:
+        display:
+          title: General Resource Usage
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 1
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_0'
+        - x: 12
+          "y": 1
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_1'
+        - x: 0
+          "y": 8
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_2'
+        - x: 12
+          "y": 8
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_3'
+        - x: 0
+          "y": 16
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_4'
+        - x: 12
+          "y": 16
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_5'
+    - kind: Grid
+      spec:
+        display:
+          title: Compact/Defrag Detailed
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 0
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/1_0'
+        - x: 8
+          "y": 0
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/1_1'
+        - x: 16
+          "y": 0
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/1_2'
+    - kind: Grid
+      spec:
+        display:
+          title: WAL fsync Duration Detailed
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 0
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/2_0'
+        - x: 8
+          "y": 0
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/2_1'
+        - x: 16
+          "y": 0
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/2_2'
+    - kind: Grid
+      spec:
+        display:
+          title: Backend Commit Duration Detailed
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 0
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/3_0'
+        - x: 8
+          "y": 0
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/3_1'
+        - x: 16
+          "y": 0
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/3_2'
+    - kind: Grid
+      spec:
+        display:
+          title: Network Usage
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 1
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/4_0'
+        - x: 12
+          "y": 1
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/4_1'
+        - x: 0
+          "y": 8
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/4_2'
+        - x: 12
+          "y": 8
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/4_3'
+        - x: 0
+          "y": 16
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/4_4'
+        - x: 12
+          "y": 16
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/4_5'
+    - kind: Grid
+      spec:
+        display:
+          title: DB Info per Member
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 8
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/5_0'
+        - x: 8
+          "y": 8
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/5_1'
+        - x: 16
+          "y": 8
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/5_2'
+    - kind: Grid
+      spec:
+        display:
+          title: General Info
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 1
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6_0'
+        - x: 12
+          "y": 1
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6_1'
+        - x: 0
+          "y": 8
+          width: 6
+          height: 2
+          content:
+            $ref: '#/spec/panels/6_2'
+        - x: 6
+          "y": 8
+          width: 6
+          height: 2
+          content:
+            $ref: '#/spec/panels/6_3'
+        - x: 12
+          "y": 12
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6_4'
+        - x: 0
+          "y": 12
+          width: 12
+          height: 6
+          content:
+            $ref: '#/spec/panels/6_5'
+        - x: 0
+          "y": 20
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6_6'
+        - x: 12
+          "y": 20
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6_7'
+        - x: 0
+          "y": 28
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6_8'
+        - x: 12
+          "y": 28
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6_9'
+    duration: 1h

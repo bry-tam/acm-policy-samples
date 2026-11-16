@@ -1,0 +1,82 @@
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PolicyGenerator
+metadata:
+  name: gen-policy-perses-dashboards
+policyDefaults:
+  namespace: bry-tam-policies
+  remediationAction: enforce
+  consolidateManifests: false
+  policySets:
+    - perses-dashboards
+  categories:
+    - "CM Configuration Management"
+  controls:
+    - "CM-2 Baseline Configuration"
+  standards:
+    - "NIST SP 800-53"
+  policyLabels:
+    policy_gen.name: perses-dashboards
+  severity: medium
+
+placementBindingDefaults:
+  name: "perses-dashboards-binding"
+
+policies:
+  - name: perses-dashboards
+    description: "Deploys custom PersesDashboard resources (converted from Grafana dashboards) into the open-cluster-management-observability namespace, alongside ACM's own Perses dashboards."
+    configurationPolicyAnnotations:
+      policy.open-cluster-management.io/disable-templates: "true"
+    manifests:
+      - path: ovn-dashboard-perses.yml
+        name: perses-dashboard-ovn
+        complianceType: mustonlyhave
+
+      - path: ocp-cluster-health-perses.yml
+        name: perses-dashboard-ocp-cluster-health
+        complianceType: mustonlyhave
+
+      - path: node-perses.yml
+        name: perses-dashboard-node-performance
+        complianceType: mustonlyhave
+
+      - path: etcd-on-cluster-dashboard-perses.yml
+        name: perses-dashboard-etcd
+        complianceType: mustonlyhave
+
+      - path: api-performance-overview-perses.yml
+        name: perses-dashboard-api-performance-overview
+        complianceType: mustonlyhave
+
+      - path: ocp-lifecycle-perses.yml
+        name: perses-dashboard-ocp-lifecycle
+        complianceType: mustonlyhave
+
+      - path: ovn-metrics-scrapeconfig.yml
+        name: perses-dashboard-ovn-metrics-scrapeconfig
+        complianceType: mustonlyhave
+
+      - path: ocp-cluster-health-metrics-scrapeconfig.yml
+        name: perses-dashboard-ocp-cluster-health-metrics-scrapeconfig
+        complianceType: mustonlyhave
+
+      - path: node-metrics-scrapeconfig.yml
+        name: perses-dashboard-node-metrics-scrapeconfig
+        complianceType: mustonlyhave
+
+      - path: etcd-metrics-scrapeconfig.yml
+        name: perses-dashboard-etcd-metrics-scrapeconfig
+        complianceType: mustonlyhave
+
+      - path: api-performance-metrics-scrapeconfig.yml
+        name: perses-dashboard-api-performance-metrics-scrapeconfig
+        complianceType: mustonlyhave
+
+      - path: ocp-lifecycle-metrics-scrapeconfig.yml
+        name: perses-dashboard-ocp-lifecycle-metrics-scrapeconfig
+        complianceType: mustonlyhave
+
+policySets:
+  - name: perses-dashboards
+    placement:
+      placementName: "ft-acm-observability--enabled"

@@ -1,0 +1,895 @@
+---
+apiVersion: perses.dev/v1alpha2
+kind: PersesDashboard
+metadata:
+  namespace: open-cluster-management-observability
+  name: api-performance-overview
+  labels:
+    managed-by: bry-tam-policies
+spec:
+  config:
+    display:
+      name: bry-tam / API Performance Dashboard
+      description: "Kube-apiserver request performance for one cluster: latency, request rates, errors, in-flight/long-running requests, response sizes and API Priority & Fairness (P&F) queueing. Use the variables at the top (apiserver, instance, resource, verb, code, flow_schema, priority_level) to narrow every panel. Rates use the interval variable as their window."
+    variables:
+    - kind: ListVariable
+      spec:
+        allowAllValue: false
+        allowMultiple: false
+        display:
+          hidden: false
+          name: cluster
+        name: cluster
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+            labelName: name
+            matchers:
+            - acm_managed_cluster_labels{openshiftVersion_major!="3"}
+    - kind: ListVariable
+      spec:
+        display:
+          name: apiserver
+          hidden: false
+        allowAllValue: true
+        allowMultiple: false
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: apiserver
+            matchers:
+            - apiserver_request_duration_seconds_bucket{cluster="$cluster"}
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+        name: apiserver
+    - kind: ListVariable
+      spec:
+        display:
+          name: instance
+          hidden: false
+        allowAllValue: true
+        allowMultiple: false
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: instance
+            matchers:
+            - apiserver_request_total{cluster="$cluster"}
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+        name: instance
+    - kind: ListVariable
+      spec:
+        display:
+          name: resource
+          hidden: false
+        allowAllValue: true
+        allowMultiple: false
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: resource
+            matchers:
+            - apiserver_request_duration_seconds_bucket{cluster="$cluster"}
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+        name: resource
+    - kind: ListVariable
+      spec:
+        display:
+          name: code
+          hidden: false
+        allowAllValue: true
+        allowMultiple: false
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: code
+            matchers:
+            - '{cluster="$cluster"}'
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+        name: code
+    - kind: ListVariable
+      spec:
+        display:
+          name: verb
+          hidden: false
+        allowAllValue: true
+        allowMultiple: false
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: verb
+            matchers:
+            - '{cluster="$cluster"}'
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+        name: verb
+    - kind: ListVariable
+      spec:
+        display:
+          name: flow-schema
+          hidden: false
+        allowAllValue: true
+        allowMultiple: false
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: flow_schema
+            matchers:
+            - '{cluster="$cluster"}'
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+        name: flow_schema
+    - kind: ListVariable
+      spec:
+        display:
+          name: priority-level
+          hidden: false
+        allowAllValue: true
+        allowMultiple: false
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: priority_level
+            matchers:
+            - '{cluster="$cluster"}'
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+        name: priority_level
+    - kind: ListVariable
+      spec:
+        display:
+          name: interval
+          hidden: false
+        defaultValue: 10m
+        allowAllValue: true
+        allowMultiple: false
+        plugin:
+          kind: StaticListVariable
+          spec:
+            values:
+            - label: auto
+              value: $__auto_interval_interval
+            - 1m
+            - 3m
+            - 5m
+            - 10m
+            - 20m
+            - 30m
+        name: interval
+    panels:
+      '0':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile latency of API requests, grouped by verb (GET, LIST, POST, ...). WATCH, WATCHLIST and PROXY are excluded because they are long-lived and would skew the result. Rising latency usually points to an overloaded apiserver, slow etcd or an expensive client. Note: Perses may show a harmless PromQL info message about histogram monotonicity; it comes from short-lived or duplicate series and does not affect the graph."
+            name: request duration - 99th quantile
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{cluster="$cluster",apiserver=~"$apiserver",instance=~"$instance",resource=~"$resource",subresource!="log",verb=~"$verb",verb!~"WATCH|WATCHLIST|PROXY"}[$interval])) by(verb,le))
+                  seriesNameFormat: '{{verb}}'
+      '1':
+        kind: Panel
+        spec:
+          display:
+            description: "Requests per second received by each kube-apiserver instance (one per control plane node). Use it to see whether load is balanced across the instances or concentrated on one."
+            name: request rate - by instance
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(apiserver_request_total{cluster="$cluster",apiserver=~"$apiserver",instance=~"$instance",resource=~"$resource",code=~"$code",verb=~"$verb"}[$interval])) by(instance)
+                  seriesNameFormat: '{{instance}}'
+      '2':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile request latency grouped by API resource (pods, configmaps, secrets, ...). Use it to find which resources are slow. WATCH, WATCHLIST, PROXY and log subresource requests are excluded. A harmless PromQL histogram monotonicity info message may appear."
+            name: request duration - 99th quantile - by resource
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{cluster="$cluster",apiserver=~"$apiserver",instance=~"$instance",resource=~"$resource",subresource!="log",verb=~"$verb",verb!~"WATCH|WATCHLIST|PROXY"}[$interval])) by(resource,le))
+                  seriesNameFormat: '{{resource}}'
+      '3':
+        kind: Panel
+        spec:
+          display:
+            description: "Requests per second grouped by API resource. Shows which resources generate the most API traffic, which helps identify chatty controllers or clients."
+            name: request rate - by resource
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(apiserver_request_total{cluster="$cluster",apiserver=~"$apiserver",instance=~"$instance",resource=~"$resource",code=~"$code",verb=~"$verb"}[$interval])) by(resource)
+                  seriesNameFormat: '{{resource}}'
+      '4':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile latency split into read (LIST, GET) and write (POST, PUT, PATCH, UPDATE, DELETE) requests. Writes normally take longer because they go through etcd consensus. A harmless PromQL histogram monotonicity info message may appear."
+            name: request duration - read vs write
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{cluster="$cluster",apiserver=~"$apiserver",instance=~"$instance",resource=~"$resource",verb=~"LIST|GET"}[$interval])) by(le))
+                  seriesNameFormat: read
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{cluster="$cluster",apiserver=~"$apiserver",instance=~"$instance",resource=~"$resource",verb=~"POST|PUT|PATCH|UPDATE|DELETE"}[$interval])) by(le))
+                  seriesNameFormat: write
+      '5':
+        kind: Panel
+        spec:
+          display:
+            description: "Requests per second split into read (LIST, GET) and write (POST, PUT, PATCH, UPDATE, DELETE) requests. Shows the read/write mix of the cluster's API load."
+            name: request rate - read vs write
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(apiserver_request_total{cluster="$cluster",apiserver=~"$apiserver",instance=~"$instance",resource=~"$resource",verb=~"LIST|GET"}[$interval]))
+                  seriesNameFormat: read
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(apiserver_request_total{cluster="$cluster",apiserver=~"$apiserver",instance=~"$instance",resource=~"$resource",verb=~"POST|PUT|PATCH|UPDATE|DELETE"}[$interval]))
+                  seriesNameFormat: write
+      '6':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of requests the apiserver terminated before completing, grouped by verb. Terminations happen when the server sheds load (for example timeouts or P&F rejections). Anything above zero for a sustained period means clients are being turned away."
+            name: requests dropped rate
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(apiserver_request_terminations_total{cluster="$cluster",instance=~"$instance"}[$interval])) by (verb)
+                  seriesNameFormat: ''
+      '7':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of requests terminated by the apiserver, grouped by the component that terminated them (for example the timeout or priority-and-fairness filter). Use it with 'requests dropped rate' to see why requests are being terminated."
+            name: requests terminated rate
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: list
+                position: bottom
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(apiserver_request_terminations_total{cluster="$cluster",instance=~"$instance",resource=~"$resource",code=~"$code"}[$interval])) by(component)
+                  seriesNameFormat: ''
+      '8':
+        kind: Panel
+        spec:
+          display:
+            description: "Requests per second grouped by HTTP response code. A rise in 4xx (client errors, throttling 429) or 5xx (server errors) is a sign of problems. Use the code variable to isolate specific codes."
+            name: requests status rate
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(apiserver_request_total{cluster="$cluster",apiserver=~"$apiserver",instance=~"$instance",resource=~"$resource",verb=~"$verb",code=~"$code"}[$interval])) by(code)
+                  seriesNameFormat: '{{code}}'
+      '9':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of long-running requests (mostly WATCH and exec/attach sessions) currently open on each apiserver instance. These are not counted in the latency panels. A large imbalance between instances can indicate a client reconnect storm."
+            name: long running requests
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(apiserver_longrunning_requests{cluster="$cluster",instance=~"$instance",resource=~"$resource",verb=~"$verb"}) by(instance)
+                  seriesNameFormat: '{{instance}}'
+      '10':
+        kind: Panel
+        spec:
+          display:
+            description: "Requests currently being processed by each apiserver instance, split into mutating and read-only. This is compared against the apiserver's max-in-flight limits; sustained values near the limit mean requests will queue or be rejected."
+            name: request in flight
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(apiserver_current_inflight_requests{cluster="$cluster",instance=~"$instance"}) by (instance,request_kind)
+                  seriesNameFormat: '{{request_kind}}-{{instance}}'
+      '11':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile size of API responses per apiserver instance. Large responses (for example unpaginated LISTs of big resources) increase apiserver memory, network use and latency."
+            name: response size - 99th quantile
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(apiserver_response_sizes_bucket{cluster="$cluster",instance=~"$instance",resource=~"$resource",verb=~"$verb"}[$interval])) by(instance,le))
+                  seriesNameFormat: '{{instance}}'
+      '12':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile length of the API Priority & Fairness queue a request lands in after being enqueued, per flow schema and priority level. Longer queues mean a flow is competing for limited concurrency and requests will wait."
+            name: p&f - request queue length
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(apiserver_flowcontrol_request_queue_length_after_enqueue_bucket{cluster="$cluster",instance=~"$instance",flow_schema=~"$flow_schema",priority_level=~"$priority_level"}[$interval])) by(flow_schema, priority_level, le))
+                  seriesNameFormat: '{{flow_schema}}:{{priority_level}}'
+      '13':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time requests wait in API Priority & Fairness queues before being executed, per flow schema and priority level. Increasing wait time means that flow is being throttled by P&F."
+            name: p&f - request wait duration - 99th quantile
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - mean
+                - max
+                - last-number
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(apiserver_flowcontrol_request_wait_duration_seconds_bucket{cluster="$cluster",instance=~"$instance",flow_schema=~"$flow_schema",priority_level=~"$priority_level"}[$interval])) by(flow_schema, priority_level, le))
+                  seriesNameFormat: '{{flow_schema}}:{{priority_level}}'
+      '14':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate at which P&F dispatches (starts executing) requests, per flow schema and priority level. Shows which flows are consuming the apiserver's capacity."
+            name: p&f - request dispatch rate
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(apiserver_flowcontrol_dispatched_requests_total{cluster="$cluster",instance=~"$instance",flow_schema=~"$flow_schema",priority_level=~"$priority_level"}[$interval])) by(flow_schema,priority_level)
+                  seriesNameFormat: '{{flow_schema}}:{{priority_level}}'
+      '15':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time spent executing requests, once dispatched by P&F, per flow schema and priority level. Excludes queue wait time."
+            name: p&f - request execution duration
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(apiserver_flowcontrol_request_execution_seconds_bucket{cluster="$cluster",instance=~"$instance",flow_schema=~"$flow_schema",priority_level=~"$priority_level"}[$interval])) by(flow_schema, priority_level, le))
+                  seriesNameFormat: '{{flow_schema}}:{{priority_level}}'
+      '16':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of requests currently waiting in P&F queues, per flow schema and priority level. Non-zero values for a sustained time mean that flow is saturated."
+            name: p&f - pending in queue
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(apiserver_flowcontrol_current_inqueue_requests{cluster="$cluster",instance=~"$instance",flow_schema=~"$flow_schema",priority_level=~"$priority_level"}) by (flow_schema,priority_level)
+                  seriesNameFormat: '{{flow_schema}}:{{priority_level}}'
+      '17':
+        kind: Panel
+        spec:
+          display:
+            description: "Seats of API Priority & Fairness concurrency currently in use on each kube-apiserver (port 6443 instance), per flow schema. Compare with the priority level's concurrency limit: when usage reaches the limit, new requests queue."
+            name: p&f - concurrency limit by kube-apiserver
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: right
+                values:
+                - max
+              visual:
+                areaOpacity: 0.1
+                connectNulls: false
+                display: line
+                lineWidth: 1
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(apiserver_flowcontrol_request_concurrency_in_use{cluster="$cluster",instance=~".*:6443",priority_level=~"$priority_level"}) by (instance,flow_schema)
+                  seriesNameFormat: '{{instance}}:{{flow_schema}}'
+    layouts:
+    - kind: Grid
+      spec:
+        display:
+          title: Panel Group 1
+        items:
+        - x: 0
+          "y": 0
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0'
+        - x: 12
+          "y": 0
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/1'
+        - x: 0
+          "y": 8
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/2'
+        - x: 12
+          "y": 8
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/3'
+        - x: 0
+          "y": 16
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/4'
+        - x: 12
+          "y": 16
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/5'
+        - x: 0
+          "y": 24
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6'
+        - x: 12
+          "y": 24
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/7'
+        - x: 0
+          "y": 32
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/8'
+        - x: 12
+          "y": 32
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/9'
+        - x: 0
+          "y": 40
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/10'
+        - x: 12
+          "y": 40
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/11'
+        - x: 0
+          "y": 48
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/12'
+        - x: 12
+          "y": 48
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/13'
+        - x: 0
+          "y": 64
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/14'
+        - x: 12
+          "y": 64
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/15'
+        - x: 0
+          "y": 72
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/16'
+        - x: 12
+          "y": 72
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/17'
+    duration: 1h

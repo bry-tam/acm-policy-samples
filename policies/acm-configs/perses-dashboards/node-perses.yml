@@ -1,0 +1,2464 @@
+---
+apiVersion: perses.dev/v1alpha2
+kind: PersesDashboard
+metadata:
+  namespace: open-cluster-management-observability
+  name: node-performance
+  labels:
+    managed-by: bry-tam-policies
+spec:
+  config:
+    display:
+      name: bry-tam / Node Performance
+      description: "Per-node performance of the cluster's workers and control plane nodes: CPU, load, memory, disk IOPS, cgroup resource use, workload distribution, top containers, kubelet and CRI-O health, PLEG latency, inode usage and (when enabled) pressure stall information (PSI). Use the role and node variables to restrict every panel to specific node roles or individual nodes (default: all). Warning/critical thresholds in panel titles are rules of thumb from the upstream Red Hat performance dashboards. Panels on PSI need PSI enabled on the nodes and otherwise show 'No data'."
+    variables:
+    - kind: ListVariable
+      spec:
+        allowAllValue: false
+        allowMultiple: false
+        display:
+          hidden: false
+          name: cluster
+        name: cluster
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+            labelName: name
+            matchers:
+            - acm_managed_cluster_labels{openshiftVersion_major!="3"}
+    - kind: ListVariable
+      spec:
+        allowAllValue: true
+        allowMultiple: true
+        customAllValue: .*
+        defaultValue:
+        - $__all
+        sort: alphabetical-asc
+        display:
+          hidden: false
+          name: role
+        name: role
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+            labelName: role
+            matchers:
+            - kube_node_role{cluster="$cluster"}
+    - kind: ListVariable
+      spec:
+        allowAllValue: true
+        allowMultiple: true
+        defaultValue:
+        - $__all
+        sort: alphabetical-asc
+        display:
+          hidden: false
+          name: node
+        name: node
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+            labelName: node
+            matchers:
+            - kube_node_role{cluster="$cluster",role=~"$role"}
+    - kind: ListVariable
+      spec:
+        display:
+          name: interval
+          hidden: false
+        defaultValue: 10m
+        allowAllValue: false
+        allowMultiple: false
+        plugin:
+          kind: StaticListVariable
+          spec:
+            values:
+            - 1m
+            - 3m
+            - 5m
+            - 10m
+            - 20m
+            - 30m
+        name: interval
+    panels:
+      '0_0':
+        kind: Panel
+        spec:
+          display:
+            description: "CPU used on each worker node as a percentage of one core (100% = one full core; a 4-core node can show up to 400%). Idle time is excluded. Use it to find busy or unevenly loaded workers."
+            name: Workers CPU Usage
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum( rate( (node_cpu_seconds_total{cluster="$cluster", mode != "idle" } * on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "worker", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") )[$interval:] ) ) by (instance) * 100
+                  seriesNameFormat: '{{instance}}'
+      '0_1':
+        kind: Panel
+        spec:
+          display:
+            description: "CPU used on each control plane node as a percentage of one core (100% = one full core). Control plane nodes run the API server and etcd, so sustained high CPU here affects the whole cluster."
+            name: Control Plane CPU Usage
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum( rate( (node_cpu_seconds_total{cluster="$cluster", mode != "idle" } * on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") )[$interval:] ) ) by (instance) * 100
+                  seriesNameFormat: '{{instance}}'
+      '0_2':
+        kind: Panel
+        spec:
+          display:
+            description: "1-minute load average per worker node. Load consistently above the node's CPU core count means processes are waiting for CPU (or blocked on disk I/O)."
+            name: Workers Load1
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: 'node_load1{cluster="$cluster"} * on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "worker", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") '
+                  seriesNameFormat: '{{instance}}'
+      '0_3':
+        kind: Panel
+        spec:
+          display:
+            description: "1-minute load average per control plane node. Load consistently above the node's core count signals CPU or I/O saturation."
+            name: Control Plane Load1
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: 'node_load1{cluster="$cluster"} * on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") '
+                  seriesNameFormat: '{{instance}}'
+      '0_4':
+        kind: Panel
+        spec:
+          display:
+            description: "Memory available for new workloads on each worker (MemAvailable), plus the total across the selected workers. Low or shrinking values mean the node is close to memory pressure and evictions."
+            name: Workers Memory Available
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: node_memory_MemAvailable_bytes{cluster="$cluster"} * on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "worker", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)")
+                  seriesNameFormat: '{{instance}}'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum( node_memory_MemAvailable_bytes{cluster="$cluster"} * on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "worker", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") )
+                  seriesNameFormat: sum
+      '0_5':
+        kind: Panel
+        spec:
+          display:
+            description: "Memory available on each control plane node (MemAvailable), plus the total across the selected nodes. Low values risk OOM kills of critical components such as etcd and the API server."
+            name: Control Plane Memory Available
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: node_memory_MemAvailable_bytes{cluster="$cluster"} * on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)")
+                  seriesNameFormat: '{{instance}}'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum( node_memory_MemAvailable_bytes{cluster="$cluster"} * on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") )
+                  seriesNameFormat: sum
+      '0_6':
+        kind: Panel
+        spec:
+          display:
+            description: "Disk read and write operations per second for each device on each worker. High IOPS can saturate a disk; compare against what the underlying storage supports."
+            name: Workers Disk IOPS
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate( (  node_disk_reads_completed_total{cluster="$cluster"} *  on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "worker", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") )[$interval:])
+                  seriesNameFormat: '{{instance}} - {{ device }} - read'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate( (  node_disk_writes_completed_total{cluster="$cluster"} *  on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "worker", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") )[$interval:])
+                  seriesNameFormat: '{{instance}} - {{ device }} - write'
+      '0_7':
+        kind: Panel
+        spec:
+          display:
+            description: "Disk read and write operations per second for each device on each control plane node. etcd is very sensitive to disk latency, so heavy IOPS on the etcd disk deserves attention."
+            name: Control Plane Disk IOPS
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate( (  node_disk_reads_completed_total{cluster="$cluster"} *  on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") )[$interval:])
+                  seriesNameFormat: '{{instance}} - {{ device }} - read'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate( (  node_disk_writes_completed_total{cluster="$cluster"} *  on (instance) group_left label_replace( kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"} , "instance" , "$1" , "node" ,"(.*)") )[$interval:])
+                  seriesNameFormat: '{{instance}} - {{ device }} - write'
+      "0_8":
+        kind: Panel
+        spec:
+          display:
+            description: "Total number of container threads (processes/threads) running on each worker node. A very high or steadily growing value can indicate a thread leak or approaching the node's PID limits."
+            name: Workers Container Threads
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (node) (container_threads{cluster="$cluster", container!=""})  * on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"}
+                  seriesNameFormat: '{{node}}'
+      "0_9":
+        kind: Panel
+        spec:
+          display:
+            description: "Total number of container threads running on each control plane node. Steady growth can indicate a leak in a control plane component."
+            name: Control Plane Container Threads
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (node) (container_threads{cluster="$cluster", container!=""})  * on (node) group_left kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"}
+                  seriesNameFormat: '{{node}}'
+      '1_0':
+        kind: Panel
+        spec:
+          display:
+            description: "CPU used by key systemd/kubernetes cgroups (system.slice, kubelet, CRI-O, OVS, journald, kubepods, ...) on the selected worker nodes, as a percentage of one core, summed across those nodes. Shows how much CPU goes to system services versus pods. Requires the cgroup-id metrics in node-metrics-scrapeconfig.yml."
+            name: Workers CGroup CPU(% of 1 core)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (id) (( rate(container_cpu_usage_seconds_total{cluster="$cluster",node=~"$node", job=~".*", id =~"/system.slice|/system.slice/kubelet.service|/system.slice/ovs-vswitchd.service|/system.slice/crio.service|/system.slice/systemd-journald.service|/system.slice/ovsdb-server.service|/system.slice/systemd-udevd.service|/kubepods.slice"}[$interval])) * 100 * on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"} )
+                  seriesNameFormat: '{{id}}'
+      '1_1':
+        kind: Panel
+        spec:
+          display:
+            description: "CPU used by key systemd/kubernetes cgroups (system.slice, kubelet, CRI-O, OVS, journald, kubepods, ...) on the selected control plane nodes, as a percentage of one core, summed across those nodes."
+            name: Control Plane CGroup CPU(% of 1 core)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (id) (( rate(container_cpu_usage_seconds_total{cluster="$cluster",node=~"$node", job=~".*", id =~"/system.slice|/system.slice/kubelet.service|/system.slice/ovs-vswitchd.service|/system.slice/crio.service|/system.slice/systemd-journald.service|/system.slice/ovsdb-server.service|/system.slice/systemd-udevd.service|/kubepods.slice"}[$interval])) * 100 * on (node) group_left kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"} )
+                  seriesNameFormat: '{{id}}'
+      '1_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Working-set memory of key systemd/kubernetes cgroups on the selected worker nodes, summed across those nodes. Shows how much memory goes to system services versus pods. Requires the cgroup-id metrics in node-metrics-scrapeconfig.yml."
+            name: Workers CGroup Memory Working Set
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (id) (container_memory_working_set_bytes{cluster="$cluster",node=~"$node", job=~".*", id =~"/system.slice|/system.slice/kubelet.service|/system.slice/ovs-vswitchd.service|/system.slice/crio.service|/system.slice/systemd-journald.service|/system.slice/ovsdb-server.service|/system.slice/systemd-udevd.service|/kubepods.slice"} * on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"} )
+                  seriesNameFormat: '{{id}}'
+      '1_3':
+        kind: Panel
+        spec:
+          display:
+            description: "Working-set memory of key systemd/kubernetes cgroups on the selected control plane nodes, summed across those nodes."
+            name: Control Plane CGroup Memory Working Set
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (id) (container_memory_working_set_bytes{cluster="$cluster",node=~"$node", job=~".*", id =~"/system.slice|/system.slice/kubelet.service|/system.slice/ovs-vswitchd.service|/system.slice/crio.service|/system.slice/systemd-journald.service|/system.slice/ovsdb-server.service|/system.slice/systemd-udevd.service|/kubepods.slice"} * on (node) group_left kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"} )
+                  seriesNameFormat: '{{id}}'
+      '1_4':
+        kind: Panel
+        spec:
+          display:
+            description: "Working-set memory used by the system.slice cgroup (host OS services such as kubelet and CRI-O) on each node. Unexpected growth indicates a leak or runaway system service. Requires the cgroup-id metrics in node-metrics-scrapeconfig.yml."
+            name: system.slice Working Set by node
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (node)(container_memory_working_set_bytes{cluster="$cluster",node=~"$node",id="/system.slice"})
+                  seriesNameFormat: system.slice - {{ node }}
+      '1_5':
+        kind: Panel
+        spec:
+          display:
+            description: "CPU used by the system.slice cgroup (host OS services) on each node, as a percentage of one core. High values mean system services (kubelet, CRI-O, journald, ...) are consuming CPU that pods could use."
+            name: system.slice CPU by node
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (node) (( rate(container_cpu_usage_seconds_total{cluster="$cluster",node=~"$node",id="/system.slice"}[$interval])) * 100)
+                  seriesNameFormat: system.slice - {{ node }}
+      '2_0':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of pods by phase (Running, Pending, Failed, Succeeded, Unknown) for the whole cluster. Not filtered by the role/node variables because pods that are pending are not yet assigned to a node. Growing Pending or Failed counts indicate scheduling or runtime problems."
+            name: Pod count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(kube_pod_status_phase{cluster="$cluster"}) by (phase)
+                  seriesNameFormat: '{{phase}} pods'
+      '2_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of pods on each node. Use it to check that pods are spread reasonably across nodes and to see nodes approaching the maximum pods-per-node limit (250 by default on OpenShift)."
+            name: Pod Distribution
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(kube_pod_info{cluster="$cluster",node=~"$node"}) by (node)
+                  seriesNameFormat: '{{ node }}'
+      '2_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Total number of containers running in the pods on the selected nodes."
+            name: Container count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(kube_pod_container_info{cluster="$cluster"} * on (namespace, pod) group_left (node) kube_pod_info{cluster="$cluster",node=~"$node"})
+                  seriesNameFormat: Containers
+      '2_3':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of containers on each node, as seen by the kubelet's cAdvisor. Compare with the pod distribution to spot nodes with heavy multi-container pods."
+            name: Container Distribution
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(container_last_seen{cluster="$cluster",node=~"$node"}) by (node)
+                  seriesNameFormat: Containers on {{node}}
+      '3_0':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 containers with the largest working-set memory on the selected nodes. Working set is the memory the kernel cannot easily reclaim and what the OOM killer considers. Use it to find the heaviest memory consumers."
+            name: Top 10 Container Memory Working Set
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, container_memory_working_set_bytes{cluster="$cluster",node=~"$node",namespace!="",container!="POD",name!=""})
+                  seriesNameFormat: '{{ namespace }} - {{ name }}'
+      '3_1':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 containers using the most CPU on the selected nodes, as a percentage of one core (100% = one full core). Use it to find the biggest CPU consumers."
+            name: Top 10 Container CPU(% of 1 core)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10,irate(container_cpu_usage_seconds_total{cluster="$cluster",node=~"$node",namespace!="",container!="POD",name!=""}[$interval])*100)
+                  seriesNameFormat: '{{ namespace }} - {{ name }}'
+      '3_2':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 scrape targets (job and instance) with the most goroutines. A very high or steadily growing goroutine count in a Go component often indicates a goroutine leak."
+            name: Top 10 Goroutines count
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, sum(go_goroutines{cluster="$cluster"}) by (job,instance))
+                  seriesNameFormat: '{{ job }} - {{ instance }}'
+      '4_0':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of kubelet container runtime operation errors on worker nodes, per node and operation type. Should normally be zero. Thresholds: above 0.001/s warning, above 0.01/s critical, above 0.1/s severe. Errors indicate problems talking to CRI-O (image pulls, container start/stop)."
+            name: Workers Kubelet Runtime Operations Errors/second, >0.001 Warning, >0.01 Critical, >0.1 Severe
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (node, operation_type) (rate(kubelet_runtime_operations_errors_total{cluster="$cluster"} [$interval])  *  on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"})
+                  seriesNameFormat: '{{node}}: {{operation_type}}'
+      '4_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of kubelet container runtime operation errors on control plane nodes, per node and operation type. Should normally be zero. Thresholds: above 0.001/s warning, above 0.01/s critical, above 0.1/s severe."
+            name: Control Plane Kubelet Runtime Operations Errors/second, >0.001 Warning, >0.01 Critical, >0.1 Severe
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (node, operation_type) (rate(kubelet_runtime_operations_errors_total{cluster="$cluster"} [$interval]) *  on (node) group_left kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"})
+                  seriesNameFormat: '{{node}}: {{operation_type}}'
+      '5_0':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time the kubelet's cgroup manager takes to create a cgroup, per node. Cgroups are created whenever a pod or container starts, so slow values delay pod startup."
+            name: P99 Kubelet Cgroup Manager Duration - Create
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(kubelet_cgroup_manager_duration_seconds_bucket{cluster="$cluster",node=~"$node",operation_type="create"}[$interval])) by (node, operation_type, le))
+                  seriesNameFormat: '{{node}}: {{operation_type}}'
+      '5_1':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time the kubelet's cgroup manager takes to update a cgroup, per node. Updates happen when pod resource limits change."
+            name: P99 Kubelet Cgroup Manager Duration - Update
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(kubelet_cgroup_manager_duration_seconds_bucket{cluster="$cluster",node=~"$node",operation_type="update"}[$interval])) by (node, operation_type, le))
+                  seriesNameFormat: '{{node}}: {{operation_type}}'
+      '5_2':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile time the kubelet's cgroup manager takes to destroy a cgroup, per node. Destroys happen when pods and containers are removed; slow values can delay pod cleanup."
+            name: P99 Kubelet Cgroup Manager Duration - Destroy
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(kubelet_cgroup_manager_duration_seconds_bucket{cluster="$cluster",node=~"$node",operation_type="destroy"}[$interval])) by (node, operation_type, le))
+                  seriesNameFormat: '{{node}}: {{operation_type}}'
+      '6_0':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes whose kubelet process uses the most CPU, as a percentage of one core. A busy kubelet can be slow to start pods and report node status."
+            name: Top 10 Kubelet Process CPU Usage(% of 1 core)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10,irate(process_cpu_seconds_total{cluster="$cluster",service="kubelet",job="kubelet"}[$interval])*100 *  on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"})
+                  seriesNameFormat: kubelet - {{node}}
+      '6_1':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes whose kubelet process uses the most resident memory. Growth over time can indicate a kubelet leak."
+            name: Top 10 Kubelet Process Resident Memory
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10,process_resident_memory_bytes{cluster="$cluster",service="kubelet",job="kubelet"} *  on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"})
+                  seriesNameFormat: kubelet - {{node}}
+      '7_0':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of HTTP requests served by the kubelet, grouped by request path. Shows which kubelet endpoints (logs, exec, metrics, ...) are used the most."
+            name: Kubelet HTTP requests count by path
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(kubelet_http_requests_duration_seconds_count{cluster="$cluster",node=~"$node"}[$interval])) by (path)
+                  seriesNameFormat: '{{ path }}'
+      '7_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of HTTP requests served by the kubelet, per node. Use it to find nodes with unusually high kubelet API traffic."
+            name: Kubelet HTTP requests count by node
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(kubelet_http_requests_duration_seconds_count{cluster="$cluster",node=~"$node"}[$interval])) by (node)
+                  seriesNameFormat: '{{ node }}'
+      '7_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Average latency per kubelet HTTP request, in milliseconds, grouped by path. Shows which kubelet endpoints are slow."
+            name: Kubelet HTTP requests latency per request by path (ms)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(kubelet_http_requests_duration_seconds_sum{cluster="$cluster",node=~"$node"}[$interval])) by (path) * 1000/sum(rate(kubelet_http_requests_duration_seconds_count{cluster="$cluster",node=~"$node"}[$interval])) by (path)
+                  seriesNameFormat: '{{ path }}'
+      '7_3':
+        kind: Panel
+        spec:
+          display:
+            description: "Average latency per kubelet HTTP request, in milliseconds, per node. Above 200 ms is a warning and above 500 ms is critical."
+            name: Kubelet HTTP requests latency per request by node (ms)> 200ms Warning, > 500ms Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(rate(kubelet_http_requests_duration_seconds_sum{cluster="$cluster",node=~"$node"}[$interval])) by (node) * 1000/sum(rate(kubelet_http_requests_duration_seconds_count{cluster="$cluster",node=~"$node"}[$interval])) by (node)
+                  seriesNameFormat: '{{ node }}'
+      '8_0':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of CRI-O (container runtime) operation errors on worker nodes, per node and operation. Should normally be zero. Above 0.001/s is a warning and above 0.01/s is critical."
+            name: Workers Runtime Crio Operations Errors/second, > 0.001 Warning, >0.01 Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (node, operation) (rate(container_runtime_crio_operations_errors_total{cluster="$cluster"} [$interval])  *  on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"})
+                  seriesNameFormat: '{{node}}: {{ operation }}'
+      '8_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Rate of CRI-O (container runtime) operation errors on control plane nodes, per node and operation. Should normally be zero. Above 0.001/s is a warning and above 0.01/s is critical."
+            name: Control Plane Runtime Crio Operations Errors/second, > 0.001 Warning, >0.01 Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum by (node, operation) (rate(container_runtime_crio_operations_errors_total{cluster="$cluster"} [$interval]) *  on (node) group_left kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"})
+                  seriesNameFormat: '{{node}}: {{ operation }}'
+      '8_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Average latency of CRI-O operations on worker nodes (top 10 node/operation combinations), in seconds. Above 1 s is a warning and above 5 s is critical. Slow operations such as RunPodSandbox, image pulls or container creation delay pod startup."
+            name: Workers Runtime Crio Operations Latency Avg(second), > 1s Warning, >5s Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, sum by (operation, node) (rate(container_runtime_crio_operations_latency_seconds_total{cluster="$cluster",node=~"$node"}[$interval]))/sum by (operation, node) (rate(container_runtime_crio_operations_total{cluster="$cluster",node=~"$node"}[$interval])) * on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"})
+                  seriesNameFormat: '{{node}}: {{ operation }}'
+      '8_3':
+        kind: Panel
+        spec:
+          display:
+            description: "Average latency of CRI-O operations on control plane nodes (top 10 node/operation combinations), in seconds. Above 1 s is a warning and above 5 s is critical."
+            name: Control Plane Runtime Crio Operations Latency Avg(second), > 1s Warning, >5s Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, sum by (operation, node) (rate(container_runtime_crio_operations_latency_seconds_total{cluster="$cluster",node=~"$node"}[$interval]))/sum by (operation, node) (rate(container_runtime_crio_operations_total{cluster="$cluster",node=~"$node"}[$interval])) * on (node) group_left kube_node_role{cluster="$cluster", role = "control-plane", node=~"$node"})
+                  seriesNameFormat: '{{node}}: {{ operation }}'
+      '9_0':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes where the CRI-O process uses the most CPU, as a percentage of one core. High CRI-O CPU is often caused by heavy container churn or image operations."
+            name: Top 10 crio Process CPU Usage(% of 1 core)
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10,irate(process_cpu_seconds_total{cluster="$cluster",service="kubelet",job="crio"}[$interval])*100 *  on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"})
+                  seriesNameFormat: crio - {{node}}
+      '9_1':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes where the CRI-O process uses the most resident memory."
+            name: Top 10 crio Process Resident Memory
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - first
+                - min
+                - max
+                - last
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: bytes
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10,process_resident_memory_bytes{cluster="$cluster",service="kubelet",job="crio"} *  on (node) group_left kube_node_role{cluster="$cluster", role = "worker", node=~"$node"})
+                  seriesNameFormat: crio - {{node}}
+      '10_0':
+        kind: Panel
+        spec:
+          display:
+            description: "Percentage of inodes used on the /run filesystem of each node. If inodes run out, no new files can be created even if disk space is free, which breaks pod and service startup."
+            name: inodes usage in /run
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (1 - node_filesystem_files_free{cluster="$cluster",instance=~"$node",fstype!="",mountpoint="/run"} / node_filesystem_files{cluster="$cluster",instance=~"$node",fstype!="",mountpoint="/run"}) * 100
+                  seriesNameFormat: '{{instance}}'
+      '10_1':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of inodes in use on /run for each node, plus the total across the selected nodes. Complements the percentage panel above."
+            name: inodes count in /run
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: node_filesystem_files{cluster="$cluster",instance=~"$node",fstype!="",mountpoint="/run"} - node_filesystem_files_free{cluster="$cluster",instance=~"$node",fstype!="",mountpoint="/run"}
+                  seriesNameFormat: '{{instance}}'
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(node_filesystem_files{cluster="$cluster",instance=~"$node",fstype!="",mountpoint="/run"} - node_filesystem_files_free{cluster="$cluster",instance=~"$node",fstype!="",mountpoint="/run"})
+                  seriesNameFormat: sum
+      '11_0':
+        kind: Panel
+        spec:
+          display:
+            description: "95th percentile duration of the kubelet's Pod Lifecycle Event Generator (PLEG) relist, per node. PLEG relists container states to detect changes; above 1 s is a warning and above 3 s is critical, and extreme values make nodes go NotReady ('PLEG is not healthy')."
+            name: P95 PLEG Latency (s), >1s Warning, >3s Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.95, sum(rate(kubelet_pleg_relist_duration_seconds_bucket{cluster="$cluster",node=~"$node"} [$interval])) by (node, le))
+                  seriesNameFormat: '{{node}}'
+      '11_1':
+        kind: Panel
+        spec:
+          display:
+            description: "99th percentile duration of the kubelet's PLEG relist per node. Above 3 s is a warning and above 5 s is critical."
+            name: P99 PLEG Latency (s), >3s Warning, >5s Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: histogram_quantile(0.99, sum(rate(kubelet_pleg_relist_duration_seconds_bucket{cluster="$cluster",node=~"$node"} [$interval])) by (node, le))
+                  seriesNameFormat: '{{node}}'
+      '11_2':
+        kind: Panel
+        spec:
+          display:
+            description: "Average PLEG relist duration per node. Above 0.5 s is a warning and above 1 s is critical."
+            name: Average Latency  (s), >0.5s Warning, >1s Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: rate(kubelet_pleg_relist_duration_seconds_sum{cluster="$cluster",node=~"$node"} [$interval])/rate(kubelet_pleg_relist_duration_seconds_count{cluster="$cluster",node=~"$node"}[$interval])
+                  seriesNameFormat: '{{node}}'
+      '11_3':
+        kind: Panel
+        spec:
+          display:
+            description: "Number of PLEG relists performed in the selected interval, per node. The kubelet normally relists about once per second; a low count (below 150 is a warning, below 50 is critical) means the kubelet is stuck or heavily delayed."
+            name: PLEG Relist Count in 5 mins, <150 Warning, <50 Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: sum(increase(kubelet_pleg_relist_duration_seconds_count{cluster="$cluster",node=~"$node"}[$interval])) by (node)
+                  seriesNameFormat: '{{node}}'
+      '12_0':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 containers with the most memory stall time (all tasks stalled waiting on memory), as a percentage of time. Above 1% is a warning and above 5% is critical. Requires pressure stall information (PSI) to be enabled on the nodes; otherwise 'No data'."
+            name: Top 10 Container Pressure Memory Stalled, >1% Warning, >5% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, sum(rate(container_pressure_memory_stalled_seconds_total{cluster="$cluster",node=~"$node",container!="POD",name!="",namespace!=""}[$interval])) by (node,pod,container,namespace,name,service) * 100)
+                  seriesNameFormat: '{{node}}: {{ pod }}: {{ container }}'
+      '12_1':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 containers with the most time where at least one task waited for memory, as a percentage of time. Above 5% is a warning and above 10% is critical. Requires PSI to be enabled on the nodes."
+            name: Top 10 Container Pressure Memory Waiting, >5% Warning, >10% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, sum(rate(container_pressure_memory_waiting_seconds_total{cluster="$cluster",node=~"$node",container!="POD",name!="",namespace!=""}[$interval])) by (node,pod,container,namespace,name,service) * 100)
+                  seriesNameFormat: '{{node}}: {{ pod }}: {{ container }}'
+      '12_2':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 containers with the most time where all tasks were stalled waiting for CPU, as a percentage. Above 1% is a warning and above 5% is critical. Requires PSI to be enabled."
+            name: Top 10 Container Pressure CPU Stalled, >1% Warning, >5% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, sum(irate(container_pressure_cpu_stalled_seconds_total{cluster="$cluster",node=~"$node",container!="POD",name!="",namespace!=""}[$interval])) by (node,pod,container,namespace,name,service) * 100)
+                  seriesNameFormat: '{{node}}: {{ pod }}: {{ container }}'
+      '12_3':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 containers with the most time where at least one task waited for CPU, as a percentage. Above 20% is a warning and above 50% is critical. A sign of CPU throttling or contention. Requires PSI to be enabled."
+            name: Top 10 Container Pressure CPU Waiting, >20% Warning, >50% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, sum(rate(container_pressure_cpu_waiting_seconds_total{cluster="$cluster",node=~"$node",container!="POD",name!="",namespace!=""}[$interval])) by (node,pod,container,namespace,name,service) * 100)
+                  seriesNameFormat: '{{node}}: {{ pod }}: {{ container }}'
+      '12_4':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 containers with the most I/O stall time (all tasks stalled on I/O), as a percentage. Above 5% is a warning and above 10% is critical. Requires PSI to be enabled."
+            name: Top 10 Container Pressure IO Stalled, >5% Warning, >10% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, sum(rate(container_pressure_io_stalled_seconds_total{cluster="$cluster",node=~"$node",container!="POD",name!="",namespace!=""}[$interval])) by (node,pod,container,namespace,name,service) * 100)
+                  seriesNameFormat: '{{node}}: {{ pod }}: {{ container }}'
+      '12_5':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 containers with the most time where at least one task waited on I/O, as a percentage. Above 10% is a warning and above 30% is critical. Requires PSI to be enabled."
+            name: Top 10 Container Pressure IO Waiting, >10% Warning, >30% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, sum(rate(container_pressure_io_waiting_seconds_total{cluster="$cluster",node=~"$node",container!="POD",name!="",namespace!=""}[$interval])) by (node,pod,container,namespace,name,service) * 100)
+                  seriesNameFormat: '{{node}}: {{ pod }}: {{ container }}'
+      '13_0':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes with the most memory stall time (all tasks stalled waiting on memory), as a percentage of time. Above 1% is a warning and above 5% is critical. Requires PSI and node_exporter's pressure collector; otherwise 'No data'."
+            name: Top 10 Node Pressure Memory Stalled, >1% Warning, >5% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, rate(node_pressure_memory_stalled_seconds_total{cluster="$cluster",instance=~"$node"} [$interval]) * 100)
+                  seriesNameFormat: '{{instance}}'
+      '13_1':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes with the most time where at least one task waited for memory, as a percentage. Above 10% is a warning and above 30% is critical. Requires PSI."
+            name: Top 10 Node Pressure Memory Waiting, >10% Warning, >30% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, rate(node_pressure_memory_waiting_seconds_total{cluster="$cluster",instance=~"$node"} [$interval]) * 100)
+                  seriesNameFormat: '{{instance}}'
+      '13_2':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes with the most I/O stall time (all tasks stalled on I/O), as a percentage. Above 10% is a warning and above 30% is critical. Requires PSI."
+            name: Top 10 Node Pressure IO Stalled, >10% Warning, >30% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, rate(node_pressure_io_stalled_seconds_total{cluster="$cluster",instance=~"$node"} [$interval]) * 100)
+                  seriesNameFormat: '{{instance}}'
+      '13_3':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes with the most time where at least one task waited on I/O, as a percentage. Above 30% is a warning and above 60% is critical. Requires PSI."
+            name: Top 10 Node Pressure IO Waiting, >30% Warning, >60% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, rate(node_pressure_io_waiting_seconds_total{cluster="$cluster",instance=~"$node"}[$interval]) * 100)
+                  seriesNameFormat: '{{instance}}'
+      '13_4':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes with the most time where at least one task waited for CPU, as a percentage. Above 5% is a warning and above 20% is critical. Requires PSI."
+            name: Top 10 Node Pressure CPU Waiting, >5% Warning, >20% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, rate(node_pressure_cpu_waiting_seconds_total{cluster="$cluster",instance=~"$node"} [$interval]) * 100)
+                  seriesNameFormat: '{{instance}}'
+      '13_5':
+        kind: Panel
+        spec:
+          display:
+            description: "The 10 nodes with the most time stalled handling interrupts (IRQ), as a percentage. Above 5% is a warning and above 10% is critical. Requires PSI."
+            name: Top 10 Node Pressure IRQ Stalled, >5% Warning, >10% Critical
+          plugin:
+            kind: TimeSeriesChart
+            spec:
+              legend:
+                mode: table
+                position: bottom
+                values:
+                - mean
+                - min
+                - max
+              visual:
+                connectNulls: false
+              yAxis:
+                format:
+                  unit: percent
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: topk(10, rate(node_pressure_irq_stalled_seconds_total{cluster="$cluster",instance=~"$node"} [$interval]) * 100)
+                  seriesNameFormat: '{{instance}}'
+    layouts:
+    - kind: Grid
+      spec:
+        display:
+          title: Node Resource
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_0'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_1'
+        - x: 0
+          "y": 9
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_2'
+        - x: 12
+          "y": 9
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_3'
+        - x: 0
+          "y": 17
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_4'
+        - x: 12
+          "y": 17
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_5'
+        - x: 0
+          "y": 49
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_6'
+        - x: 12
+          "y": 49
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_7'
+        - x: 0
+          "y": 41
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_8'
+        - x: 12
+          "y": 41
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/0_9'
+    - kind: Grid
+      spec:
+        display:
+          title: Cgroup Resource
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/1_0'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/1_1'
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/1_2'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/1_3'
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/1_4'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/1_5'
+    - kind: Grid
+      spec:
+        display:
+          title: Cluster Workload
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 12
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/2_0'
+        - x: 12
+          "y": 12
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/2_1'
+        - x: 0
+          "y": 12
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/2_2'
+        - x: 12
+          "y": 12
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/2_3'
+    - kind: Grid
+      spec:
+        display:
+          title: Top Usage
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 28
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/3_0'
+        - x: 12
+          "y": 28
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/3_1'
+        - x: 0
+          "y": 36
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/3_2'
+    - kind: Grid
+      spec:
+        display:
+          title: Kubelet Operation
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/4_0'
+        - x: 12
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/4_1'
+    - kind: Grid
+      spec:
+        display:
+          title: P99 Kubelet Cgroup Manager Duration
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 19
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/5_0'
+        - x: 8
+          "y": 19
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/5_1'
+        - x: 16
+          "y": 19
+          width: 8
+          height: 8
+          content:
+            $ref: '#/spec/panels/5_2'
+    - kind: Grid
+      spec:
+        display:
+          title: Kubelet Resource Usage
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6_0'
+        - x: 12
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/6_1'
+    - kind: Grid
+      spec:
+        display:
+          title: Kubelet HTTP requests Performance
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/7_0'
+        - x: 12
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/7_1'
+        - x: 0
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/7_2'
+        - x: 12
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/7_3'
+    - kind: Grid
+      spec:
+        display:
+          title: CRIO Operation
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/8_0'
+        - x: 12
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/8_1'
+        - x: 0
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/8_2'
+        - x: 12
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/8_3'
+    - kind: Grid
+      spec:
+        display:
+          title: CRIO Resource Usage
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/9_0'
+        - x: 12
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/9_1'
+    - kind: Grid
+      spec:
+        display:
+          title: iNodes Usage
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/10_0'
+        - x: 12
+          "y": 19
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/10_1'
+    - kind: Grid
+      spec:
+        display:
+          title: Pod Lifecycle Event Generator (PLEG)
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/11_0'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/11_1'
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/11_2'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/11_3'
+    - kind: Grid
+      spec:
+        display:
+          title: PSI - Containers (need to enable PSI)
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/12_0'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/12_1'
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/12_2'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/12_3'
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/12_4'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/12_5'
+    - kind: Grid
+      spec:
+        display:
+          title: PSI - Nodes (need to enable PSI)
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/13_0'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/13_1'
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/13_2'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/13_3'
+        - x: 0
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/13_4'
+        - x: 12
+          "y": 2
+          width: 12
+          height: 8
+          content:
+            $ref: '#/spec/panels/13_5'
+    duration: 1h

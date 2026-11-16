@@ -1,0 +1,39 @@
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: ocp-cluster-health-metrics
+  namespace: open-cluster-management-observability
+  labels:
+    app.kubernetes.io/component: platform-metrics-collector
+    managed-by: bry-tam-policies
+spec:
+  jobName: ocp-cluster-health-metrics
+  metricsPath: /federate
+  scheme: HTTPS
+  scrapeClass: not-configurable
+  staticConfigs:
+    - targets: ["not-configurable"]
+  params:
+    match[]:
+      - '{__name__="alertmanager_cluster_members",namespace="openshift-monitoring",job="alertmanager-main"}'
+      - '{__name__="apiserver_storage_objects",job="apiserver"}'
+      - '{__name__="cluster_operator_conditions"}'
+      - '{__name__="container_cpu_usage_seconds_total",namespace="openshift-monitoring"}'
+      - '{__name__="etcd_mvcc_db_total_size_in_use_in_bytes"}'
+      - '{__name__="etcd_network_peer_round_trip_time_seconds_bucket"}'
+      - '{__name__="etcd_server_health_failures"}'
+      - '{__name__="etcd_server_quota_backend_bytes"}'
+      - '{__name__="etcd_server_slow_apply_total"}'
+      - '{__name__="kube_configmap_info"}'
+      - '{__name__="kube_deployment_spec_replicas"}'
+      - '{__name__="kube_namespace_status_phase"}'
+      - '{__name__="kube_node_info"}'
+      - '{__name__="kube_node_status_condition"}'
+      - '{__name__="kube_pod_status_phase"}'
+      - '{__name__="kube_secret_info"}'
+      - '{__name__="kube_service_info"}'
+      - '{__name__="openshift_route_info"}'
+      - '{__name__="prometheus_config_last_reload_successful",namespace="openshift-monitoring",job="prometheus-k8s"}'
+      - '{__name__="prometheus_tsdb_head_samples_appended_total",namespace="openshift-monitoring",job="prometheus-k8s"}'
+      - '{__name__="prometheus_tsdb_head_series",namespace="openshift-monitoring",job="prometheus-k8s"}'

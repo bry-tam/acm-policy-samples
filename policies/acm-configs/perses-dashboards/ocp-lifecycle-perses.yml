@@ -1,0 +1,1318 @@
+---
+apiVersion: perses.dev/v1alpha2
+kind: PersesDashboard
+metadata:
+  namespace: open-cluster-management-observability
+  name: ocp-lifecycle
+  labels:
+    managed-by: bry-tam-policies
+spec:
+  config:
+    display:
+      name: bry-tam / OpenShift & operator lifecycle
+      description: "Support-lifecycle status of OpenShift and installed OLM operators across the fleet, based on Red Hat's published lifecycle data collected by the ocp-lifecycle exporter running on each cluster. Use it to see which clusters and operators are end of life or approaching it, and which operator versions will block an OpenShift update. The Fleet summary row always covers every cluster; the sections below follow the cluster selector. The last section shows how fresh the underlying data is."
+    variables:
+    - kind: ListVariable
+      spec:
+        display:
+          name: Cluster
+          hidden: false
+        defaultValue:
+        - $__all
+        allowAllValue: true
+        allowMultiple: true
+        customAllValue: .*
+        sort: alphabetical-asc
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            datasource:
+              kind: PrometheusDatasource
+              name: rbac-query-proxy-datasource
+            labelName: name
+            matchers:
+            - acm_managed_cluster_labels{openshiftVersion_major!="3"}
+        name: cluster
+    panels:
+      '0_0':
+        kind: Panel
+        spec:
+          display:
+            name: Clusters reporting
+            description: Clusters with a running lifecycle exporter.
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(ocp_lifecycle_cluster_info)
+                  seriesNameFormat: ''
+      '0_1':
+        kind: Panel
+        spec:
+          display:
+            name: 'Operators: action required'
+            description: Installed operator versions that are end of life or do not support the cluster's current OpenShift version.
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(ocp_lifecycle_operator_status == 2)
+                  seriesNameFormat: ''
+      '0_2':
+        kind: Panel
+        spec:
+          display:
+            name: 'Operators: plan an update'
+            description: Installed operator versions that block the update channel's target OpenShift version, or whose support ends soon.
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(ocp_lifecycle_operator_status == 1)
+                  seriesNameFormat: ''
+      '0_3':
+        kind: Panel
+        spec:
+          display:
+            name: 'Operators: OK'
+            description: Supported, and compatible with both the current and target OpenShift version.
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(ocp_lifecycle_operator_status == 0)
+                  seriesNameFormat: ''
+      '0_4':
+        kind: Panel
+        spec:
+          display:
+            name: Not tracked by Red Hat
+            description: Community/certified operators with no Red Hat lifecycle entry, or a version the lifecycle data does not list.
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count(ocp_lifecycle_operator_status == -1)
+                  seriesNameFormat: ''
+      '0_5':
+        kind: Panel
+        spec:
+          display:
+            name: Clusters
+            description: Each cluster's OpenShift version, the minor its update channel targets, and where that minor is in the Red Hat lifecycle.
+          plugin:
+            kind: Table
+            spec:
+              columnSettings:
+              - enableSorting: true
+                header: Cluster
+                name: 'cluster #1'
+              - enableSorting: true
+                header: Version
+                name: 'version #1'
+              - enableSorting: true
+                header: Minor
+                name: 'ocp_version #1'
+              - header: Channel
+                name: 'channel #1'
+              - header: Channel target
+                name: 'target_ocp_version #1'
+              - hide: true
+                name: 'cluster #2'
+              - hide: true
+                name: 'cluster #3'
+              - hide: true
+                name: 'cluster #4'
+              - hide: true
+                name: 'cluster #5'
+              - hide: true
+                name: 'cluster #6'
+              - hide: true
+                name: 'cluster #7'
+              - hide: true
+                name: 'cluster #8'
+              - hide: true
+                name: 'cluster #9'
+              - cellSettings:
+                - backgroundColor: '#f2495c'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '2'
+                  text: Action required
+                - backgroundColor: '#ff9830'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: Plan update
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: OK
+                - condition:
+                    kind: Value
+                    spec:
+                      value: '-1'
+                  text: Not tracked
+                header: Status
+                name: 'value #2'
+                width: 130
+              - cellSettings:
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '3'
+                  text: Full support
+                - backgroundColor: '#5794f2'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '2'
+                  text: Maintenance
+                - backgroundColor: '#ff9830'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: Extended (EUS)
+                - backgroundColor: '#f2495c'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: End of life
+                - condition:
+                    kind: Value
+                    spec:
+                      value: '-1'
+                  text: Unknown
+                enableSorting: true
+                header: Support level
+                name: 'value #3'
+                width: 140
+              - header: Phase
+                name: 'phase #3'
+              - format:
+                  unit: date-iso
+                header: Phase ends
+                name: 'value #4'
+              - format:
+                  unit: decimal
+                header: Days left in phase
+                name: 'value #5'
+              - format:
+                  unit: date-iso
+                header: Standard support ends
+                name: 'value #6'
+              - format:
+                  unit: date-iso
+                header: Extended support ends
+                name: 'value #7'
+              - cellSettings:
+                - condition:
+                    kind: Misc
+                    spec:
+                      value: 'null'
+                  text: '0'
+                header: 'Operators: action'
+                name: 'value #8'
+              - cellSettings:
+                - condition:
+                    kind: Misc
+                    spec:
+                      value: 'null'
+                  text: '0'
+                header: 'Operators: plan'
+                name: 'value #9'
+              - hide: true
+                name: timestamp
+              - hide: true
+                name: 'value #1'
+              - hide: true
+                name: 'status #2'
+              density: compact
+              transforms:
+              - kind: JoinByColumnValue
+                spec:
+                  columns:
+                  - 'cluster #1'
+                  - 'cluster #2'
+                  - 'cluster #3'
+                  - 'cluster #4'
+                  - 'cluster #5'
+                  - 'cluster #6'
+                  - 'cluster #7'
+                  - 'cluster #8'
+                  - 'cluster #9'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (cluster, version, ocp_version, channel, target_ocp_version) (ocp_lifecycle_cluster_info)
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (cluster, status) (ocp_lifecycle_cluster_status)
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (cluster, phase) (ocp_lifecycle_cluster_support_phase)
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (max by (cluster) (ocp_lifecycle_cluster_current_phase_end_timestamp_seconds) + 43200) * 1000
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (cluster) ((ocp_lifecycle_cluster_current_phase_end_timestamp_seconds - time()) / 86400)
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (max by (cluster) (ocp_lifecycle_cluster_support_end_timestamp_seconds) + 43200) * 1000
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (max by (cluster) (ocp_lifecycle_cluster_extended_support_end_timestamp_seconds) + 43200) * 1000
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count by (cluster) (ocp_lifecycle_operator_status == 2)
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count by (cluster) (ocp_lifecycle_operator_status == 1)
+                  seriesNameFormat: ''
+      '1_0':
+        kind: Panel
+        spec:
+          display:
+            name: Operators
+            description: Every OLM Subscription joined against the Red Hat lifecycle. Sorted worst first. "For current OCP" / "For target OCP" are the newest supported operator versions compatible with the cluster's current minor and with its update channel's target.
+          plugin:
+            kind: Table
+            spec:
+              columnSettings:
+              - enableSorting: true
+                header: Cluster
+                name: 'cluster #1'
+              - hide: true
+                name: 'cluster #2'
+              - hide: true
+                name: 'cluster #3'
+              - hide: true
+                name: 'cluster #4'
+              - hide: true
+                name: 'cluster #5'
+              - hide: true
+                name: 'cluster #6'
+              - hide: true
+                name: 'cluster #7'
+              - hide: true
+                name: 'cluster #8'
+              - enableSorting: true
+                header: Package
+                name: 'package #1'
+                width: 260
+              - hide: true
+                name: 'package #2'
+              - hide: true
+                name: 'package #3'
+              - hide: true
+                name: 'package #4'
+              - hide: true
+                name: 'package #5'
+              - hide: true
+                name: 'package #6'
+              - hide: true
+                name: 'package #7'
+              - hide: true
+                name: 'package #8'
+              - enableSorting: true
+                header: Namespace
+                name: 'operator_namespace #1'
+              - hide: true
+                name: 'operator_namespace #2'
+              - hide: true
+                name: 'operator_namespace #3'
+              - hide: true
+                name: 'operator_namespace #4'
+              - hide: true
+                name: 'operator_namespace #5'
+              - hide: true
+                name: 'operator_namespace #6'
+              - hide: true
+                name: 'operator_namespace #7'
+              - hide: true
+                name: 'operator_namespace #8'
+              - header: Installed
+                name: 'installed_version #1'
+              - header: Lifecycle stream
+                name: 'lifecycle_version #1'
+              - header: Channel
+                name: 'channel #1'
+              - cellSettings:
+                - backgroundColor: '#f2495c'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '2'
+                  text: Action required
+                - backgroundColor: '#ff9830'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: Plan update
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: OK
+                - condition:
+                    kind: Value
+                    spec:
+                      value: '-1'
+                  text: Not tracked
+                header: Status
+                name: 'value #2'
+                width: 130
+              - cellSettings:
+                - condition:
+                    kind: Value
+                    spec:
+                      value: end_of_life
+                  text: End of life
+                - condition:
+                    kind: Value
+                    spec:
+                      value: incompatible_with_cluster
+                  text: Doesn't support current OCP
+                - condition:
+                    kind: Value
+                    spec:
+                      value: blocks_cluster_upgrade
+                  text: Blocks upgrade to target OCP
+                - condition:
+                    kind: Value
+                    spec:
+                      value: support_ending_soon
+                  text: Support ends soon
+                - condition:
+                    kind: Value
+                    spec:
+                      value: update_with_cluster
+                  text: Update alongside OCP
+                - condition:
+                    kind: Value
+                    spec:
+                      value: newer_version_available
+                  text: Newer version available
+                - condition:
+                    kind: Value
+                    spec:
+                      value: unknown_version
+                  text: Version not in lifecycle data
+                - condition:
+                    kind: Value
+                    spec:
+                      value: not_tracked
+                  text: No Red Hat lifecycle
+                - condition:
+                    kind: Value
+                    spec:
+                      value: ok
+                  text: OK
+                header: Finding
+                name: 'status #2'
+                width: 230
+              - cellSettings:
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '3'
+                  text: Full support
+                - backgroundColor: '#5794f2'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '2'
+                  text: Maintenance
+                - backgroundColor: '#ff9830'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: Extended (EUS)
+                - backgroundColor: '#f2495c'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: End of life
+                - condition:
+                    kind: Value
+                    spec:
+                      value: '-1'
+                  text: Unknown
+                header: Support level
+                name: 'value #3'
+                width: 130
+              - header: Phase
+                hide: true
+                name: 'phase #1'
+              - cellSettings:
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: 'Yes'
+                - backgroundColor: '#f2495c'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: 'No'
+                - condition:
+                    kind: Value
+                    spec:
+                      value: '-1'
+                  text: Unknown
+                header: Supports current OCP
+                name: 'value #4'
+                width: 110
+              - cellSettings:
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: 'Yes'
+                - backgroundColor: '#f2495c'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: 'No'
+                - condition:
+                    kind: Value
+                    spec:
+                      value: '-1'
+                  text: Unknown
+                header: Supports target OCP
+                name: 'value #5'
+                width: 110
+              - header: Compatible OCP versions
+                name: 'compatible_ocp_versions #1'
+              - format:
+                  unit: date-iso
+                header: Support ends
+                name: 'value #6'
+                width: 110
+              - header: For current OCP
+                name: 'recommended_version #7'
+              - header: For target OCP
+                name: 'target_version #8'
+              - dataLink:
+                  openNewTab: true
+                  title: Red Hat lifecycle policy
+                  url: ${__data.fields["link #1"]}
+                header: Product
+                name: 'product #1'
+              - header: All findings
+                name: 'reasons #2'
+              - name: 'link #1'
+              - hide: true
+                name: timestamp
+              - hide: true
+                name: 'value #1'
+              - hide: true
+                name: 'value #7'
+              - hide: true
+                name: 'value #8'
+              - hide: true
+                name: 'join_key #1'
+              - hide: true
+                name: 'join_key #2'
+              - hide: true
+                name: 'join_key #3'
+              - hide: true
+                name: 'join_key #4'
+              - hide: true
+                name: 'join_key #5'
+              - hide: true
+                name: 'join_key #6'
+              - hide: true
+                name: 'join_key #7'
+              - hide: true
+                name: 'join_key #8'
+              density: compact
+              transforms:
+              - kind: JoinByColumnValue
+                spec:
+                  columns:
+                  - 'join_key #1'
+                  - 'join_key #2'
+                  - 'join_key #3'
+                  - 'join_key #4'
+                  - 'join_key #5'
+                  - 'join_key #6'
+                  - 'join_key #7'
+                  - 'join_key #8'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: label_join(max by (cluster, operator_namespace, package, product, installed_version, lifecycle_version, channel, phase, compatible_ocp_versions, link) (ocp_lifecycle_operator_info{cluster=~"$cluster"}), "join_key", "/", "cluster", "operator_namespace", "package")
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: label_join(max by (cluster, operator_namespace, package, status, reasons) (ocp_lifecycle_operator_status{cluster=~"$cluster"}), "join_key", "/", "cluster", "operator_namespace", "package")
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: label_join(max by (cluster, operator_namespace, package) (ocp_lifecycle_operator_support_phase{cluster=~"$cluster"}), "join_key", "/", "cluster", "operator_namespace", "package")
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: label_join(max by (cluster, operator_namespace, package) (ocp_lifecycle_operator_compatible_with_cluster{cluster=~"$cluster"}), "join_key", "/", "cluster", "operator_namespace", "package")
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: label_join(max by (cluster, operator_namespace, package) (ocp_lifecycle_operator_compatible_with_target{cluster=~"$cluster"}), "join_key", "/", "cluster", "operator_namespace", "package")
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: label_join((max by (cluster, operator_namespace, package) (ocp_lifecycle_operator_support_end_timestamp_seconds{cluster=~"$cluster"}) + 43200) * 1000, "join_key", "/", "cluster", "operator_namespace", "package")
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: label_join(max by (cluster, operator_namespace, package, recommended_version) (ocp_lifecycle_operator_recommended_version_info{cluster=~"$cluster", for="current"}), "join_key", "/", "cluster", "operator_namespace", "package")
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: label_join(max by (cluster, operator_namespace, package, target_version) (label_replace(ocp_lifecycle_operator_recommended_version_info{cluster=~"$cluster", for="target"}, "target_version", "$1", "recommended_version", "(.*)")), "join_key", "/", "cluster", "operator_namespace", "package")
+                  seriesNameFormat: ''
+      '1_1':
+        kind: Panel
+        spec:
+          display:
+            name: Operator support remaining (soonest first)
+            description: Days until standard support ends for each installed operator version. Negative means already past.
+          plugin:
+            kind: BarChart
+            spec:
+              calculation: last-number
+              format:
+                decimalPlaces: 0
+                unit: decimal
+              sort: asc
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: bottomk(15, max by (cluster, package) ((ocp_lifecycle_operator_support_end_timestamp_seconds{cluster=~"$cluster"} - time()) / 86400))
+                  seriesNameFormat: '{{package}} {{cluster}}'
+      '1_2':
+        kind: Panel
+        spec:
+          display:
+            name: 'OpenShift: days left in current phase'
+            description: Days until each cluster's OpenShift minor leaves its current support phase.
+          plugin:
+            kind: BarChart
+            spec:
+              calculation: last-number
+              format:
+                decimalPlaces: 0
+                unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (cluster, ocp_version, phase) ((ocp_lifecycle_cluster_current_phase_end_timestamp_seconds{cluster=~"$cluster"} - time()) / 86400)
+                  seriesNameFormat: "{{cluster}} {{ocp_version}} \u2013 {{phase}}"
+      '2_0':
+        kind: Panel
+        spec:
+          display:
+            name: "Operator \xD7 OpenShift compatibility \u2013 $cluster"
+            description: Which OpenShift minors the installed version of each operator supports, per Red Hat. Compare against this cluster's current minor and its update channel's target (Clusters table above). Untracked operators are not listed.
+          plugin:
+            kind: Table
+            spec:
+              cellSettings:
+              - condition:
+                  kind: Misc
+                  spec:
+                    value: 'null'
+                text: "\u2013"
+              columnSettings:
+              - header: Operator
+                name: 'package #1'
+                width: 280
+                enableSorting: true
+                sort: asc
+              - header: '4.20'
+                name: 'lifecycle_version #2'
+              - header: '4.21'
+                name: 'lifecycle_version #3'
+              - header: '4.22'
+                name: 'lifecycle_version #4'
+              - header: '4.23'
+                name: 'lifecycle_version #5'
+              - header: '5.0'
+                name: 'lifecycle_version #6'
+              - header: '5.1'
+                name: 'lifecycle_version #7'
+              - hide: true
+                name: 'package #2'
+              - hide: true
+                name: 'package #3'
+              - hide: true
+                name: 'package #4'
+              - hide: true
+                name: 'package #5'
+              - hide: true
+                name: 'package #6'
+              - hide: true
+                name: 'package #7'
+              - hide: true
+                name: 'value #1'
+              - hide: true
+                name: 'value #2'
+              - hide: true
+                name: 'value #3'
+              - hide: true
+                name: 'value #4'
+              - hide: true
+                name: 'value #5'
+              - hide: true
+                name: 'value #6'
+              - hide: true
+                name: 'value #7'
+              - hide: true
+                name: timestamp
+              density: compact
+              transforms:
+              - kind: JoinByColumnValue
+                spec:
+                  columns:
+                  - 'package #1'
+                  - 'package #2'
+                  - 'package #3'
+                  - 'package #4'
+                  - 'package #5'
+                  - 'package #6'
+                  - 'package #7'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (package) (ocp_lifecycle_operator_info{cluster=~"$cluster"})
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (package, lifecycle_version) (ocp_lifecycle_operator_ocp_compatibility{cluster=~"$cluster", ocp_version="4.20"})
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (package, lifecycle_version) (ocp_lifecycle_operator_ocp_compatibility{cluster=~"$cluster", ocp_version="4.21"})
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (package, lifecycle_version) (ocp_lifecycle_operator_ocp_compatibility{cluster=~"$cluster", ocp_version="4.22"})
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (package, lifecycle_version) (ocp_lifecycle_operator_ocp_compatibility{cluster=~"$cluster", ocp_version="4.23"})
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (package, lifecycle_version) (ocp_lifecycle_operator_ocp_compatibility{cluster=~"$cluster", ocp_version="5.0"})
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (package, lifecycle_version) (ocp_lifecycle_operator_ocp_compatibility{cluster=~"$cluster", ocp_version="5.1"})
+                  seriesNameFormat: ''
+      '3_1':
+        kind: Panel
+        spec:
+          display:
+            name: 'OpenShift minors: phase end dates'
+            description: Published end date of each lifecycle phase. Empty where the phase does not apply (e.g. EUS on odd minors).
+          plugin:
+            kind: Table
+            spec:
+              columnSettings:
+              - header: Minor
+                name: 'ocp_version #1'
+              - cellSettings:
+                - backgroundColor: '#73bf69'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '3'
+                  text: Full support
+                - backgroundColor: '#5794f2'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '2'
+                  text: Maintenance
+                - backgroundColor: '#ff9830'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '1'
+                  text: Extended (EUS)
+                - backgroundColor: '#f2495c'
+                  condition:
+                    kind: Value
+                    spec:
+                      value: '0'
+                  text: End of life
+                - condition:
+                    kind: Value
+                    spec:
+                      value: '-1'
+                  text: Unknown
+                header: Current phase
+                name: 'value #7'
+              - hide: true
+                name: 'ocp_version #2'
+              - hide: true
+                name: 'ocp_version #3'
+              - hide: true
+                name: 'ocp_version #4'
+              - hide: true
+                name: 'ocp_version #5'
+              - hide: true
+                name: 'ocp_version #6'
+              - hide: true
+                name: 'ocp_version #7'
+              - hide: true
+                name: 'phase #7'
+              - format:
+                  unit: date-iso
+                header: Full support
+                name: 'value #1'
+              - format:
+                  unit: date-iso
+                header: Maintenance support
+                name: 'value #2'
+              - format:
+                  unit: date-iso
+                header: Extended update support
+                name: 'value #3'
+              - format:
+                  unit: date-iso
+                header: Extended update support Term 2
+                name: 'value #4'
+              - format:
+                  unit: date-iso
+                header: Extended update support Term 3
+                name: 'value #5'
+              - format:
+                  unit: date-iso
+                header: Extended life phase
+                name: 'value #6'
+              - hide: true
+                name: timestamp
+              density: compact
+              transforms:
+              - kind: JoinByColumnValue
+                spec:
+                  columns:
+                  - 'ocp_version #1'
+                  - 'ocp_version #2'
+                  - 'ocp_version #3'
+                  - 'ocp_version #4'
+                  - 'ocp_version #5'
+                  - 'ocp_version #6'
+                  - 'ocp_version #7'
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (max by (ocp_version) (ocp_lifecycle_ocp_version_phase_end_timestamp_seconds{cluster=~"$cluster", phase="Full support"}) + 43200) * 1000
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (max by (ocp_version) (ocp_lifecycle_ocp_version_phase_end_timestamp_seconds{cluster=~"$cluster", phase="Maintenance support"}) + 43200) * 1000
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (max by (ocp_version) (ocp_lifecycle_ocp_version_phase_end_timestamp_seconds{cluster=~"$cluster", phase="Extended update support"}) + 43200) * 1000
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (max by (ocp_version) (ocp_lifecycle_ocp_version_phase_end_timestamp_seconds{cluster=~"$cluster", phase="Extended update support Term 2"}) + 43200) * 1000
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (max by (ocp_version) (ocp_lifecycle_ocp_version_phase_end_timestamp_seconds{cluster=~"$cluster", phase="Extended update support Term 3"}) + 43200) * 1000
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: (max by (ocp_version) (ocp_lifecycle_ocp_version_phase_end_timestamp_seconds{cluster=~"$cluster", phase="Extended life phase"}) + 43200) * 1000
+                  seriesNameFormat: ''
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max by (ocp_version, phase) (ocp_lifecycle_ocp_version_support_phase{cluster=~"$cluster"})
+                  seriesNameFormat: ''
+      '4_0':
+        kind: Panel
+        spec:
+          display:
+            name: Lifecycle data age
+            description: Oldest successful Red Hat API fetch across the selected clusters. Refreshes every 4h.
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max(time() - ocp_lifecycle_api_last_success_timestamp_seconds{cluster=~"$cluster"})
+                  seriesNameFormat: ''
+      '4_1':
+        kind: Panel
+        spec:
+          display:
+            name: Cluster data age
+            description: Oldest successful read of ClusterVersion/Subscriptions. Refreshes every 10m.
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: value
+              format:
+                unit: seconds
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: max(time() - ocp_lifecycle_cluster_last_success_timestamp_seconds{cluster=~"$cluster"})
+                  seriesNameFormat: ''
+      '4_2':
+        kind: Panel
+        spec:
+          display:
+            name: Clusters with stale data
+            description: Clusters whose exporter has not reached access.redhat.com in 24h.
+          plugin:
+            kind: StatChart
+            spec:
+              calculation: last-number
+              colorMode: background_solid
+              format:
+                unit: decimal
+          queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  datasource:
+                    kind: PrometheusDatasource
+                    name: rbac-query-proxy-datasource
+                  query: count((time() - ocp_lifecycle_api_last_success_timestamp_seconds{cluster=~"$cluster"}) > 86400)
+                  seriesNameFormat: ''
+    layouts:
+    - kind: Grid
+      spec:
+        display:
+          title: Fleet summary
+          collapse:
+            open: true
+        items:
+        - x: 0
+          "y": 1
+          width: 4
+          height: 4
+          content:
+            $ref: '#/spec/panels/0_0'
+        - x: 4
+          "y": 1
+          width: 5
+          height: 4
+          content:
+            $ref: '#/spec/panels/0_1'
+        - x: 9
+          "y": 1
+          width: 5
+          height: 4
+          content:
+            $ref: '#/spec/panels/0_2'
+        - x: 14
+          "y": 1
+          width: 5
+          height: 4
+          content:
+            $ref: '#/spec/panels/0_3'
+        - x: 19
+          "y": 1
+          width: 5
+          height: 4
+          content:
+            $ref: '#/spec/panels/0_4'
+        - x: 0
+          "y": 5
+          width: 24
+          height: 6
+          content:
+            $ref: '#/spec/panels/0_5'
+    - kind: Grid
+      spec:
+        display:
+          title: Installed operators
+          collapse:
+            open: true
+        items:
+        - x: 0
+          "y": 12
+          width: 24
+          height: 16
+          content:
+            $ref: '#/spec/panels/1_0'
+        - x: 0
+          "y": 28
+          width: 12
+          height: 10
+          content:
+            $ref: '#/spec/panels/1_1'
+        - x: 12
+          "y": 28
+          width: 12
+          height: 10
+          content:
+            $ref: '#/spec/panels/1_2'
+    - kind: Grid
+      spec:
+        display:
+          title: OpenShift compatibility matrix
+          collapse:
+            open: true
+        items:
+        - x: 0
+          "y": 39
+          width: 24
+          height: 14
+          content:
+            $ref: '#/spec/panels/2_0'
+    - kind: Grid
+      spec:
+        display:
+          title: OpenShift Release Lifecycle
+          collapse:
+            open: true
+        items:
+        - x: 0
+          "y": 54
+          width: 24
+          height: 10
+          content:
+            $ref: '#/spec/panels/3_1'
+    - kind: Grid
+      spec:
+        display:
+          title: Exporter health
+          collapse:
+            open: false
+        items:
+        - x: 0
+          "y": 65
+          width: 8
+          height: 4
+          content:
+            $ref: '#/spec/panels/4_0'
+        - x: 8
+          "y": 65
+          width: 8
+          height: 4
+          content:
+            $ref: '#/spec/panels/4_1'
+        - x: 16
+          "y": 65
+          width: 8
+          height: 4
+          content:
+            $ref: '#/spec/panels/4_2'
+    duration: 1h
+    links:
+    - name: Red Hat product lifecycles
+      url: https://access.redhat.com/product-life-cycles
+      targetBlank: true

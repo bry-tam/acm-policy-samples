@@ -1,0 +1,49 @@
+---
+apiVersion: monitoring.rhobs/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: ocp-lifecycle-metrics
+  namespace: open-cluster-management-observability
+  labels:
+    app.kubernetes.io/component: user-workload-metrics-collector
+    managed-by: bry-tam-policies
+spec:
+  jobName: ocp-lifecycle-metrics
+  metricsPath: /federate
+  # NOTE: staticConfigs (and scrapeClass/scheme) are intentionally omitted here.
+  # MCOA only auto-populates scrapeClassName, scheme, and staticConfigs for a
+  # user-workload-metrics-collector ScrapeConfig when staticConfigs is empty to
+  # begin with (see stolostron/multicluster-observability-addon
+  # internal/metrics/manifests/values.go, BuildValues(): the UserWorkloads loop
+  # only sets these fields `if len(scrapeConfig.Spec.StaticConfigs) == 0`).
+  # Defining staticConfigs ourselves (even as a placeholder) skips that
+  # auto-population entirely, which is what originally forced us to hand-derive
+  # the "ocp-monitoring" scrapeClass and the ":9092" federate target below.
+  params:
+    match[]:
+      - '{__name__="ocp_lifecycle_api_fetch_failures_total"}'
+      - '{__name__="ocp_lifecycle_api_last_attempt_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_api_last_success_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_api_products"}'
+      - '{__name__="ocp_lifecycle_cluster_current_phase_end_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_cluster_extended_support_end_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_cluster_info"}'
+      - '{__name__="ocp_lifecycle_cluster_last_success_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_cluster_read_failures_total"}'
+      - '{__name__="ocp_lifecycle_cluster_status"}'
+      - '{__name__="ocp_lifecycle_cluster_support_end_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_cluster_support_phase"}'
+      - '{__name__="ocp_lifecycle_ocp_version_extended_support_end_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_ocp_version_phase_end_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_ocp_version_support_end_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_ocp_version_support_phase"}'
+      - '{__name__="ocp_lifecycle_operator_compatible_with_cluster"}'
+      - '{__name__="ocp_lifecycle_operator_compatible_with_target"}'
+      - '{__name__="ocp_lifecycle_operator_current_phase_end_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_operator_extended_support_end_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_operator_info"}'
+      - '{__name__="ocp_lifecycle_operator_ocp_compatibility"}'
+      - '{__name__="ocp_lifecycle_operator_recommended_version_info"}'
+      - '{__name__="ocp_lifecycle_operator_status"}'
+      - '{__name__="ocp_lifecycle_operator_support_end_timestamp_seconds"}'
+      - '{__name__="ocp_lifecycle_operator_support_phase"}'
