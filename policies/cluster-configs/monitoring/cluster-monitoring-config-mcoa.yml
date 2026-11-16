@@ -1,5 +1,86 @@
 ---
 object-templates-raw: |
+  {{- $current_cm := (lookup "v1" "ConfigMap" "openshift-monitoring" "cluster-monitoring-config") }}
+
+  ## The base_config is the customer expected config.  This should not include ACM required details.
+  ## nodeSelector and tolerations will be applied further down the policy
+  {{- $base_config := `
+    alertmanagerMain:
+      enableUserAlertmanagerConfig: true
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 10Gi
+          storageClassName: gp3-csi
+
+    enableUserWorkload: true
+
+    prometheusK8s:
+      resources:
+        requests:
+          cpu: 200m
+          memory: 2Gi
+      retention: 7d
+      retentionSize: 100GB
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 100Gi
+          storageClassName: gp3-csi
+  ` }}
+
+  ## optionally add additional external labels
+  {{- $ex_labels := (dict
+        "prometheusK8s" (dict
+          "externalLabels" (dict
+            "instance_name" (split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL)._1
+            "product" (fromClusterClaim "product.open-cluster-management.io")
+          )
+        )
+      )
+  }}
+
+  ## merge the user config ontop of the existing cluster config
+  {{ $rendered_config := merge ($base_config | fromYaml) $ex_labels ((dig "data" "config.yaml" "{}" $current_cm) | fromYaml) }}
+
+  ## set nodeSelector and tolerations for each key
+  {{- $keys := (list "alertmanagerMain" "prometheusK8s" "prometheusOperator" "kubeStateMetrics" "openshiftStateMetrics" "telemeterClient" "thanosQuerier") }}
+  {{- range $key := $keys }}
+    {{- $node_selector := (dict
+          $key (dict
+            "nodeSelector" (dict
+              (printf "node-role.kubernetes.io/%s" (hasNodesWithExactRoles "infra" | ternary "infra" "worker")) ""
+            )
+          )
+        )
+    }}
+    {{- $node_tolerations := (dict) }}
+    {{- if (hasNodesWithExactRoles "infra") }}
+      {{- $node_tolerations = (dict
+            $key (dict
+              "tolerations" (list
+                (dict
+                  "operator" "Exists"
+                  "key" "node-role.kubernetes.io/infra"
+                )
+              )
+            )
+          )
+      }}
+    {{- end }}
+
+    ## Remove any existing nodeSelector and tolertations since we don't want these to merge
+    {{- if (dig $key "nodeSelector" "" $rendered_config) }}
+      {{- $_ := unset (index $rendered_config $key) "nodeSelector" }}
+    {{- end }}
+    {{- if (dig $key "tolerations" "" $rendered_config) }}
+      {{- $_ := unset (index $rendered_config $key) "tolerations" }}
+    {{- end }}
+    {{- $rendered_config = merge $node_selector $node_tolerations $rendered_config }}
+  {{- end }}
+
   - complianceType: musthave
     recordDiff: InStatus
     objectDefinition:
@@ -10,83 +91,4 @@ object-templates-raw: |
         namespace: openshift-monitoring
       data:
         config.yaml: |
-          alertmanagerMain:
-            enableUserAlertmanagerConfig: true
-            nodeSelector:
-              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
-            tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-            volumeClaimTemplate:
-              spec:
-                resources:
-                  requests:
-                    storage: 10Gi
-                storageClassName: gp3-csi
-
-          enableUserWorkload: true
-
-          nodeExporter:
-            collectors:
-              buddyinfo: {}
-              cpufreq: {}
-              ksmd: {}
-              mountstats: {}
-              netclass: {}
-              netdev: {}
-              processes: {}
-              systemd: {}
-              tcpstat: {}
-
-          prometheusK8s:
-            nodeSelector:
-              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
-            tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-
-  {{hub- $ManagedClusterAnnotations := (lookup "cluster.open-cluster-management.io/v1" "ManagedCluster" "" $.ManagedClusterName).metadata.annotations hub}}
-  {{hub- if not (empty (index $ManagedClusterAnnotations "hub-cluster-id")) hub}}
-            additionalAlertmanagerConfigs:
-            - apiVersion: v2
-              bearerToken:
-                key: token
-                name: 'observability-alertmanager-accessor-{{hub index $ManagedClusterAnnotations "hub-cluster-id" hub}}'
-              scheme: https
-              staticConfigs:
-              - {{hub index $ManagedClusterAnnotations "hub-alertmanager-url" hub}}
-              tlsConfig:
-                ca:
-                  key: service-ca.crt
-                  name: 'hub-alertmanager-router-ca-{{hub index $ManagedClusterAnnotations "hub-cluster-id" hub}}'
-                insecureSkipVerify: false
-  {{hub- end hub}}
-            externalLabels:
-              instance_name: {{ $n := split "." (lookup "config.openshift.io/v1" "Infrastructure" "" "cluster").status.apiServerURL }}{{ $n._1 }}
-              managed_cluster: {{ fromClusterClaim "id.openshift.io" }}
-              product: {{ fromClusterClaim "product.open-cluster-management.io" }}
-            resources:
-              requests:
-                cpu: 200m
-                memory: 2Gi
-
-            retention: 7d
-            retentionSize: 100GB
-
-            volumeClaimTemplate:
-              spec:
-                resources:
-                  requests:
-                    storage: 100Gi
-                storageClassName: gp3-csi
-
-
-  {{/* ##  group all remaining components together since the only config is for infra nodes  ## */}}
-  {{- range $key := (list "prometheusOperator" "kubeStateMetrics" "openshiftStateMetrics" "telemeterClient" "thanosQuerier")}}
-          {{ $key }}:
-            nodeSelector:
-              node-role.kubernetes.io/{{ hasNodesWithExactRoles "infra" | ternary "infra" "worker" }}: ""
-            tolerations:
-              - operator: Exists
-                key: node-role.kubernetes.io/infra
-  {{- end }}
+          {{ $rendered_config | toYaml | autoindent }}

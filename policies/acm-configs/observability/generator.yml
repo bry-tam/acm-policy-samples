@@ -54,14 +54,6 @@ policies:
             kind: ConfigurationPolicy
             compliance: "Compliant"
 
-      - path: managedcluster.yml
-        name: annotate-hub-info-managedcluster
-        objectSelector:
-          matchExpressions:
-            - key: vendor
-              operator: In
-              values:
-                - OpenShift
 
   - name: acm-observe-status
     remediationAction: inform
