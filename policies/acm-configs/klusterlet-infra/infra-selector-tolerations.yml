@@ -41,17 +41,25 @@ object-templates-raw: |
 
     {{/* ##  Gather all ManagedClusterAddOn ## */}}
     {{- range $mca := (lookup "addon.open-cluster-management.io/v1alpha1" "ManagedClusterAddOn" $mc.metadata.name "").items }}
+      ## skip observability for now since it is crashing the console when this is applied
+      {{- if eq $mca.metadata.name "multicluster-observability-addon"}}
+        {{- continue }}
+      {{ end }}
+
       {{- $aodcSpec := ((printf $nodeSelector $roleLabel) | fromYaml) }}
       {{- $aodcName := (dig "annotations" "org_addondeploymentconfig_name" "" $mca.metadata) }}
+      {{- if (get $aodc $aodcName) }}
+        {{- $aodcSpec = merge $aodcSpec (get $aodc $aodcName).spec }}
+      {{- else }}
+        {{/* ##  Check if there is an existing AddOnDeploymentConfig created for this MCAO ## */}}
+        {{- range $configRef := $mca.status.configReferences }}
+          {{- if eq $configRef.resource "addondeploymentconfigs" }}
+            {{- if eq $aodcName "" }}
+              {{- $aodcName = (printf "%s-%s" $configRef.desiredConfig.namespace $configRef.desiredConfig.name) }}
+            {{- end }}
 
-      {{/* ##  Check if there is an existing AddOnDeploymentConfig created for this MCAO ## */}}
-      {{- range $configRef := $mca.status.configReferences }}
-        {{- if eq $configRef.resource "addondeploymentconfigs" }}
-          {{- if not $aodcName }}
-            {{- $aodcName = (printf "%s-%s" $configRef.desiredConfig.namespace $configRef.desiredConfig.name) }}
+            {{- break }}
           {{- end }}
-          {{- $aodcSpec = merge $aodcSpec (get $aodc $aodcName).spec }}
-          {{- break }}
         {{- end }}
       {{- end }}
 

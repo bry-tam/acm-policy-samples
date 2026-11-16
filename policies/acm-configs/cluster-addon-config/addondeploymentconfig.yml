@@ -1,5 +1,5 @@
 ---
-apiVersion: addon.open-cluster-management.io/v1alpha1
+apiVersion: addon.open-cluster-management.io/v1beta1
 kind: AddOnDeploymentConfig
 metadata:
   name: clusteraddon-resource-config
@@ -12,10 +12,10 @@ spec:
       requests:
         memory: 512Mi
       limits:
-        memory: 1024Mi
+        memory: 2Gi
   - containerID: "deployments:config-policy-controller:config-policy-controller"
     resources:
       requests:
         memory: 512Mi
       limits:
-        memory: 1024Mi
+        memory: 2Gi
